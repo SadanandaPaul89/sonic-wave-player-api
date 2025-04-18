@@ -1,6 +1,6 @@
 
 // Jamendo API configuration
-const API_KEY = 'c0cb7534'; // Jamendo public client ID
+const API_KEY = 'af567a60'; // Jamendo public client ID
 const BASE_URL = 'https://api.jamendo.com/v3.0';
 
 // Types
@@ -17,6 +17,7 @@ export interface Album {
   artistName: string;
   releaseDate: string;
   image: string;
+  artistId?: string;
 }
 
 export interface Track {

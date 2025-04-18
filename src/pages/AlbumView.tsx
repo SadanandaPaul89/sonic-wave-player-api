@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getAlbumById, getTracksByAlbumId, Album, Track } from '@/services/api';
@@ -74,10 +73,7 @@ const AlbumView: React.FC = () => {
     isPlaying;
 
   const getAlbumImage = () => {
-    if (album.links?.images?.href) {
-      return `${album.links.images.href}/500x500`;
-    }
-    return 'https://api.napster.com/imageserver/images/v2/default/album/500x500.png';
+    return album.image || 'https://api.napster.com/imageserver/images/v2/default/album/500x500.png';
   };
 
   return (
@@ -96,7 +92,7 @@ const AlbumView: React.FC = () => {
           <div className="flex items-center text-sm text-gray-300">
             <span className="font-medium">{album.artistName}</span>
             <span className="mx-1">•</span>
-            <span>{new Date(album.released).getFullYear()}</span>
+            <span>{new Date(album.releaseDate).getFullYear()}</span>
             <span className="mx-1">•</span>
             <span>{tracks.length} songs</span>
           </div>

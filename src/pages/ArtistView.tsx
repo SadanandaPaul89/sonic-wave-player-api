@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getArtistById, searchContent, Artist, Album, Track, getImageUrl } from '@/services/api';
@@ -89,10 +88,7 @@ const ArtistView: React.FC = () => {
     isPlaying;
 
   const getArtistImage = () => {
-    if (artist.links?.images?.href) {
-      return `${artist.links.images.href}/500x500`;
-    }
-    return 'https://api.napster.com/imageserver/images/v2/default/artist/500x500.png';
+    return artist.image || 'https://api.napster.com/imageserver/images/v2/default/artist/500x500.png';
   };
 
   return (
@@ -137,7 +133,7 @@ const ArtistView: React.FC = () => {
           cards={albums.map(album => ({
             id: album.id,
             name: album.name,
-            description: `${new Date(album.released).getFullYear()}`,
+            description: `${new Date(album.releaseDate).getFullYear()}`,
             imageUrl: getImageUrl(album, 'md'),
             type: 'album' as const,
           }))}

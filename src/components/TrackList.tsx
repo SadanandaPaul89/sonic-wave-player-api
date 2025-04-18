@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Track } from '@/services/api';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -26,7 +25,6 @@ const TrackList: React.FC<TrackListProps> = ({
     }
   };
 
-  // Display a message when there are no tracks
   if (!tracks || tracks.length === 0) {
     return (
       <div className="w-full flex flex-col items-center justify-center py-16 text-gray-400">
@@ -87,7 +85,7 @@ const TrackList: React.FC<TrackListProps> = ({
                 </div>
               )}
               <div className="col-span-2 flex items-center justify-end text-sm text-gray-400">
-                {formatTime(track.playbackSeconds)}
+                {formatTime(track.duration)}
               </div>
             </div>
           );
