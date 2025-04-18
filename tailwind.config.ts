@@ -19,6 +19,16 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Spotify Colors
+				spotify: {
+					base: '#121212',
+					elevated: '#181818',
+					highlight: '#282828',
+					green: '#1DB954',
+					white: '#FFFFFF',
+					lightgray: '#B3B3B3',
+					darkgray: '#535353',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
