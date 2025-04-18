@@ -1,6 +1,6 @@
-
 // Jamendo API configuration
-const API_KEY = 'af567a60'; // Jamendo public client ID
+const API_KEY = 'af567a60';
+const CLIENT_SECRET = '931d7d5868340508620990e3ba2510d6';
 const BASE_URL = 'https://api.jamendo.com/v3.0';
 
 // Types
@@ -43,57 +43,32 @@ export const mockArtists: Artist[] = [
   {
     id: 'art.1',
     name: 'The Weeknd',
-    href: '#',
-    type: 'artist',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/artists/art.1/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    type: 'artist'
   },
   {
     id: 'art.2',
     name: 'Billie Eilish',
-    href: '#',
-    type: 'artist',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/artists/art.2/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    type: 'artist'
   },
   {
     id: 'art.3',
     name: 'Drake',
-    href: '#',
-    type: 'artist',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/artists/art.3/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    type: 'artist'
   },
   {
     id: 'art.4',
     name: 'Taylor Swift',
-    href: '#',
-    type: 'artist',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/artists/art.4/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    type: 'artist'
   },
   {
     id: 'art.5',
     name: 'Ed Sheeran',
-    href: '#',
-    type: 'artist',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/artists/art.5/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    type: 'artist'
   }
 ];
 
@@ -102,37 +77,22 @@ export const mockAlbums: Album[] = [
     id: 'alb.1',
     name: 'After Hours',
     artistName: 'The Weeknd',
-    href: '#',
-    released: '2020-03-20',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/albums/alb.1/images'
-      }
-    }
+    releaseDate: '2020-03-20',
+    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
   },
   {
     id: 'alb.2',
     name: 'Happier Than Ever',
     artistName: 'Billie Eilish',
-    href: '#',
-    released: '2021-07-30',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/albums/alb.2/images'
-      }
-    }
+    releaseDate: '2021-07-30',
+    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
   },
   {
     id: 'alb.3',
     name: 'Certified Lover Boy',
     artistName: 'Drake',
-    href: '#',
-    released: '2021-09-03',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/albums/alb.3/images'
-      }
-    }
+    releaseDate: '2021-09-03',
+    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
   }
 ];
 
@@ -142,50 +102,50 @@ export const mockTracks: Track[] = [
     name: 'Blinding Lights',
     artistName: 'The Weeknd',
     albumName: 'After Hours',
-    playbackSeconds: 201,
+    duration: 201,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
-    href: '#',
-    albumId: 'alb.1'
+    albumId: 'alb.1',
+    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
   },
   {
     id: 'tra.2',
     name: 'Save Your Tears',
     artistName: 'The Weeknd',
     albumName: 'After Hours',
-    playbackSeconds: 215,
+    duration: 215,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
-    href: '#',
-    albumId: 'alb.1'
+    albumId: 'alb.1',
+    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
   },
   {
     id: 'tra.3',
     name: 'Happier Than Ever',
     artistName: 'Billie Eilish',
     albumName: 'Happier Than Ever',
-    playbackSeconds: 298,
+    duration: 298,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
-    href: '#',
-    albumId: 'alb.2'
+    albumId: 'alb.2',
+    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
   },
   {
     id: 'tra.4',
     name: 'NDA',
     artistName: 'Billie Eilish',
     albumName: 'Happier Than Ever',
-    playbackSeconds: 196,
+    duration: 196,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
-    href: '#',
-    albumId: 'alb.2'
+    albumId: 'alb.2',
+    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
   },
   {
     id: 'tra.5',
     name: 'Way 2 Sexy',
     artistName: 'Drake',
     albumName: 'Certified Lover Boy',
-    playbackSeconds: 254,
+    duration: 254,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
-    href: '#',
-    albumId: 'alb.3'
+    albumId: 'alb.3',
+    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
   }
 ];
 
@@ -194,34 +154,19 @@ export const mockPlaylists: Playlist[] = [
     id: 'pla.1',
     name: 'Today\'s Top Hits',
     description: 'The most popular songs right now',
-    href: '#',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/playlists/pla.1/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
   },
   {
     id: 'pla.2',
     name: 'RapCaviar',
     description: 'New music from Drake, Lil Baby and more',
-    href: '#',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/playlists/pla.2/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
   },
   {
     id: 'pla.3',
     name: 'chill hits',
     description: 'Kick back to the best new and recent chill hits',
-    href: '#',
-    links: {
-      images: {
-        href: 'https://api.napster.com/imageserver/v2/playlists/pla.3/images'
-      }
-    }
+    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
   }
 ];
 
@@ -229,7 +174,7 @@ export const mockPlaylists: Playlist[] = [
 export const getTopArtists = async (limit = 20): Promise<Artist[]> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/artists/popular?client_id=${API_KEY}&format=json&limit=${limit}&imagesize=200`
+      `${BASE_URL}/artists/popular?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&limit=${limit}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -254,7 +199,7 @@ export const getTopArtists = async (limit = 20): Promise<Artist[]> => {
 export const getTopTracks = async (limit = 20): Promise<Track[]> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/tracks/popular?client_id=${API_KEY}&format=json&limit=${limit}&imagesize=200&include=stats,audio&boost=popularity_total`
+      `${BASE_URL}/tracks/popular?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&limit=${limit}&imagesize=200&include=stats,audio&boost=popularity_total`
     );
     
     if (!response.ok) {
@@ -283,7 +228,7 @@ export const getTopTracks = async (limit = 20): Promise<Track[]> => {
 export const getFeaturedPlaylists = async (limit = 10): Promise<Playlist[]> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/playlists/featured?client_id=${API_KEY}&format=json&limit=${limit}&imagesize=200`
+      `${BASE_URL}/playlists/featured?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&limit=${limit}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -312,7 +257,7 @@ export const getArtistById = async (id: string): Promise<Artist | null> => {
     }
     
     const response = await fetch(
-      `${BASE_URL}/artists/tracks/?client_id=${API_KEY}&format=json&id=${id}&imagesize=200`
+      `${BASE_URL}/artists/tracks/?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&id=${id}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -344,7 +289,7 @@ export const getAlbumById = async (id: string): Promise<Album | null> => {
     }
     
     const response = await fetch(
-      `${BASE_URL}/albums/tracks/?client_id=${API_KEY}&format=json&id=${id}&imagesize=200`
+      `${BASE_URL}/albums/tracks/?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&id=${id}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -377,7 +322,7 @@ export const getTracksByAlbumId = async (albumId: string): Promise<Track[]> => {
     }
     
     const response = await fetch(
-      `${BASE_URL}/albums/tracks/?client_id=${API_KEY}&format=json&id=${albumId}&imagesize=200`
+      `${BASE_URL}/albums/tracks/?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&id=${albumId}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -410,7 +355,7 @@ export const searchContent = async (query: string, type = 'track', limit = 20): 
                       type === 'album' ? 'albums' : 'tracks';
                       
     const response = await fetch(
-      `${BASE_URL}/${searchType}/search?client_id=${API_KEY}&format=json&limit=${limit}&namesearch=${encodeURIComponent(query)}&imagesize=200`
+      `${BASE_URL}/${searchType}/search?client_id=${API_KEY}&client_secret=${CLIENT_SECRET}&format=json&limit=${limit}&namesearch=${encodeURIComponent(query)}&imagesize=200`
     );
     
     if (!response.ok) {
@@ -471,4 +416,3 @@ export const getImageUrl = (item: any, size = 'sm'): string => {
 
   return 'https://cdn.jamendo.com/default/default-artist_200.jpg';
 };
-
