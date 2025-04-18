@@ -3,7 +3,7 @@ import React from 'react';
 import { Track } from '@/services/api';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Music } from 'lucide-react';
 
 interface TrackListProps {
   tracks: Track[];
@@ -25,6 +25,17 @@ const TrackList: React.FC<TrackListProps> = ({
       playTrack(track);
     }
   };
+
+  // Display a message when there are no tracks
+  if (!tracks || tracks.length === 0) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-16 text-gray-400">
+        <Music size={64} className="mb-4" />
+        <h3 className="text-xl font-medium mb-2">No tracks available</h3>
+        <p>Try searching for something else or check back later.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
