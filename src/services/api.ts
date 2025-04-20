@@ -28,7 +28,8 @@ export interface Track {
   duration: number;
   previewURL: string;
   albumId: string;
-  image: string;
+  artistId?: string;
+  image?: string;
 }
 
 export interface Playlist {

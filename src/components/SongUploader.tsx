@@ -8,9 +8,10 @@ import { addLocalTrack, getAllLocalTracks } from '@/services/localLibrary';
 
 interface SongUploaderProps {
   onUploadComplete?: () => void;
+  onTrackUploaded?: (track: Track) => void;
 }
 
-const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete }) => {
+const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUploaded }) => {
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -72,10 +73,17 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete }) => {
               duration: audio.duration,
               previewURL: audioUrl,
               albumId: 'local-album',
-              image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+              image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
+              artistId: 'local-artist' // Add artistId to track
             };
             
             addLocalTrack(newTrack);
+            
+            // Call the onTrackUploaded callback if provided
+            if (onTrackUploaded) {
+              onTrackUploaded(newTrack);
+            }
+            
             resolve();
           };
           
