@@ -16,26 +16,28 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout><Home /></Layout>} />
-          <Route path="/search" element={<Layout><Search /></Layout>} />
-          <Route path="/library" element={<Layout><Library /></Layout>} />
-          <Route path="/album/:id" element={<Layout><AlbumView /></Layout>} />
-          <Route path="/artist/:id" element={<Layout><ArtistView /></Layout>} />
-          <Route path="/artist-profile/:id" element={<Layout><ArtistProfile /></Layout>} />
-          <Route path="/publish" element={<Layout><PublishSong /></Layout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout><Home /></Layout>} />
+            <Route path="/search" element={<Layout><Search /></Layout>} />
+            <Route path="/library" element={<Layout><Library /></Layout>} />
+            <Route path="/album/:id" element={<Layout><AlbumView /></Layout>} />
+            <Route path="/artist/:id" element={<Layout><ArtistView /></Layout>} />
+            <Route path="/artist-profile/:id" element={<Layout><ArtistProfile /></Layout>} />
+            <Route path="/publish" element={<Layout><PublishSong /></Layout>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
