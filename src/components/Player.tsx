@@ -55,13 +55,11 @@ const Player: React.FC = () => {
       {/* Track Info */}
       <div className="w-1/4 flex items-center">
         <div className="w-14 h-14 bg-gray-600 mr-3 rounded flex-shrink-0">
-          {currentTrack.albumId && (
-            <img
-              src={`https://api.napster.com/imageserver/v2/albums/${currentTrack.albumId}/images/70x70.jpg`}
-              alt={currentTrack.albumName}
-              className="w-full h-full rounded object-cover"
-            />
-          )}
+          <img
+            src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+            alt={currentTrack.albumName}
+            className="w-full h-full rounded object-cover"
+          />
         </div>
         <div className="truncate">
           <div className="text-sm font-medium truncate">{currentTrack.name}</div>
