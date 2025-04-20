@@ -3,25 +3,36 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { getAllLocalTracks, clearLocalLibrary } from '@/services/localLibrary';
+import { getAllLocalTracks, clearLocalLibrary, getAllPublishedTracks, getAllArtists } from '@/services/localLibrary';
 import SongUploader from '@/components/SongUploader';
 import TrackList from '@/components/TrackList';
-import { Track } from '@/services/api';
-import { Music, Plus, File } from 'lucide-react';
+import { Track, PublishedTrack } from '@/services/api';
+import { Music, Plus, File, User, MusicIcon } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Library: React.FC = () => {
   const [localTracks, setLocalTracks] = useState<Track[]>([]);
+  const [publishedTracks, setPublishedTracks] = useState<PublishedTrack[]>([]);
+  const [hasArtistProfile, setHasArtistProfile] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadLocalTracks();
+    loadData();
   }, []);
 
-  const loadLocalTracks = () => {
+  const loadData = () => {
+    // Get local tracks
     const tracks = getAllLocalTracks();
     setLocalTracks(tracks);
+    
+    // Get published tracks
+    const published = getAllPublishedTracks();
+    setPublishedTracks(published);
+    
+    // Check if user has any artist profiles
+    const artists = getAllArtists();
+    setHasArtistProfile(artists.length > 0);
   };
 
   const handleClearLibrary = () => {
@@ -37,14 +48,32 @@ const Library: React.FC = () => {
 
   return (
     <div className="pb-20">
-      <h1 className="text-3xl font-bold mb-6 px-6">Your Library</h1>
+      <div className="flex justify-between items-center px-6 py-4">
+        <h1 className="text-3xl font-bold">Your Library</h1>
+        <div className="flex gap-3">
+          <Link to="/publish">
+            <Button variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Publish Music
+            </Button>
+          </Link>
+          {!hasArtistProfile && (
+            <Link to="/artist-registration">
+              <Button variant="default" size="sm">
+                <User className="mr-2 h-4 w-4" />
+                Register as Artist
+              </Button>
+            </Link>
+          )}
+        </div>
+      </div>
       
       <Tabs defaultValue="my-music" className="w-full">
         <TabsList className="mb-6 px-6">
           <TabsTrigger value="my-music">My Music</TabsTrigger>
+          <TabsTrigger value="all-music">Music Catalog</TabsTrigger>
           <TabsTrigger value="playlists">Playlists</TabsTrigger>
           <TabsTrigger value="artists">Artists</TabsTrigger>
-          <TabsTrigger value="albums">Albums</TabsTrigger>
         </TabsList>
         
         <TabsContent value="my-music" className="mt-0 px-6">
@@ -75,7 +104,7 @@ const Library: React.FC = () => {
           {showUploader && (
             <div className="mb-8">
               <SongUploader onUploadComplete={() => {
-                loadLocalTracks();
+                loadData();
                 setShowUploader(false);
               }} />
             </div>
@@ -96,6 +125,28 @@ const Library: React.FC = () => {
           )}
         </TabsContent>
         
+        <TabsContent value="all-music" className="mt-0 px-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-4">Music Catalog ({publishedTracks.length})</h2>
+            
+            {publishedTracks.length > 0 ? (
+              <TrackList tracks={publishedTracks} showAlbum={true} />
+            ) : (
+              <div className="bg-spotify-elevated rounded-md p-8 text-center">
+                <MusicIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h2 className="text-2xl font-bold mb-2">No published music yet</h2>
+                <p className="text-gray-400 mb-6">Be the first to publish your music on the platform</p>
+                <Link to="/publish">
+                  <Button>
+                    Publish Your Music
+                    <Plus className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        
         <TabsContent value="playlists" className="mt-0">
           <div className="bg-spotify-elevated rounded-md p-8 text-center">
             <h2 className="text-2xl font-bold mb-2">Create your first playlist</h2>
@@ -106,24 +157,34 @@ const Library: React.FC = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="artists" className="mt-0">
-          <div className="bg-spotify-elevated rounded-md p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Follow your first artist</h2>
-            <p className="text-gray-400 mb-6">Follow artists you like by tapping the follow button</p>
-            <Link to="/search" className="bg-white text-black font-medium py-3 px-8 rounded-full hover:scale-105 transition-transform inline-block">
-              Find artists
-            </Link>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="albums" className="mt-0">
-          <div className="bg-spotify-elevated rounded-md p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Save your first album</h2>
-            <p className="text-gray-400 mb-6">Save albums you like by tapping the heart icon</p>
-            <Link to="/search" className="bg-white text-black font-medium py-3 px-8 rounded-full hover:scale-105 transition-transform inline-block">
-              Find albums
-            </Link>
-          </div>
+        <TabsContent value="artists" className="mt-0 px-6">
+          {hasArtistProfile ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {getAllArtists().map((artist) => (
+                <Link to={`/artist-profile/${artist.id}`} key={artist.id}>
+                  <div className="bg-spotify-elevated p-4 rounded-lg hover:bg-spotify-highlight transition-colors">
+                    <div className="w-24 h-24 mx-auto rounded-full overflow-hidden mb-4">
+                      <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-center">{artist.name}</h3>
+                    <p className="text-gray-400 text-center text-sm truncate mt-1">Artist</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-spotify-elevated rounded-md p-8 text-center">
+              <User className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h2 className="text-2xl font-bold mb-2">Become an artist</h2>
+              <p className="text-gray-400 mb-6">Register as an artist to publish your music and build your profile</p>
+              <Link to="/artist-registration">
+                <Button>
+                  Register as Artist
+                  <User className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

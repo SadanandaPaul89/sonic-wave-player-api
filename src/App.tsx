@@ -12,6 +12,7 @@ import AlbumView from "./pages/AlbumView";
 import ArtistView from "./pages/ArtistView";
 import ArtistProfile from "./pages/ArtistProfile";
 import PublishSong from "./pages/PublishSong";
+import ArtistRegistration from "./pages/ArtistRegistration";
 import NotFound from "./pages/NotFound";
 
 // Create a client
@@ -32,6 +33,7 @@ function App() {
             <Route path="/artist/:id" element={<Layout><ArtistView /></Layout>} />
             <Route path="/artist-profile/:id" element={<Layout><ArtistProfile /></Layout>} />
             <Route path="/publish" element={<Layout><PublishSong /></Layout>} />
+            <Route path="/artist-registration" element={<Layout><ArtistRegistration /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
