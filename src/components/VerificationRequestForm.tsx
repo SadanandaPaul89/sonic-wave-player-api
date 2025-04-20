@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -52,7 +53,8 @@ const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ artis
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      await requestVerification(artistId, values.email, values.reason);
+      // Note: We're only passing the required arguments according to the error
+      await requestVerification(artistId, values.email);
       
       simulateVerification();
       
