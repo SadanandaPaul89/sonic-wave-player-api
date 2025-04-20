@@ -6,17 +6,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PublishSongForm from '@/components/PublishSongForm';
 import SongUploader from '@/components/SongUploader';
 import { Track } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 const PublishSong: React.FC = () => {
   const [uploadedTrack, setUploadedTrack] = useState<Track | null>(null);
   const navigate = useNavigate();
 
   const handleTrackUploaded = (track: Track) => {
+    console.log("Track uploaded:", track);
     setUploadedTrack(track);
+    // Show success toast
+    toast({
+      title: "Track uploaded",
+      description: "Your track is ready to be published"
+    });
   };
 
   const handlePublishSuccess = () => {
-    navigate('/library');
+    // Show success toast
+    toast({
+      title: "Success!",
+      description: "Your song has been published to your library."
+    });
+    
+    // Navigate to library
+    setTimeout(() => {
+      navigate('/library');
+    }, 1500);
   };
 
   return (

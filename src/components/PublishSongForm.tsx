@@ -46,15 +46,23 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   };
 
   const onSubmit = async (values: FormValues) => {
+    if (!track) {
+      toast({
+        title: "Error",
+        description: "No track data available to publish.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       // First create or get artist profile
-      let artistProfile: Artist;
       // We'd normally have user authentication here, for now use a fixed userId
       const userId = 'user-' + Date.now();
       
       // Create new artist profile
-      artistProfile = createArtistProfile({
+      const artistProfile = createArtistProfile({
         name: values.artistName,
         bio: values.bio,
         image: artistImage || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
@@ -62,15 +70,15 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       });
 
       // Then publish the track
-      const publishedTrack = publishTrack({
-        id: track?.id || `track-${Date.now()}`,
+      publishTrack({
+        id: track.id || `track-${Date.now()}`,
         name: values.songName,
         artistName: values.artistName,
         albumName: values.albumName,
-        duration: track?.duration || 0,
-        previewURL: track?.previewURL || '',
-        albumId: track?.albumId || '',
-        image: track?.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+        duration: track.duration || 0,
+        previewURL: track.previewURL || '',
+        albumId: track.albumId || `album-${Date.now()}`,
+        image: track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
         artistId: artistProfile.id
       });
 

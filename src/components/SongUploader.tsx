@@ -1,10 +1,10 @@
 
 import React, { useState, useRef } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Upload, Plus, Music } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Track } from '@/services/api';
-import { addLocalTrack, getAllLocalTracks } from '@/services/localLibrary';
+import { addLocalTrack } from '@/services/localLibrary';
 
 interface SongUploaderProps {
   onUploadComplete?: () => void;
@@ -65,18 +65,20 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
         
         await new Promise<void>((resolve) => {
           audio.onloadedmetadata = () => {
+            const uniqueId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             const newTrack: Track = {
-              id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              id: uniqueId,
               name: file.name.replace(/\.(mp3|wav|ogg)$/i, ''),
-              artistName: 'Local Library',
+              artistName: 'Local Artist',
               albumName: 'My Uploads',
               duration: audio.duration,
               previewURL: audioUrl,
-              albumId: 'local-album',
+              albumId: `local-album-${uniqueId}`,
               image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
-              artistId: 'local-artist' // Add artistId to track
+              artistId: `local-artist-${uniqueId}`
             };
             
+            // Add track to local library
             addLocalTrack(newTrack);
             
             // Call the onTrackUploaded callback if provided
@@ -96,7 +98,7 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
       
       toast({
         title: "Upload complete",
-        description: `Successfully added ${audioFiles.length} song${audioFiles.length > 1 ? 's' : ''} to your library.`,
+        description: `Successfully added ${audioFiles.length} song${audioFiles.length > 1 ? 's' : ''} to publish.`,
       });
       
       if (onUploadComplete) {
@@ -106,7 +108,7 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
       console.error("Error processing audio files:", error);
       toast({
         title: "Upload failed",
-        description: "There was an error adding your songs to the library.",
+        description: "There was an error adding your songs. Please try again.",
         variant: "destructive"
       });
     } finally {
