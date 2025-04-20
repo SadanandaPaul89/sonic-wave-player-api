@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, BadgeCheck } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import { getArtistById, isArtistVerified } from '@/services/localLibrary';
 
 const Player: React.FC = () => {
   const {
@@ -21,6 +23,7 @@ const Player: React.FC = () => {
   
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState(volume);
+  const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
 
   // Handle mute toggle
   const toggleMute = () => {
@@ -41,6 +44,16 @@ const Player: React.FC = () => {
       setIsMuted(false);
     }
   }, [volume]);
+  
+  // Check if artist is verified
+  useEffect(() => {
+    if (currentTrack && currentTrack.artistId) {
+      const verified = isArtistVerified(currentTrack.artistId);
+      setIsArtistVerifiedState(verified);
+    } else {
+      setIsArtistVerifiedState(false);
+    }
+  }, [currentTrack]);
 
   if (!currentTrack) {
     return (
@@ -63,7 +76,19 @@ const Player: React.FC = () => {
         </div>
         <div className="truncate">
           <div className="text-sm font-medium truncate">{currentTrack.name}</div>
-          <div className="text-xs text-gray-400 truncate">{currentTrack.artistName}</div>
+          <div className="flex items-center text-xs text-gray-400 truncate">
+            {currentTrack.artistId ? (
+              <Link to={`/artist-profile/${currentTrack.artistId}`} className="hover:text-white transition-colors">
+                {currentTrack.artistName}
+              </Link>
+            ) : (
+              <span>{currentTrack.artistName}</span>
+            )}
+            
+            {isArtistVerifiedState && (
+              <BadgeCheck size={14} className="ml-1 text-blue-500" />
+            )}
+          </div>
         </div>
       </div>
       

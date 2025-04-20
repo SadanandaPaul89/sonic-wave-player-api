@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Search, Library, PlusSquare, Heart } from 'lucide-react';
+import { Home, Search, Library, PlusSquare, Heart, Music, BadgeCheck } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   return (
@@ -25,6 +25,10 @@ const Sidebar: React.FC = () => {
       </div>
       
       <div className="mt-6">
+        <Link to="/publish" className="flex items-center text-gray-300 hover:text-white transition-colors mb-4">
+          <Music className="mr-3" size={24} />
+          <span className="font-medium">Publish Song</span>
+        </Link>
         <button className="flex items-center text-gray-300 hover:text-white transition-colors mb-4">
           <PlusSquare className="mr-3" size={24} />
           <span className="font-medium">Create Playlist</span>
