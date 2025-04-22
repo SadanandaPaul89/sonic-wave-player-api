@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { Google } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -148,7 +148,7 @@ const Auth = () => {
               onClick={handleGoogleSignIn} 
               className="w-full"
             >
-              <Google className="mr-2 h-4 w-4" />
+              <LogIn className="mr-2 h-4 w-4" />
               Google
             </Button>
           </Tabs>

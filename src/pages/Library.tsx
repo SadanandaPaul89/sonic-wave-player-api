@@ -1,190 +1,146 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { getAllLocalTracks, clearLocalLibrary, getAllPublishedTracks, getAllArtists } from '@/services/localLibrary';
-import SongUploader from '@/components/SongUploader';
-import TrackList from '@/components/TrackList';
-import { Track, PublishedTrack } from '@/services/api';
-import { Music, Plus, File, User, MusicIcon } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link } from 'react-router-dom';
+import { UserRound, Music } from 'lucide-react';
+import { getPublishedTracks, getArtists } from '@/services/localLibrary';
+import { supabase } from '@/lib/supabase';
 
-const Library: React.FC = () => {
-  const [localTracks, setLocalTracks] = useState<Track[]>([]);
-  const [publishedTracks, setPublishedTracks] = useState<PublishedTrack[]>([]);
-  const [hasArtistProfile, setHasArtistProfile] = useState(false);
-  const [showUploader, setShowUploader] = useState(false);
-  const { toast } = useToast();
+interface PublishedTrack {
+  id: string;
+  title: string;
+  artist: string;
+  artistId: string;
+  coverUrl: string;
+  audioUrl: string;
+  userId: string;
+  publishedAt: string;
+}
+
+interface Artist {
+  id: string;
+  name: string;
+  photoUrl: string;
+  verified: boolean;
+}
+
+const Library = () => {
+  const [tracks, setTracks] = useState<PublishedTrack[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [activeTab, setActiveTab] = useState('tracks');
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    
+    fetchUserData();
+    
+    // Load published tracks and artists
+    const loadedTracks = getPublishedTracks();
+    const loadedArtists = getArtists();
+    
+    // Add required fields to match the PublishedTrack interface
+    const enhancedTracks = loadedTracks.map(track => ({
+      ...track,
+      userId: track.userId || 'mock-user-id',
+      publishedAt: track.publishedAt || new Date().toISOString()
+    }));
+    
+    setTracks(enhancedTracks);
+    setArtists(loadedArtists);
   }, []);
 
-  const loadData = () => {
-    // Get local tracks
-    const tracks = getAllLocalTracks();
-    setLocalTracks(tracks);
-    
-    // Get published tracks
-    const published = getAllPublishedTracks();
-    setPublishedTracks(published);
-    
-    // Check if user has any artist profiles
-    const artists = getAllArtists();
-    setHasArtistProfile(artists.length > 0);
-  };
-
-  const handleClearLibrary = () => {
-    if (window.confirm('Are you sure you want to clear your entire music library? This cannot be undone.')) {
-      clearLocalLibrary();
-      setLocalTracks([]);
-      toast({
-        title: "Library cleared",
-        description: "Your local music library has been cleared."
-      });
-    }
-  };
-
   return (
-    <div className="pb-20">
-      <div className="flex justify-between items-center px-6 py-4">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Your Library</h1>
-        <div className="flex gap-3">
-          <Link to="/publish">
-            <Button variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Publish Music
-            </Button>
-          </Link>
-          {!hasArtistProfile && (
-            <Link to="/artist-registration">
-              <Button variant="default" size="sm">
-                <User className="mr-2 h-4 w-4" />
-                Register as Artist
-              </Button>
-            </Link>
-          )}
-        </div>
+        <Link to="/artist-registration">
+          <Button variant="outline">Register as Artist</Button>
+        </Link>
       </div>
       
-      <Tabs defaultValue="my-music" className="w-full">
-        <TabsList className="mb-6 px-6">
-          <TabsTrigger value="my-music">My Music</TabsTrigger>
-          <TabsTrigger value="all-music">Music Catalog</TabsTrigger>
-          <TabsTrigger value="playlists">Playlists</TabsTrigger>
-          <TabsTrigger value="artists">Artists</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="tracks">Your Tracks</TabsTrigger>
+          <TabsTrigger value="artists">Following</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="my-music" className="mt-0 px-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">Local Music ({localTracks.length})</h2>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowUploader(!showUploader)}
-                variant="outline"
-                size="sm"
-              >
-                {showUploader ? 'Hide Uploader' : 'Add Songs'}
-                <Plus className="ml-2 h-4 w-4" />
-              </Button>
-              {localTracks.length > 0 && (
-                <Button
-                  onClick={handleClearLibrary}
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                >
-                  Clear Library
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {showUploader && (
-            <div className="mb-8">
-              <SongUploader onUploadComplete={() => {
-                loadData();
-                setShowUploader(false);
-              }} />
-            </div>
-          )}
-
-          {localTracks.length > 0 ? (
-            <TrackList tracks={localTracks} />
-          ) : (
-            <div className="bg-spotify-elevated rounded-md p-8 text-center">
-              <Music className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Your music library is empty</h2>
-              <p className="text-gray-400 mb-6">Upload your own music files to start your collection</p>
-              <Button onClick={() => setShowUploader(true)}>
-                Add Music
-                <Plus className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="all-music" className="mt-0 px-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-4">Music Catalog ({publishedTracks.length})</h2>
-            
-            {publishedTracks.length > 0 ? (
-              <TrackList tracks={publishedTracks} showAlbum={true} />
+        <TabsContent value="tracks" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {tracks.length > 0 ? (
+              tracks.map((track) => (
+                <Card key={track.id} className="overflow-hidden bg-spotify-elevated hover:bg-spotify-highlight transition-colors">
+                  <Link to={`/album/${track.id}`}>
+                    <div className="aspect-square w-full bg-gray-800 overflow-hidden">
+                      <img 
+                        src={track.coverUrl || '/placeholder.svg'} 
+                        alt={track.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-lg truncate">{track.title}</CardTitle>
+                      <CardDescription className="truncate">{track.artist}</CardDescription>
+                    </CardHeader>
+                  </Link>
+                </Card>
+              ))
             ) : (
-              <div className="bg-spotify-elevated rounded-md p-8 text-center">
-                <MusicIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">No published music yet</h2>
-                <p className="text-gray-400 mb-6">Be the first to publish your music on the platform</p>
+              <div className="col-span-full flex flex-col items-center justify-center p-10 text-center">
+                <Music className="h-16 w-16 text-gray-400 mb-4" />
+                <h3 className="text-xl font-medium mb-2">No tracks yet</h3>
+                <p className="text-gray-400 mb-4">You haven't published any tracks yet</p>
                 <Link to="/publish">
-                  <Button>
-                    Publish Your Music
-                    <Plus className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Button>Publish Your First Track</Button>
                 </Link>
               </div>
             )}
           </div>
         </TabsContent>
         
-        <TabsContent value="playlists" className="mt-0">
-          <div className="bg-spotify-elevated rounded-md p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Create your first playlist</h2>
-            <p className="text-gray-400 mb-6">It's easy, we'll help you</p>
-            <button className="bg-white text-black font-medium py-3 px-8 rounded-full hover:scale-105 transition-transform">
-              Create playlist
-            </button>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="artists" className="mt-0 px-6">
-          {hasArtistProfile ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {getAllArtists().map((artist) => (
-                <Link to={`/artist-profile/${artist.id}`} key={artist.id}>
-                  <div className="bg-spotify-elevated p-4 rounded-lg hover:bg-spotify-highlight transition-colors">
-                    <div className="w-24 h-24 mx-auto rounded-full overflow-hidden mb-4">
-                      <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+        <TabsContent value="artists" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {artists.length > 0 ? (
+              artists.map((artist) => (
+                <Card key={artist.id} className="overflow-hidden bg-spotify-elevated hover:bg-spotify-highlight transition-colors">
+                  <Link to={`/artist/${artist.id}`}>
+                    <div className="aspect-square w-full bg-gray-800 overflow-hidden">
+                      <img 
+                        src={artist.photoUrl || '/placeholder.svg'} 
+                        alt={artist.name}
+                        className="w-full h-full object-cover rounded-t-lg"
+                      />
                     </div>
-                    <h3 className="text-lg font-semibold text-center">{artist.name}</h3>
-                    <p className="text-gray-400 text-center text-sm truncate mt-1">Artist</p>
-                  </div>
+                    <CardHeader className="p-4 pb-2">
+                      <CardTitle className="text-lg truncate flex items-center gap-2">
+                        {artist.name}
+                        {artist.verified && (
+                          <span className="text-blue-500 text-sm bg-blue-500/10 px-2 py-0.5 rounded-full">Verified</span>
+                        )}
+                      </CardTitle>
+                      <CardDescription>Artist</CardDescription>
+                    </CardHeader>
+                  </Link>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center p-10 text-center">
+                <UserRound className="h-16 w-16 text-gray-400 mb-4" />
+                <h3 className="text-xl font-medium mb-2">No followed artists</h3>
+                <p className="text-gray-400 mb-4">You aren't following any artists yet</p>
+                <Link to="/search">
+                  <Button>Discover Artists</Button>
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-spotify-elevated rounded-md p-8 text-center">
-              <User className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Become an artist</h2>
-              <p className="text-gray-400 mb-6">Register as an artist to publish your music and build your profile</p>
-              <Link to="/artist-registration">
-                <Button>
-                  Register as Artist
-                  <User className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
