@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,7 @@ interface Artist {
   id: string;
   name: string;
   photoUrl: string;
-  verified: boolean;
+  isVerified: boolean;
 }
 
 const Library = () => {
@@ -62,7 +63,7 @@ const Library = () => {
       id: artist.id,
       name: artist.name,
       photoUrl: artist.image || '', // Map image to photoUrl
-      verified: artist.verified || false
+      isVerified: artist.isVerified || false  // Use isVerified instead of verified
     }));
     
     setTracks(mappedTracks);
@@ -133,7 +134,7 @@ const Library = () => {
                     <CardHeader className="p-4 pb-2">
                       <CardTitle className="text-lg truncate flex items-center gap-2">
                         {artist.name}
-                        {artist.verified && (
+                        {artist.isVerified && (  // Changed from verified to isVerified
                           <span className="text-blue-500 text-sm bg-blue-500/10 px-2 py-0.5 rounded-full">Verified</span>
                         )}
                       </CardTitle>
