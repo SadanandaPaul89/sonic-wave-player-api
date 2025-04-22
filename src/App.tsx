@@ -23,22 +23,46 @@ const queryClient = new QueryClient();
 
 function App() {
   const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting session:", error);
+        } else {
+          console.log("Initial session check:", data.session ? "Session found" : "No session");
+          setSession(data.session);
+        }
+      } catch (error) {
+        console.error("Error in auth initialization:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session ? "Session exists" : "No session");
       setSession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

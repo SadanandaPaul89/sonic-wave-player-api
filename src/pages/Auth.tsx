@@ -19,16 +19,22 @@ const Auth = () => {
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting to sign in with:', { email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
       if (error) throw error;
+      
+      console.log('Sign in successful:', data);
       navigate('/');
       toast.success('Successfully signed in!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Sign in error:', error);
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -37,15 +43,26 @@ const Auth = () => {
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting to sign up with:', { email, password });
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
+      
       if (error) throw error;
-      toast.success('Check your email to confirm your account!');
+      
+      console.log('Sign up successful:', data);
+      if (data.user) {
+        navigate('/');
+        toast.success('Account created successfully!');
+      } else {
+        toast.success('Check your email to confirm your account!');
+      }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Sign up error:', error);
+      toast.error(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -97,9 +114,9 @@ const Auth = () => {
             <TabsContent value="register">
               <form onSubmit={handleEmailSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="register-email">Email</Label>
                   <Input
-                    id="email"
+                    id="register-email"
                     type="email"
                     placeholder="m@example.com"
                     value={email}
@@ -108,14 +125,16 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="register-password">Password</Label>
                   <Input
-                    id="password"
+                    id="register-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
+                  <p className="text-xs text-gray-400">Password must be at least 6 characters</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Creating account...' : 'Create account'}
