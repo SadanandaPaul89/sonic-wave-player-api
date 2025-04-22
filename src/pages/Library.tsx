@@ -42,19 +42,32 @@ const Library = () => {
     
     fetchUserData();
     
-    // Load published tracks and artists with correct function names
+    // Load local library data
     const loadedTracks = getAllPublishedTracks();
     const loadedArtists = getAllArtists();
     
-    // Add required fields to match the PublishedTrack interface
-    const enhancedTracks = loadedTracks.map(track => ({
-      ...track,
-      userId: track.userId || 'mock-user-id',
-      publishedAt: track.publishedAt || new Date().toISOString()
+    // Transform library tracks to match our interface
+    const mappedTracks: PublishedTrack[] = loadedTracks.map(track => ({
+      id: track.id,
+      title: track.name || '', // Map name to title
+      artist: track.artistName || '',
+      artistId: track.artistId || '',
+      coverUrl: track.image || '',
+      audioUrl: track.previewURL || '',
+      userId: 'mock-user-id', // Provide default values
+      publishedAt: track.publishedDate || new Date().toISOString()
     }));
     
-    setTracks(enhancedTracks);
-    setArtists(loadedArtists);
+    // Transform artists to match our interface
+    const mappedArtists: Artist[] = loadedArtists.map(artist => ({
+      id: artist.id,
+      name: artist.name,
+      photoUrl: artist.image || '', // Map image to photoUrl
+      verified: artist.verified || false
+    }));
+    
+    setTracks(mappedTracks);
+    setArtists(mappedArtists);
   }, []);
 
   return (
