@@ -32,6 +32,11 @@ export interface Track {
   image?: string;
 }
 
+export interface PublishedTrack extends Track {
+  userId: string;
+  publishedAt: string;
+}
+
 export interface Playlist {
   id: string;
   name: string;

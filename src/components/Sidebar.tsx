@@ -1,9 +1,23 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Home, Search, Library, PlusSquare, Heart, Music, BadgeCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Home, Search, Library, PlusSquare, Heart, Music, LogOut } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/auth');
+      toast.success('Successfully signed out!');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   return (
     <aside className="w-64 bg-black p-6 flex flex-col h-full">
       <div className="mb-8">
@@ -47,6 +61,16 @@ const Sidebar: React.FC = () => {
           <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Workout Mix</a></li>
           <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Road Trip</a></li>
         </ul>
+      </div>
+      
+      <div className="mt-auto pt-6 border-t border-gray-800">
+        <button 
+          onClick={handleSignOut}
+          className="flex items-center text-gray-300 hover:text-white transition-colors w-full"
+        >
+          <LogOut className="mr-3" size={24} />
+          <span className="font-medium">Sign Out</span>
+        </button>
       </div>
     </aside>
   );
