@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,6 @@ import ArtistRegistration from "./pages/ArtistRegistration";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-// Create a client
 const queryClient = new QueryClient();
 
 function App() {
@@ -28,14 +26,13 @@ function App() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Get initial session
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error("Error getting session:", error);
-        } else {
-          console.log("Initial session check:", data.session ? "Session found" : "No session");
-          setSession(data.session);
+          return;
         }
+        console.log("Initial session check:", data.session ? "Session found" : "No session");
+        setSession(data.session);
       } catch (error) {
         console.error("Error in auth initialization:", error);
       } finally {
@@ -45,7 +42,6 @@ function App() {
 
     initializeAuth();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -71,8 +67,19 @@ function App() {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" />} />
-            <Route path="/" element={session ? <Layout><Home /></Layout> : <Navigate to="/auth" />} />
+            <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
+            <Route
+              path="/"
+              element={
+                session ? (
+                  <Layout>
+                    <Home />
+                  </Layout>
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
             <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" />} />
             <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" />} />
             <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" />} />

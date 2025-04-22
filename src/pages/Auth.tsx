@@ -30,8 +30,8 @@ const Auth = () => {
       if (error) throw error;
       
       console.log('Sign in successful:', data);
-      navigate('/');
       toast.success('Successfully signed in!');
+      navigate('/', { replace: true });
     } catch (error: any) {
       console.error('Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');
@@ -55,8 +55,8 @@ const Auth = () => {
       
       console.log('Sign up successful:', data);
       if (data.user) {
-        navigate('/');
         toast.success('Account created successfully!');
+        navigate('/', { replace: true });
       } else {
         toast.success('Check your email to confirm your account!');
       }
