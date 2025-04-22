@@ -51,17 +51,6 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
-
   return (
     <div className="container flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md bg-spotify-elevated">
@@ -133,24 +122,6 @@ const Auth = () => {
                 </Button>
               </form>
             </TabsContent>
-
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-600" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-spotify-elevated px-2 text-gray-400">Or continue with</span>
-              </div>
-            </div>
-
-            <Button 
-              variant="outline" 
-              onClick={handleGoogleSignIn} 
-              className="w-full"
-            >
-              <LogIn className="mr-2 h-4 w-4" />
-              Google
-            </Button>
           </Tabs>
         </CardContent>
       </Card>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { UserRound, Music } from 'lucide-react';
-import { getPublishedTracks, getArtists } from '@/services/localLibrary';
+import { getAllPublishedTracks, getAllArtists } from '@/services/localLibrary';
 import { supabase } from '@/lib/supabase';
 
 interface PublishedTrack {
@@ -42,9 +42,9 @@ const Library = () => {
     
     fetchUserData();
     
-    // Load published tracks and artists
-    const loadedTracks = getPublishedTracks();
-    const loadedArtists = getArtists();
+    // Load published tracks and artists with correct function names
+    const loadedTracks = getAllPublishedTracks();
+    const loadedArtists = getAllArtists();
     
     // Add required fields to match the PublishedTrack interface
     const enhancedTracks = loadedTracks.map(track => ({
