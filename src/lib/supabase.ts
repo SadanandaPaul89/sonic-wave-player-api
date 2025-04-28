@@ -20,6 +20,22 @@ if (isMockClient) {
   // Store mock user data in localStorage to simulate persistence
   const localStorageKey = 'mock_supabase_auth';
   
+  // Mock database of users
+  const mockUsers = [
+    { 
+      email: 'test@example.com', 
+      password: 'password123', 
+      id: 'mock-user-1',
+      user_metadata: { full_name: 'Test User' }
+    },
+    { 
+      email: 'admin@example.com', 
+      password: 'admin123', 
+      id: 'mock-user-2',
+      user_metadata: { full_name: 'Admin User' }
+    }
+  ];
+  
   // Mock user session management
   const getMockUser = () => {
     try {
@@ -64,47 +80,63 @@ if (isMockClient) {
     signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
       console.log('Mock sign in attempt:', { email, password });
       
-      // Basic validation - in a real app, you'd verify against a database
-      if (email && password && password.length >= 6) {
-        const user = { 
-          id: 'mock-user-id',
-          email, 
-          user_metadata: { full_name: email.split('@')[0] },
-          created_at: new Date().toISOString()
-        };
-        setMockUser(user);
-        const session = createMockSession(user);
+      // Find user with matching email and password
+      const user = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (user) {
+        // Create a copy of the user object without the password
+        const { password: _, ...safeUser } = user;
+        setMockUser(safeUser);
+        const session = createMockSession(safeUser);
         
         // Dispatch a custom event to notify listeners of auth state change
         window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 
           detail: { event: 'SIGNED_IN', session } 
         }));
         
-        return { data: { user, session }, error: null };
+        return { data: { user: safeUser, session }, error: null };
       }
-      return { data: { user: null, session: null }, error: { message: 'Invalid login credentials' } };
+      
+      // Return error for invalid credentials
+      return { 
+        data: { user: null, session: null }, 
+        error: { message: 'Invalid login credentials', status: 400 } 
+      };
     },
     signUp: async ({ email, password }: { email: string; password: string }) => {
       console.log('Mock sign up attempt:', { email, password });
       
+      // Check if user already exists
+      const existingUser = mockUsers.find(u => u.email === email);
+      if (existingUser) {
+        return { 
+          data: { user: null, session: null }, 
+          error: { message: 'User already registered', status: 400 } 
+        };
+      }
+      
       if (email && password && password.length >= 6) {
-        const user = { 
+        const newUser = { 
           id: 'mock-user-id-' + new Date().getTime(),
           email, 
           user_metadata: { full_name: email.split('@')[0] },
           created_at: new Date().toISOString()
         };
-        setMockUser(user);
-        const session = createMockSession(user);
+        
+        // Add the new user to mock database (in memory only for this session)
+        mockUsers.push({...newUser, password});
+        
+        setMockUser(newUser);
+        const session = createMockSession(newUser);
         
         // Dispatch a custom event to notify listeners of auth state change
         window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 
           detail: { event: 'SIGNED_IN', session } 
         }));
         
-        return { data: { user, session }, error: null };
+        return { data: { user: newUser, session }, error: null };
       }
-      return { data: { user: null, session: null }, error: { message: 'Failed to sign up' } };
+      return { data: { user: null, session: null }, error: { message: 'Failed to sign up', status: 400 } };
     },
     signOut: async () => {
       console.log('Mock sign out');

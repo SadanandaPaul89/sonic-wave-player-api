@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
@@ -57,6 +57,10 @@ const Auth = () => {
       
       if (error) throw error;
       
+      if (!data.user || !data.session) {
+        throw new Error('Authentication failed');
+      }
+      
       console.log('Sign in successful:', data);
       toast.success('Successfully signed in!');
       navigate('/', { replace: true });
@@ -86,6 +90,10 @@ const Auth = () => {
       
       if (error) throw error;
       
+      if (!data.user) {
+        throw new Error('Sign up failed');
+      }
+      
       console.log('Sign up successful:', data);
       toast.success('Account created successfully!');
       navigate('/', { replace: true });
@@ -114,6 +122,7 @@ const Auth = () => {
             
             {error && (
               <Alert variant="destructive" className="my-4">
+                <AlertCircle className="h-4 w-4 mr-2" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -153,6 +162,12 @@ const Auth = () => {
                     'Sign in'
                   )}
                 </Button>
+                
+                <div className="text-center mt-4 text-sm text-muted-foreground">
+                  <p>Demo credentials:</p>
+                  <p>Email: test@example.com</p>
+                  <p>Password: password123</p>
+                </div>
               </form>
             </TabsContent>
             
