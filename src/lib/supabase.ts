@@ -74,6 +74,12 @@ if (isMockClient) {
         };
         setMockUser(user);
         const session = createMockSession(user);
+        
+        // Dispatch a custom event to notify listeners of auth state change
+        window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 
+          detail: { event: 'SIGNED_IN', session } 
+        }));
+        
         return { data: { user, session }, error: null };
       }
       return { data: { user: null, session: null }, error: { message: 'Invalid login credentials' } };
@@ -83,13 +89,19 @@ if (isMockClient) {
       
       if (email && password && password.length >= 6) {
         const user = { 
-          id: 'mock-user-id',
+          id: 'mock-user-id-' + new Date().getTime(),
           email, 
           user_metadata: { full_name: email.split('@')[0] },
           created_at: new Date().toISOString()
         };
         setMockUser(user);
         const session = createMockSession(user);
+        
+        // Dispatch a custom event to notify listeners of auth state change
+        window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 
+          detail: { event: 'SIGNED_IN', session } 
+        }));
+        
         return { data: { user, session }, error: null };
       }
       return { data: { user: null, session: null }, error: { message: 'Failed to sign up' } };
@@ -97,12 +109,35 @@ if (isMockClient) {
     signOut: async () => {
       console.log('Mock sign out');
       localStorage.removeItem(localStorageKey);
+      
+      // Dispatch a custom event to notify listeners of auth state change
+      window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 
+        detail: { event: 'SIGNED_OUT', session: null } 
+      }));
+      
       return { error: null };
     },
     onAuthStateChange: (callback: any) => {
       console.log('Mock auth state change listener registered');
-      // Return a mock unsubscribe function
-      return { data: { subscription: { unsubscribe: () => {} } } };
+      
+      // Add real listener for our custom events
+      const listener = (event: any) => {
+        const { detail } = event;
+        callback(detail.event, detail.session);
+      };
+      
+      window.addEventListener('supabase.auth.stateChange', listener);
+      
+      // Return a real unsubscribe function
+      return { 
+        data: { 
+          subscription: { 
+            unsubscribe: () => {
+              window.removeEventListener('supabase.auth.stateChange', listener);
+            } 
+          } 
+        } 
+      };
     },
   } as any;  // Type assertion to avoid TypeScript errors
 

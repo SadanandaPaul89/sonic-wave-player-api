@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -80,13 +81,13 @@ function App() {
                 )
               }
             />
-            <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" />} />
-            <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" />} />
+            <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

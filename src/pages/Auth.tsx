@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,16 +8,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { LogIn } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('login');
+
+  useEffect(() => {
+    // Clear error when switching tabs
+    setError(null);
+  }, [activeTab]);
+
+  const validateInputs = () => {
+    if (!email) {
+      setError('Email is required');
+      return false;
+    }
+    if (!password) {
+      setError('Password is required');
+      return false;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+    return true;
+  };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
+    if (!validateInputs()) return;
+    
     setLoading(true);
     
     try {
@@ -34,6 +62,7 @@ const Auth = () => {
       navigate('/', { replace: true });
     } catch (error: any) {
       console.error('Sign in error:', error);
+      setError(error.message || 'Failed to sign in');
       toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
@@ -42,6 +71,10 @@ const Auth = () => {
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
+    if (!validateInputs()) return;
+    
     setLoading(true);
     
     try {
@@ -54,14 +87,11 @@ const Auth = () => {
       if (error) throw error;
       
       console.log('Sign up successful:', data);
-      if (data.user) {
-        toast.success('Account created successfully!');
-        navigate('/', { replace: true });
-      } else {
-        toast.success('Check your email to confirm your account!');
-      }
+      toast.success('Account created successfully!');
+      navigate('/', { replace: true });
     } catch (error: any) {
       console.error('Sign up error:', error);
+      setError(error.message || 'Failed to create account');
       toast.error(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
@@ -76,11 +106,17 @@ const Auth = () => {
           <CardDescription>Sign in or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue="login" className="w-full" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
+            
+            {error && (
+              <Alert variant="destructive" className="my-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             
             <TabsContent value="login">
               <form onSubmit={handleEmailSignIn} className="space-y-4">
@@ -93,6 +129,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -103,10 +140,18 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign in'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign in'
+                  )}
                 </Button>
               </form>
             </TabsContent>
@@ -122,6 +167,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -133,11 +179,19 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    disabled={loading}
                   />
                   <p className="text-xs text-gray-400">Password must be at least 6 characters</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating account...' : 'Create account'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create account'
+                  )}
                 </Button>
               </form>
             </TabsContent>

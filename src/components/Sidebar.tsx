@@ -1,20 +1,29 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, Search, Library, PlusSquare, Heart, Music, LogOut } from 'lucide-react';
+import { Home, Search, Library, PlusSquare, Heart, Music, LogOut, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     try {
+      setIsSigningOut(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      navigate('/auth');
+      
+      // Navigate after sign out
+      navigate('/auth', { replace: true });
       toast.success('Successfully signed out!');
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Sign out error:', error);
+      toast.error(error.message || 'Failed to sign out');
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -67,9 +76,19 @@ const Sidebar: React.FC = () => {
         <button 
           onClick={handleSignOut}
           className="flex items-center text-gray-300 hover:text-white transition-colors w-full"
+          disabled={isSigningOut}
         >
-          <LogOut className="mr-3" size={24} />
-          <span className="font-medium">Sign Out</span>
+          {isSigningOut ? (
+            <>
+              <Loader2 className="mr-3 animate-spin" size={24} />
+              <span className="font-medium">Signing Out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="mr-3" size={24} />
+              <span className="font-medium">Sign Out</span>
+            </>
+          )}
         </button>
       </div>
     </aside>
