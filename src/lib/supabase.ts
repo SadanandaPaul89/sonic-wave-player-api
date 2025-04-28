@@ -55,6 +55,14 @@ if (isMockClient) {
     }
   };
 
+  const clearMockUser = () => {
+    try {
+      localStorage.removeItem(localStorageKey);
+    } catch (error) {
+      console.error('Error clearing mock user:', error);
+    }
+  };
+
   // Create a dummy session
   const createMockSession = (user: any) => {
     return {
@@ -140,7 +148,7 @@ if (isMockClient) {
     },
     signOut: async () => {
       console.log('Mock sign out');
-      localStorage.removeItem(localStorageKey);
+      clearMockUser();
       
       // Dispatch a custom event to notify listeners of auth state change
       window.dispatchEvent(new CustomEvent('supabase.auth.stateChange', { 

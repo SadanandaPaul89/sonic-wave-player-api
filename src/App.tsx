@@ -17,16 +17,18 @@ import PublishSong from "./pages/PublishSong";
 import ArtistRegistration from "./pages/ArtistRegistration";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
 function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        setLoading(true);
         const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error("Error getting session:", error);
@@ -45,9 +47,17 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session ? "Session exists" : "No session");
-      setSession(session);
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log("Auth state changed:", event, currentSession ? "Session exists" : "No session");
+      
+      // Update state based on the authentication event
+      if (event === 'SIGNED_IN' && currentSession) {
+        setSession(currentSession);
+        toast.success("Successfully signed in!");
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null);
+        toast.success("Successfully signed out!");
+      }
     });
 
     return () => subscription.unsubscribe();
