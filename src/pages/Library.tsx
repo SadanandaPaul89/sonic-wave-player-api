@@ -5,70 +5,130 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
 import { UserRound, Music } from 'lucide-react';
-import { getAllPublishedTracks, getAllArtists } from '@/services/localLibrary';
+import { getTopTracks, getTopArtists, Track, Artist } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 
-interface PublishedTrack {
-  id: string;
-  title: string;
-  artist: string;
-  artistId: string;
-  coverUrl: string;
-  audioUrl: string;
-  userId: string;
-  publishedAt: string;
-}
-
-interface Artist {
-  id: string;
-  name: string;
-  photoUrl: string;
-  isVerified: boolean;
-}
-
 const Library = () => {
-  const [tracks, setTracks] = useState<PublishedTrack[]>([]);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
   const [activeTab, setActiveTab] = useState('tracks');
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
+      setIsLoading(true);
+      
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          setUserId(user.id);
+          
+          // Get user's tracks
+          const { data: userTracks, error: tracksError } = await supabase
+            .from('songs')
+            .select('*')
+            .eq('user_id', user.id);
+            
+          if (tracksError) throw tracksError;
+          
+          // We need to transform these tracks
+          const transformedTracks: Track[] = await Promise.all(userTracks.map(async (track) => {
+            const { data: artist } = await supabase
+              .from('artists')
+              .select('name')
+              .eq('id', track.artist_id)
+              .single();
+              
+            const { data: album } = await supabase
+              .from('albums')
+              .select('name')
+              .eq('id', track.album_id)
+              .single();
+              
+            return {
+              id: track.id,
+              name: track.name,
+              artistName: artist?.name || 'Unknown Artist',
+              artistId: track.artist_id,
+              albumName: album?.name || 'Unknown Album',
+              albumId: track.album_id,
+              duration: track.duration,
+              previewURL: track.audio_url,
+              image: track.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+            };
+          }));
+          
+          setTracks(transformedTracks);
+          
+          // Get followed artists (for now, just get top artists as placeholder)
+          const followedArtists = await getTopArtists(10);
+          setArtists(followedArtists);
+        }
+      } catch (error) {
+        console.error('Error fetching library data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchUserData();
     
-    // Load local library data
-    const loadedTracks = getAllPublishedTracks();
-    const loadedArtists = getAllArtists();
-    
-    // Transform library tracks to match our interface
-    const mappedTracks: PublishedTrack[] = loadedTracks.map(track => ({
-      id: track.id,
-      title: track.name || '', // Map name to title
-      artist: track.artistName || '',
-      artistId: track.artistId || '',
-      coverUrl: track.image || '',
-      audioUrl: track.previewURL || '',
-      userId: 'mock-user-id', // Provide default values
-      publishedAt: track.publishedDate || new Date().toISOString()
-    }));
-    
-    // Transform artists to match our interface
-    const mappedArtists: Artist[] = loadedArtists.map(artist => ({
-      id: artist.id,
-      name: artist.name,
-      photoUrl: artist.image || '', // Map image to photoUrl
-      isVerified: artist.isVerified || false  // Use isVerified instead of verified
-    }));
-    
-    setTracks(mappedTracks);
-    setArtists(mappedArtists);
-  }, []);
+    // Subscribe to realtime changes in the songs table
+    const channel = supabase
+      .channel('songs-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'songs' },
+        async (payload) => {
+          // Check if this song belongs to the current user
+          const song = payload.new as any;
+          if (song.user_id === userId) {
+            // Fetch related data and add to tracks list
+            const { data: artist } = await supabase
+              .from('artists')
+              .select('name')
+              .eq('id', song.artist_id)
+              .single();
+              
+            const { data: album } = await supabase
+              .from('albums')
+              .select('name')
+              .eq('id', song.album_id)
+              .single();
+              
+            const newTrack: Track = {
+              id: song.id,
+              name: song.name,
+              artistName: artist?.name || 'Unknown Artist',
+              artistId: song.artist_id,
+              albumName: album?.name || 'Unknown Album',
+              albumId: song.album_id,
+              duration: song.duration,
+              previewURL: song.audio_url,
+              image: song.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+            };
+            
+            setTracks(prevTracks => [...prevTracks, newTrack]);
+          }
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,17 +150,17 @@ const Library = () => {
             {tracks.length > 0 ? (
               tracks.map((track) => (
                 <Card key={track.id} className="overflow-hidden bg-spotify-elevated hover:bg-spotify-highlight transition-colors">
-                  <Link to={`/album/${track.id}`}>
+                  <Link to={`/album/${track.albumId}`}>
                     <div className="aspect-square w-full bg-gray-800 overflow-hidden">
                       <img 
-                        src={track.coverUrl || '/placeholder.svg'} 
-                        alt={track.title}
+                        src={track.image} 
+                        alt={track.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-lg truncate">{track.title}</CardTitle>
-                      <CardDescription className="truncate">{track.artist}</CardDescription>
+                      <CardTitle className="text-lg truncate">{track.name}</CardTitle>
+                      <CardDescription className="truncate">{track.artistName}</CardDescription>
                     </CardHeader>
                   </Link>
                 </Card>
@@ -126,18 +186,13 @@ const Library = () => {
                   <Link to={`/artist/${artist.id}`}>
                     <div className="aspect-square w-full bg-gray-800 overflow-hidden">
                       <img 
-                        src={artist.photoUrl || '/placeholder.svg'} 
+                        src={artist.image} 
                         alt={artist.name}
                         className="w-full h-full object-cover rounded-t-lg"
                       />
                     </div>
                     <CardHeader className="p-4 pb-2">
-                      <CardTitle className="text-lg truncate flex items-center gap-2">
-                        {artist.name}
-                        {artist.isVerified && (  // Changed from verified to isVerified
-                          <span className="text-blue-500 text-sm bg-blue-500/10 px-2 py-0.5 rounded-full">Verified</span>
-                        )}
-                      </CardTitle>
+                      <CardTitle className="text-lg truncate">{artist.name}</CardTitle>
                       <CardDescription>Artist</CardDescription>
                     </CardHeader>
                   </Link>

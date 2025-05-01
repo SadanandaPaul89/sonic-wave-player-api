@@ -5,9 +5,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
-import { Artist, createArtistProfile, publishTrack } from '@/services/localLibrary';
+import { toast } from 'sonner';
 import { Track } from '@/services/api';
+import { publishSong } from '@/services/supabaseService';
+import { supabase } from '@/lib/supabase';
 
 interface PublishSongFormProps {
   track?: Track;
@@ -47,56 +48,41 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
 
   const onSubmit = async (values: FormValues) => {
     if (!track) {
-      toast({
-        title: "Error",
-        description: "No track data available to publish.",
-        variant: "destructive",
-      });
+      toast.error("No track data available to publish.");
       return;
     }
     
     setIsLoading(true);
     try {
-      // First create or get artist profile
-      // We'd normally have user authentication here, for now use a fixed userId
-      const userId = 'user-' + Date.now();
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to publish a song.");
+        return;
+      }
       
-      // Create new artist profile
-      const artistProfile = createArtistProfile({
-        name: values.artistName,
-        bio: values.bio,
-        image: artistImage || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
-        userId
-      });
-
-      // Then publish the track
-      publishTrack({
-        id: track.id || `track-${Date.now()}`,
-        name: values.songName,
-        artistName: values.artistName,
-        albumName: values.albumName,
-        duration: track.duration || 0,
-        previewURL: track.previewURL || '',
-        albumId: track.albumId || `album-${Date.now()}`,
-        image: track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
-        artistId: artistProfile.id
-      });
-
-      toast({
-        title: "Success!",
-        description: "Your song has been published.",
-      });
+      // Publish the song using our Supabase service
+      const result = await publishSong(
+        values.songName,
+        values.artistName,
+        values.albumName,
+        track.previewURL,
+        track.duration,
+        artistImage || track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+        user.id
+      );
       
-      if (onSuccess) {
-        onSuccess();
+      if (result) {
+        toast.success("Your song has been published.");
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        toast.error("Failed to publish your song.");
       }
     } catch (error) {
       console.error('Error publishing song:', error);
-      toast({
-        title: "Error",
-        description: "Failed to publish your song. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to publish your song. Please try again.");
     } finally {
       setIsLoading(false);
     }

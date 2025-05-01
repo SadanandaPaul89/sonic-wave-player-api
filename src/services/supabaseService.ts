@@ -1,0 +1,343 @@
+
+import { supabase } from '@/lib/supabase';
+import { Track, Artist, Album, Playlist } from '@/services/api';
+
+// Interface for Supabase data models
+interface SupabaseArtist {
+  id: string;
+  name: string;
+  image_url: string;
+  user_id?: string;
+}
+
+interface SupabaseAlbum {
+  id: string;
+  name: string;
+  artist_id: string;
+  image_url: string;
+  release_date: string;
+}
+
+interface SupabaseSong {
+  id: string;
+  name: string;
+  artist_id: string;
+  album_id: string;
+  duration: number;
+  audio_url: string;
+  image_url: string;
+  user_id?: string;
+}
+
+// Helper functions to convert between Supabase and API types
+const mapArtistFromSupabase = (artist: SupabaseArtist): Artist => ({
+  id: artist.id,
+  name: artist.name,
+  image: artist.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+  type: 'artist'
+});
+
+const mapAlbumFromSupabase = async (album: SupabaseAlbum): Promise<Album> => {
+  // Fetch artist name for this album
+  const { data: artist } = await supabase
+    .from('artists')
+    .select('name')
+    .eq('id', album.artist_id)
+    .single();
+    
+  return {
+    id: album.id,
+    name: album.name,
+    artistName: artist?.name || 'Unknown Artist',
+    artistId: album.artist_id,
+    releaseDate: album.release_date || new Date().toISOString(),
+    image: album.image_url || 'https://cdn.jamendo.com/default/default-album_200.jpg'
+  };
+};
+
+const mapSongFromSupabase = async (song: SupabaseSong): Promise<Track> => {
+  // Get artist and album details
+  const { data: artist } = await supabase
+    .from('artists')
+    .select('name')
+    .eq('id', song.artist_id)
+    .single();
+    
+  const { data: album } = await supabase
+    .from('albums')
+    .select('name')
+    .eq('id', song.album_id)
+    .single();
+    
+  return {
+    id: song.id,
+    name: song.name,
+    artistName: artist?.name || 'Unknown Artist',
+    artistId: song.artist_id,
+    albumName: album?.name || 'Unknown Album',
+    albumId: song.album_id || '',
+    duration: song.duration,
+    previewURL: song.audio_url,
+    image: song.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+  };
+};
+
+// Main API functions
+export const getTopArtists = async (limit = 20): Promise<Artist[]> => {
+  const { data: artists, error } = await supabase
+    .from('artists')
+    .select('*')
+    .limit(limit);
+    
+  if (error) {
+    console.error('Error fetching artists:', error);
+    return [];
+  }
+  
+  return artists.map(mapArtistFromSupabase);
+};
+
+export const getTopTracks = async (limit = 20): Promise<Track[]> => {
+  const { data: songs, error } = await supabase
+    .from('songs')
+    .select('*')
+    .limit(limit);
+    
+  if (error) {
+    console.error('Error fetching songs:', error);
+    return [];
+  }
+  
+  // Map each song to a Track
+  const trackPromises = songs.map(mapSongFromSupabase);
+  return await Promise.all(trackPromises);
+};
+
+export const getArtistById = async (id: string): Promise<Artist | null> => {
+  const { data: artist, error } = await supabase
+    .from('artists')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error || !artist) {
+    console.error(`Error fetching artist ${id}:`, error);
+    return null;
+  }
+  
+  return mapArtistFromSupabase(artist);
+};
+
+export const getAlbumById = async (id: string): Promise<Album | null> => {
+  const { data: album, error } = await supabase
+    .from('albums')
+    .select('*')
+    .eq('id', id)
+    .single();
+    
+  if (error || !album) {
+    console.error(`Error fetching album ${id}:`, error);
+    return null;
+  }
+  
+  return await mapAlbumFromSupabase(album);
+};
+
+export const getTracksByAlbumId = async (albumId: string): Promise<Track[]> => {
+  const { data: songs, error } = await supabase
+    .from('songs')
+    .select('*')
+    .eq('album_id', albumId);
+    
+  if (error) {
+    console.error(`Error fetching tracks for album ${albumId}:`, error);
+    return [];
+  }
+  
+  // Map each song to a Track
+  const trackPromises = songs.map(mapSongFromSupabase);
+  return await Promise.all(trackPromises);
+};
+
+export const searchContent = async (query: string, type = 'track', limit = 20): Promise<any[]> => {
+  const searchQuery = `%${query}%`;
+  
+  switch (type) {
+    case 'artist': {
+      const { data, error } = await supabase
+        .from('artists')
+        .select('*')
+        .ilike('name', searchQuery)
+        .limit(limit);
+        
+      if (error) {
+        console.error(`Error searching for artists:`, error);
+        return [];
+      }
+      
+      return data.map(mapArtistFromSupabase);
+    }
+    
+    case 'album': {
+      const { data, error } = await supabase
+        .from('albums')
+        .select('*')
+        .ilike('name', searchQuery)
+        .limit(limit);
+        
+      if (error) {
+        console.error(`Error searching for albums:`, error);
+        return [];
+      }
+      
+      const albumPromises = data.map(mapAlbumFromSupabase);
+      return await Promise.all(albumPromises);
+    }
+    
+    case 'track':
+    default: {
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .ilike('name', searchQuery)
+        .limit(limit);
+        
+      if (error) {
+        console.error(`Error searching for tracks:`, error);
+        return [];
+      }
+      
+      const trackPromises = data.map(mapSongFromSupabase);
+      return await Promise.all(trackPromises);
+    }
+  }
+};
+
+export const publishSong = async (
+  songName: string,
+  artistName: string,
+  albumName: string,
+  audioUrl: string,
+  duration: number,
+  imageUrl: string,
+  userId: string
+): Promise<Track | null> => {
+  // First, check if the artist exists or create a new one
+  let artistId: string;
+  const { data: existingArtist } = await supabase
+    .from('artists')
+    .select('id')
+    .eq('name', artistName)
+    .maybeSingle();
+    
+  if (existingArtist) {
+    artistId = existingArtist.id;
+  } else {
+    const { data: newArtist, error: artistError } = await supabase
+      .from('artists')
+      .insert({
+        name: artistName,
+        image_url: imageUrl,
+        user_id: userId
+      })
+      .select()
+      .single();
+      
+    if (artistError || !newArtist) {
+      console.error('Error creating artist:', artistError);
+      return null;
+    }
+    
+    artistId = newArtist.id;
+  }
+  
+  // Then, check if the album exists or create a new one
+  let albumId: string;
+  const { data: existingAlbum } = await supabase
+    .from('albums')
+    .select('id')
+    .eq('name', albumName)
+    .eq('artist_id', artistId)
+    .maybeSingle();
+    
+  if (existingAlbum) {
+    albumId = existingAlbum.id;
+  } else {
+    const { data: newAlbum, error: albumError } = await supabase
+      .from('albums')
+      .insert({
+        name: albumName,
+        artist_id: artistId,
+        image_url: imageUrl,
+        release_date: new Date().toISOString()
+      })
+      .select()
+      .single();
+      
+    if (albumError || !newAlbum) {
+      console.error('Error creating album:', albumError);
+      return null;
+    }
+    
+    albumId = newAlbum.id;
+  }
+  
+  // Finally, insert the song
+  const { data: song, error: songError } = await supabase
+    .from('songs')
+    .insert({
+      name: songName,
+      artist_id: artistId,
+      album_id: albumId,
+      duration,
+      audio_url: audioUrl,
+      image_url: imageUrl,
+      user_id: userId
+    })
+    .select()
+    .single();
+    
+  if (songError || !song) {
+    console.error('Error creating song:', songError);
+    return null;
+  }
+  
+  // Return the newly created track
+  return {
+    id: song.id,
+    name: song.name,
+    artistName,
+    artistId,
+    albumName,
+    albumId,
+    duration,
+    previewURL: audioUrl,
+    image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+  };
+};
+
+// Create a subscription to realtime changes
+export const subscribeToSongs = (callback: (song: Track) => void) => {
+  return supabase
+    .channel('songs-channel')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'songs' },
+      async (payload) => {
+        const song = payload.new as SupabaseSong;
+        const track = await mapSongFromSupabase(song);
+        callback(track);
+      }
+    )
+    .subscribe();
+};
+
+// Helper function to add artist verification
+export const verifyArtist = async (artistId: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from('artists')
+    .update({ verified: true })
+    .eq('id', artistId);
+    
+  return !error;
+};
