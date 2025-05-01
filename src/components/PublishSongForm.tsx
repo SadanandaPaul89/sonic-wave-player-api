@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Track } from '@/services/api';
+import { Track } from '@/services/supabaseService';
 import { publishSong } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 
@@ -58,6 +58,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("You must be logged in to publish a song.");
+        setIsLoading(false);
         return;
       }
       
@@ -78,7 +79,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           onSuccess();
         }
       } else {
-        toast.error("Failed to publish your song.");
+        toast.error("Failed to publish your song. Please check your connection and try again.");
       }
     } catch (error) {
       console.error('Error publishing song:', error);

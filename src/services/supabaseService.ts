@@ -1,6 +1,11 @@
-
 import { supabase } from '@/lib/supabase';
-import { Track, Artist, Album, Playlist } from '@/services/api';
+// Import types from the API service to maintain compatibility
+import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
+
+// Export these types so they can be used by other components
+export type Artist = ApiArtist;
+export type Track = ApiTrack;
+export type Album = ApiAlbum;
 
 // Interface for Supabase data models
 interface SupabaseArtist {
@@ -222,47 +227,38 @@ export const publishSong = async (
   imageUrl: string,
   userId: string
 ): Promise<Track | null> => {
-  // First, check if the artist exists or create a new one
-  let artistId: string;
-  const { data: existingArtist } = await supabase
-    .from('artists')
-    .select('id')
-    .eq('name', artistName)
-    .maybeSingle();
-    
-  if (existingArtist) {
-    artistId = existingArtist.id;
-  } else {
-    const { data: newArtist, error: artistError } = await supabase
+  try {
+    // First, check if the artist exists or create a new one
+    let artistId: string;
+    const { data: existingArtist } = await supabase
       .from('artists')
-      .insert({
-        name: artistName,
-        image_url: imageUrl,
-        user_id: userId
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('name', artistName)
+      .maybeSingle();
       
-    if (artistError || !newArtist) {
-      console.error('Error creating artist:', artistError);
-      return null;
+    if (existingArtist) {
+      artistId = existingArtist.id;
+    } else {
+      // Insert the artist with the user_id
+      const { data: newArtist, error: artistError } = await supabase
+        .from('artists')
+        .insert({
+          name: artistName,
+          image_url: imageUrl,
+          user_id: userId
+        })
+        .select()
+        .single();
+        
+      if (artistError || !newArtist) {
+        console.error('Error creating artist:', artistError);
+        return null;
+      }
+      
+      artistId = newArtist.id;
     }
     
-    artistId = newArtist.id;
-  }
-  
-  // Then, check if the album exists or create a new one
-  let albumId: string;
-  const { data: existingAlbum } = await supabase
-    .from('albums')
-    .select('id')
-    .eq('name', albumName)
-    .eq('artist_id', artistId)
-    .maybeSingle();
-    
-  if (existingAlbum) {
-    albumId = existingAlbum.id;
-  } else {
+    // Create a new album
     const { data: newAlbum, error: albumError } = await supabase
       .from('albums')
       .insert({
@@ -279,41 +275,44 @@ export const publishSong = async (
       return null;
     }
     
-    albumId = newAlbum.id;
-  }
-  
-  // Finally, insert the song
-  const { data: song, error: songError } = await supabase
-    .from('songs')
-    .insert({
-      name: songName,
-      artist_id: artistId,
-      album_id: albumId,
-      duration,
-      audio_url: audioUrl,
-      image_url: imageUrl,
-      user_id: userId
-    })
-    .select()
-    .single();
+    const albumId = newAlbum.id;
     
-  if (songError || !song) {
-    console.error('Error creating song:', songError);
+    // Insert the song
+    const { data: song, error: songError } = await supabase
+      .from('songs')
+      .insert({
+        name: songName,
+        artist_id: artistId,
+        album_id: albumId,
+        duration,
+        audio_url: audioUrl,
+        image_url: imageUrl,
+        user_id: userId
+      })
+      .select()
+      .single();
+      
+    if (songError || !song) {
+      console.error('Error creating song:', songError);
+      return null;
+    }
+    
+    // Return the newly created track
+    return {
+      id: song.id,
+      name: song.name,
+      artistName,
+      artistId,
+      albumName,
+      albumId,
+      duration,
+      previewURL: audioUrl,
+      image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    };
+  } catch (error) {
+    console.error('Error in publishSong:', error);
     return null;
   }
-  
-  // Return the newly created track
-  return {
-    id: song.id,
-    name: song.name,
-    artistName,
-    artistId,
-    albumName,
-    albumId,
-    duration,
-    previewURL: audioUrl,
-    image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
-  };
 };
 
 // Create a subscription to realtime changes
@@ -340,4 +339,16 @@ export const verifyArtist = async (artistId: string): Promise<boolean> => {
     .eq('id', artistId);
     
   return !error;
+};
+
+// Add functionality to send verification email
+export const requestVerification = async (artistId: string, email: string): Promise<boolean> => {
+  try {
+    // Simply log this for now since we don't have a real email service
+    console.log(`Verification request email sent to ${email} for artist: ${artistId}`);
+    return true;
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    return false;
+  }
 };

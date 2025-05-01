@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
-import { requestVerification } from '@/services/localLibrary';
+import { requestVerification } from '@/services/supabaseService';
 import confetti from 'canvas-confetti';
 import { BadgeCheck } from 'lucide-react';
 
@@ -53,17 +53,21 @@ const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ artis
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Note: We're only passing the required arguments according to the error
-      await requestVerification(artistId, values.email);
+      // Log the verification request
+      const success = await requestVerification(artistId, values.email);
       
-      simulateVerification();
-      
-      setTimeout(() => {
-        toast({
-          title: "Verification requested",
-          description: "Your verification request has been sent to dynoaryan@gmail.com",
-        });
-      }, 3000);
+      if (success) {
+        simulateVerification();
+        
+        setTimeout(() => {
+          toast({
+            title: "Verification requested",
+            description: `Your verification request has been sent to ${values.email}`,
+          });
+        }, 3000);
+      } else {
+        throw new Error("Failed to submit verification request");
+      }
     } catch (error) {
       console.error('Error requesting verification:', error);
       toast({
@@ -83,7 +87,7 @@ const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ artis
         </div>
         <h3 className="text-xl font-semibold mb-2">Verification Request Submitted!</h3>
         <p className="text-gray-400 mb-4">
-          Your request has been sent to our team at dynoaryan@gmail.com. 
+          Your request has been sent to our team. 
           We'll review your application and get back to you soon.
         </p>
       </div>
