@@ -1,10 +1,12 @@
 
 import React, { useState, useRef } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Upload, Plus, Music } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Track } from '@/services/api';
+import { Track } from '@/services/supabaseService';
 import { addLocalTrack } from '@/services/localLibrary';
+import { supabase, SONG_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface SongUploaderProps {
   onUploadComplete?: () => void;
@@ -12,7 +14,7 @@ interface SongUploaderProps {
 }
 
 const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUploaded }) => {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,24 +46,44 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
     const audioFiles = files.filter(file => file.type.startsWith('audio/'));
     
     if (audioFiles.length === 0) {
-      toast({
-        title: "No audio files found",
-        description: "Please upload files in MP3, WAV, or OGG format.",
-        variant: "destructive"
-      });
+      toast.error("Please upload files in MP3, WAV, or OGG format.");
       return;
     }
     
     setIsUploading(true);
     
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("You must be logged in to upload songs.");
+        setIsUploading(false);
+        return;
+      }
+
       for (const file of audioFiles) {
-        // Create a URL for the audio file
-        const audioUrl = URL.createObjectURL(file);
+        // Create a unique file name to prevent conflicts
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${session.user.id}/${fileName}`;
+        
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(SONG_BUCKET_NAME)
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError);
+          toast.error(`Upload failed: ${uploadError.message}`);
+          continue;
+        }
+        
+        // Get the public URL for the uploaded file
+        const publicUrl = getPublicUrl(SONG_BUCKET_NAME, filePath);
         
         // Get metadata from the file
         const audio = new Audio();
-        audio.src = audioUrl;
+        audio.src = publicUrl;
         
         await new Promise<void>((resolve) => {
           audio.onloadedmetadata = () => {
@@ -72,13 +94,13 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
               artistName: 'Local Artist',
               albumName: 'My Uploads',
               duration: audio.duration,
-              previewURL: audioUrl,
+              previewURL: publicUrl,
               albumId: `local-album-${uniqueId}`,
               image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
               artistId: `local-artist-${uniqueId}`
             };
             
-            // Add track to local library
+            // Add track to local library for immediate use
             addLocalTrack(newTrack);
             
             // Call the onTrackUploaded callback if provided
@@ -91,26 +113,20 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
           
           audio.onerror = () => {
             console.error(`Error loading audio file: ${file.name}`);
+            toast.error(`Could not process ${file.name}`);
             resolve();
           };
         });
       }
       
-      toast({
-        title: "Upload complete",
-        description: `Successfully added ${audioFiles.length} song${audioFiles.length > 1 ? 's' : ''} to publish.`,
-      });
+      toast.success(`Successfully added ${audioFiles.length} song${audioFiles.length > 1 ? 's' : ''} to publish.`);
       
       if (onUploadComplete) {
         onUploadComplete();
       }
     } catch (error) {
       console.error("Error processing audio files:", error);
-      toast({
-        title: "Upload failed",
-        description: "There was an error adding your songs. Please try again.",
-        variant: "destructive"
-      });
+      toast.error("There was an error adding your songs. Please try again.");
     } finally {
       setIsUploading(false);
       // Reset the file input

@@ -14,6 +14,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Constants for storage buckets
+export const SONG_BUCKET_NAME = 'songs';
+export const ARTIST_IMAGE_BUCKET_NAME = 'artist-images';
+
+// Helper function to get a public URL for a file
+export const getPublicUrl = (bucketName: string, filePath: string) => {
+  const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+  return data.publicUrl;
+};
+
 // Initialize session check
 supabase.auth.getSession().then(({ data }) => {
   if (data.session) {

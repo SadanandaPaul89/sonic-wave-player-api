@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase';
+
+import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
 

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Track } from '@/services/supabaseService';
 import { publishSong } from '@/services/supabaseService';
-import { supabase } from '@/lib/supabase';
+import { supabase, ARTIST_IMAGE_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
 
 interface PublishSongFormProps {
   track?: Track;
@@ -25,6 +25,7 @@ interface FormValues {
 const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [artistImage, setArtistImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -38,6 +39,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         setArtistImage(event.target?.result as string);
@@ -62,6 +64,26 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         return;
       }
       
+      // Upload artist image if provided
+      let imageUrl = track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg';
+      
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(ARTIST_IMAGE_BUCKET_NAME)
+          .upload(filePath, imageFile);
+          
+        if (uploadError) {
+          console.error("Error uploading artist image:", uploadError);
+          toast.error("Failed to upload artist image. Using default image instead.");
+        } else {
+          imageUrl = getPublicUrl(ARTIST_IMAGE_BUCKET_NAME, filePath);
+        }
+      }
+      
       // Publish the song using our Supabase service
       const result = await publishSong(
         values.songName,
@@ -69,7 +91,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         values.albumName,
         track.previewURL,
         track.duration,
-        artistImage || track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+        imageUrl,
         user.id
       );
       
