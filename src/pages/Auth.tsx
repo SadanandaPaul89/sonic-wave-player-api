@@ -49,7 +49,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      console.log('Attempting to sign in with:', { email, password });
+      console.log('Attempting to sign in with:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -57,12 +57,7 @@ const Auth = () => {
       
       if (error) throw error;
       
-      if (!data.user || !data.session) {
-        throw new Error('Authentication failed');
-      }
-      
       console.log('Sign in successful:', data);
-      toast.success('Successfully signed in!');
       navigate('/', { replace: true });
     } catch (error: any) {
       console.error('Sign in error:', error);
@@ -82,7 +77,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      console.log('Attempting to sign up with:', { email, password });
+      console.log('Attempting to sign up with:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -90,13 +85,19 @@ const Auth = () => {
       
       if (error) throw error;
       
-      if (!data.user) {
-        throw new Error('Sign up failed');
+      console.log('Sign up successful:', data);
+      
+      // Check if email confirmation is required
+      if (data?.user?.identities?.length === 0) {
+        toast.info('Please check your email for confirmation link');
+      } else {
+        toast.success('Account created successfully!');
       }
       
-      console.log('Sign up successful:', data);
-      toast.success('Account created successfully!');
-      navigate('/', { replace: true });
+      // Navigate to home if auto-confirmation is enabled
+      if (data?.session) {
+        navigate('/', { replace: true });
+      }
     } catch (error: any) {
       console.error('Sign up error:', error);
       setError(error.message || 'Failed to create account');
@@ -162,12 +163,6 @@ const Auth = () => {
                     'Sign in'
                   )}
                 </Button>
-                
-                <div className="text-center mt-4 text-sm text-muted-foreground">
-                  <p>Demo credentials:</p>
-                  <p>Email: test@example.com</p>
-                  <p>Password: password123</p>
-                </div>
               </form>
             </TabsContent>
             
