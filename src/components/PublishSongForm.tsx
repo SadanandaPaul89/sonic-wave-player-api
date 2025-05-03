@@ -9,18 +9,22 @@ import { toast } from 'sonner';
 import { Track } from '@/services/supabaseService';
 import { publishSong } from '@/services/supabaseService';
 import { supabase, ARTIST_IMAGE_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface PublishSongFormProps {
   track?: Track;
   onSuccess?: () => void;
 }
 
-interface FormValues {
-  songName: string;
-  artistName: string;
-  bio: string;
-  albumName: string;
-}
+const formSchema = z.object({
+  songName: z.string().min(1, "Song name is required"),
+  artistName: z.string().min(1, "Artist name is required"),
+  bio: z.string().optional(),
+  albumName: z.string().min(1, "Album name is required"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +32,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const [imageFile, setImageFile] = useState<File | null>(null);
   
   const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       songName: track?.name || '',
       artistName: track?.artistName || '',
@@ -84,7 +89,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         }
       }
       
-      // Publish the song using our Supabase service
+      // Pass the bio to the publishSong function
       const result = await publishSong(
         values.songName,
         values.artistName,
@@ -92,7 +97,8 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         track.previewURL,
         track.duration,
         imageUrl,
-        user.id
+        user.id,
+        values.bio // Pass the bio value
       );
       
       if (result) {

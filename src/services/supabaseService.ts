@@ -13,6 +13,7 @@ interface SupabaseArtist {
   id: string;
   name: string;
   image_url: string;
+  bio?: string; // Add bio field
   user_id?: string;
 }
 
@@ -40,7 +41,8 @@ const mapArtistFromSupabase = (artist: SupabaseArtist): Artist => ({
   id: artist.id,
   name: artist.name,
   image: artist.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
-  type: 'artist'
+  type: 'artist',
+  bio: artist.bio // Include bio in mapped artist
 });
 
 const mapAlbumFromSupabase = async (album: SupabaseAlbum): Promise<Album> => {
@@ -226,7 +228,8 @@ export const publishSong = async (
   audioUrl: string,
   duration: number,
   imageUrl: string,
-  userId: string
+  userId: string,
+  bio?: string // Add optional bio parameter
 ): Promise<Track | null> => {
   try {
     // First, check if the artist exists or create a new one
@@ -239,14 +242,23 @@ export const publishSong = async (
       
     if (existingArtist) {
       artistId = existingArtist.id;
+      
+      // Update artist bio if provided
+      if (bio) {
+        await supabase
+          .from('artists')
+          .update({ bio })
+          .eq('id', artistId);
+      }
     } else {
-      // Insert the artist with the user_id
+      // Insert the artist with the user_id and bio if provided
       const { data: newArtist, error: artistError } = await supabase
         .from('artists')
         .insert({
           name: artistName,
           image_url: imageUrl,
-          user_id: userId
+          user_id: userId,
+          bio: bio || null // Add bio
         })
         .select()
         .single();
