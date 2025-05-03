@@ -1,10 +1,9 @@
-
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
 
 // Export these types so they can be used by other components
-export type Artist = ApiArtist;
+export type Artist = ApiArtist & { bio?: string }; // Add bio field to Artist type
 export type Track = ApiTrack;
 export type Album = ApiAlbum;
 
