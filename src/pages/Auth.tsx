@@ -194,7 +194,7 @@ const Auth = () => {
                 </div>
                 <div className="flex justify-center my-4">
                   <HCaptcha
-                    sitekey="10000000-ffff-ffff-ffff-000000000001" // Replace with your actual hCaptcha site key
+                    sitekey="5af2aaaa-a180-4dfc-a27c-64f6e504ccfc"
                     onVerify={handleCaptchaVerify}
                     onExpire={handleCaptchaExpire}
                     onError={handleCaptchaError}
@@ -243,7 +243,7 @@ const Auth = () => {
                 </div>
                 <div className="flex justify-center my-4">
                   <HCaptcha
-                    sitekey="10000000-ffff-ffff-ffff-000000000001" // Replace with your actual hCaptcha site key
+                    sitekey="5af2aaaa-a180-4dfc-a27c-64f6e504ccfc"
                     onVerify={handleCaptchaVerify}
                     onExpire={handleCaptchaExpire}
                     onError={handleCaptchaError}
