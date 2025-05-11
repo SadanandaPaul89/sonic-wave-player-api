@@ -11,6 +11,7 @@ import { publishSong } from '@/services/supabaseService';
 import { supabase, ARTIST_IMAGE_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle } from 'lucide-react';
 
 interface PublishSongFormProps {
   track?: Track;
@@ -31,6 +32,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const [artistImage, setArtistImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,6 +62,8 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       return;
     }
     
+    // Reset previous errors
+    setError(null);
     setIsLoading(true);
     setUploadProgress("Checking authentication...");
     
@@ -67,12 +71,14 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) {
+        setError(`Authentication error: ${userError.message}`);
         toast.error("Authentication error: " + userError.message);
         setIsLoading(false);
         return;
       }
       
       if (!user) {
+        setError("You must be logged in to publish a song");
         toast.error("You must be logged in to publish a song. Please sign in first.");
         setIsLoading(false);
         return;
@@ -105,13 +111,17 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       
       setUploadProgress("Publishing song to database...");
       
+      // Ensure duration is an integer
+      const durationInteger = Math.round(track.duration);
+      console.log(`Using integer duration for publishing: ${durationInteger}`);
+      
       // Pass the bio to the publishSong function
       const result = await publishSong(
         values.songName,
         values.artistName,
         values.albumName,
         track.previewURL,
-        track.duration,
+        durationInteger, // Use integer duration
         imageUrl,
         user.id,
         values.bio // Pass the bio value
@@ -124,20 +134,28 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           onSuccess();
         }
       } else {
+        setError("Failed to publish your song. Please try again.");
         toast.error("Failed to publish your song. Please check the console for details.");
       }
     } catch (error) {
       console.error('Error publishing song:', error);
+      setError("An unexpected error occurred");
       toast.error("Failed to publish your song. Please try again.");
     } finally {
       setIsLoading(false);
-      setUploadProgress(null);
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        )}
+        
         <FormField
           control={form.control}
           name="songName"

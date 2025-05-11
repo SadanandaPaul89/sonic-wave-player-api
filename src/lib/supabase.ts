@@ -21,12 +21,23 @@ export const ARTIST_IMAGE_BUCKET_NAME = 'artist-images';
 
 // Create storage buckets if they don't exist
 const createBucketIfNotExists = async (bucketName: string) => {
-  const { data, error } = await supabase.storage.getBucket(bucketName);
-  if (error && error.message.includes('not found')) {
-    console.log(`Creating bucket: ${bucketName}`);
-    await supabase.storage.createBucket(bucketName, {
-      public: true,
-    });
+  try {
+    const { data, error } = await supabase.storage.getBucket(bucketName);
+    
+    if (error && error.message.includes('not found')) {
+      console.log(`Creating bucket: ${bucketName}`);
+      const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
+        public: true,
+      });
+      
+      if (createError) {
+        console.error(`Error creating bucket ${bucketName}:`, createError);
+      } else {
+        console.log(`Bucket ${bucketName} created successfully`);
+      }
+    }
+  } catch (err) {
+    console.error(`Error checking/creating bucket ${bucketName}:`, err);
   }
 };
 

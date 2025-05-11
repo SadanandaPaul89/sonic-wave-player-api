@@ -1,3 +1,4 @@
+
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
@@ -312,6 +313,10 @@ export const publishSong = async (
     console.log("Album created successfully:", newAlbum);
     const albumId = newAlbum.id;
     
+    // Convert duration to integer before inserting
+    const durationInteger = Math.round(duration);
+    console.log(`Converting duration from ${duration} to integer: ${durationInteger}`);
+    
     // Insert the song
     console.log("Creating new song...");
     const { data: song, error: songError } = await supabase
@@ -320,7 +325,7 @@ export const publishSong = async (
         name: songName,
         artist_id: artistId,
         album_id: albumId,
-        duration,
+        duration: durationInteger, // Use the integer value
         audio_url: audioUrl,
         image_url: imageUrl,
         user_id: userId
@@ -349,7 +354,7 @@ export const publishSong = async (
       artistId,
       albumName,
       albumId,
-      duration,
+      duration: durationInteger, // Return the integer duration
       previewURL: audioUrl,
       image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
     };

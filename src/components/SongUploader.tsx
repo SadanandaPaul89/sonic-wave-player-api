@@ -88,17 +88,22 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
         await new Promise<void>((resolve) => {
           audio.onloadedmetadata = () => {
             const uniqueId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Ensure duration is stored as an integer
+            const durationInSeconds = Math.round(audio.duration);
+            
             const newTrack: Track = {
               id: uniqueId,
               name: file.name.replace(/\.(mp3|wav|ogg)$/i, ''),
               artistName: 'Local Artist',
               albumName: 'My Uploads',
-              duration: audio.duration,
+              duration: durationInSeconds, // Store as integer
               previewURL: publicUrl,
               albumId: `local-album-${uniqueId}`,
               image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
               artistId: `local-artist-${uniqueId}`
             };
+            
+            console.log(`Track processed: ${newTrack.name}, duration: ${durationInSeconds} seconds`);
             
             // Add track to local library for immediate use
             addLocalTrack(newTrack);
