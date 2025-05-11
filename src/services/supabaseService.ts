@@ -1,4 +1,3 @@
-
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
@@ -229,16 +228,17 @@ export const publishSong = async (
   duration: number,
   imageUrl: string,
   userId: string,
-  bio?: string // Add optional bio parameter
+  bio?: string | null // Add optional bio parameter
 ): Promise<Track | null> => {
   try {
     console.log("Starting song publishing process...");
+    console.log("Input parameters:", { songName, artistName, albumName, duration, bio });
     
     // First, check if the artist exists or create a new one
     let artistId: string;
     const { data: existingArtist, error: artistCheckError } = await supabase
       .from('artists')
-      .select('id')
+      .select('id, bio')
       .eq('name', artistName)
       .maybeSingle();
     
@@ -251,11 +251,12 @@ export const publishSong = async (
       console.log("Found existing artist:", existingArtist);
       artistId = existingArtist.id;
       
-      // Update artist bio if provided
-      if (bio) {
+      // Update artist bio if provided and different from existing
+      if (bio && (!existingArtist.bio || existingArtist.bio !== bio)) {
+        console.log("Updating artist bio");
         const { error: updateError } = await supabase
           .from('artists')
-          .update({ bio })
+          .update({ bio: bio })
           .eq('id', artistId);
           
         if (updateError) {
@@ -265,15 +266,22 @@ export const publishSong = async (
       }
     } else {
       console.log("Creating new artist...");
+      // Build the artist data object
+      const artistData: any = {
+        name: artistName,
+        image_url: imageUrl,
+        user_id: userId
+      };
+      
+      // Only add bio if it's not null or undefined
+      if (bio) {
+        artistData.bio = bio;
+      }
+      
       // Insert the artist with the user_id and bio if provided
       const { data: newArtist, error: artistError } = await supabase
         .from('artists')
-        .insert({
-          name: artistName,
-          image_url: imageUrl,
-          user_id: userId,
-          bio: bio || null // Add bio
-        })
+        .insert(artistData)
         .select()
         .single();
         

@@ -90,22 +90,27 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       let imageUrl = track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg';
       
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
-        
-        setUploadProgress("Uploading artist image...");
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from(ARTIST_IMAGE_BUCKET_NAME)
-          .upload(filePath, imageFile);
+        try {
+          const fileExt = imageFile.name.split('.').pop();
+          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
           
-        if (uploadError) {
-          console.error("Error uploading artist image:", uploadError);
-          toast.error("Failed to upload artist image. Using default image instead.");
-        } else {
-          imageUrl = getPublicUrl(ARTIST_IMAGE_BUCKET_NAME, filePath);
-          setUploadProgress("Image uploaded successfully.");
+          setUploadProgress("Uploading artist image...");
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from(ARTIST_IMAGE_BUCKET_NAME)
+            .upload(filePath, imageFile);
+            
+          if (uploadError) {
+            console.error("Error uploading artist image:", uploadError);
+            toast.warning("Failed to upload artist image. Using default image instead.");
+          } else {
+            imageUrl = getPublicUrl(ARTIST_IMAGE_BUCKET_NAME, filePath);
+            setUploadProgress("Image uploaded successfully.");
+          }
+        } catch (imgError) {
+          console.error("Error processing image:", imgError);
+          toast.warning("Error processing image. Using default image instead.");
         }
       }
       
@@ -114,6 +119,16 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       // Ensure duration is an integer
       const durationInteger = Math.round(track.duration);
       console.log(`Using integer duration for publishing: ${durationInteger}`);
+      
+      // Log the values we're sending to the publishSong function
+      console.log("Publishing song with values:", { 
+        songName: values.songName,
+        artistName: values.artistName, 
+        albumName: values.albumName,
+        duration: durationInteger,
+        userId: user.id,
+        bio: values.bio || null
+      });
       
       // Pass the bio to the publishSong function
       const result = await publishSong(
@@ -124,7 +139,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         durationInteger, // Use integer duration
         imageUrl,
         user.id,
-        values.bio // Pass the bio value
+        values.bio || null // Pass the bio value
       );
       
       if (result) {

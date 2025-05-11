@@ -19,32 +19,38 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const SONG_BUCKET_NAME = 'songs';
 export const ARTIST_IMAGE_BUCKET_NAME = 'artist-images';
 
-// Create storage buckets if they don't exist
+// Helper function for more reliable bucket creation
 const createBucketIfNotExists = async (bucketName: string) => {
   try {
     // First check if bucket exists
     const { data, error } = await supabase.storage.getBucket(bucketName);
     
     if (error) {
-      // Only attempt to create if the error is that the bucket doesn't exist
-      // Silently ignore RLS policy errors as the buckets may have already been created
       if (error.message.includes('not found')) {
         try {
           console.log(`Creating bucket: ${bucketName}`);
           const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
             public: true,
+            fileSizeLimit: 50 * 1024 * 1024, // 50MB limit
           });
           
           if (createError) {
             console.error(`Error creating bucket ${bucketName}:`, createError);
+            // Continue execution - we'll handle errors at upload time if needed
           } else {
             console.log(`Bucket ${bucketName} created successfully`);
+            
+            // Set public bucket policy
+            const { error: policyError } = await supabase.storage.from(bucketName).setPublic();
+            if (policyError) {
+              console.error(`Error setting bucket policy for ${bucketName}:`, policyError);
+            }
           }
         } catch (createErr) {
           console.error(`Could not create bucket ${bucketName}:`, createErr);
-          // Continue execution even if bucket creation fails
         }
       } else {
+        // Log the error but continue
         console.log(`Note: Bucket ${bucketName} access check returned:`, error.message);
       }
     } else {
@@ -52,18 +58,16 @@ const createBucketIfNotExists = async (bucketName: string) => {
     }
   } catch (err) {
     console.error(`Error checking/creating bucket ${bucketName}:`, err);
-    // Continue execution even if bucket check fails
   }
 };
 
-// Try to create required buckets, but don't block execution
+// Try to create required buckets
 (async () => {
   try {
     await createBucketIfNotExists(SONG_BUCKET_NAME);
     await createBucketIfNotExists(ARTIST_IMAGE_BUCKET_NAME);
   } catch (error) {
     console.error("Error creating storage buckets:", error);
-    // Continue execution even if bucket creation fails
   }
 })();
 
