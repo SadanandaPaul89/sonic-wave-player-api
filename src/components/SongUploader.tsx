@@ -62,66 +62,85 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
       }
 
       for (const file of audioFiles) {
-        // Create a unique file name to prevent conflicts
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `${session.user.id}/${fileName}`;
-        
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from(SONG_BUCKET_NAME)
-          .upload(filePath, file);
+        try {
+          // Create a unique file name to prevent conflicts
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+          const filePath = `${session.user.id}/${fileName}`;
           
-        if (uploadError) {
-          console.error("Error uploading file:", uploadError);
-          toast.error(`Upload failed: ${uploadError.message}`);
-          continue;
-        }
-        
-        // Get the public URL for the uploaded file
-        const publicUrl = getPublicUrl(SONG_BUCKET_NAME, filePath);
-        
-        // Get metadata from the file
-        const audio = new Audio();
-        audio.src = publicUrl;
-        
-        await new Promise<void>((resolve) => {
-          audio.onloadedmetadata = () => {
-            const uniqueId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            // Ensure duration is stored as an integer
-            const durationInSeconds = Math.round(audio.duration);
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from(SONG_BUCKET_NAME)
+            .upload(filePath, file);
             
-            const newTrack: Track = {
-              id: uniqueId,
-              name: file.name.replace(/\.(mp3|wav|ogg)$/i, ''),
-              artistName: 'Local Artist',
-              albumName: 'My Uploads',
-              duration: durationInSeconds, // Store as integer
-              previewURL: publicUrl,
-              albumId: `local-album-${uniqueId}`,
-              image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
-              artistId: `local-artist-${uniqueId}`
+          if (uploadError) {
+            console.error("Error uploading file:", uploadError);
+            toast.error(`Upload failed: ${uploadError.message}`);
+            continue;
+          }
+          
+          console.log("File uploaded successfully:", filePath);
+          
+          // Get the public URL for the uploaded file
+          const publicUrl = getPublicUrl(SONG_BUCKET_NAME, filePath);
+          
+          // Get metadata from the file
+          const audio = new Audio();
+          audio.src = publicUrl;
+          
+          await new Promise<void>((resolve, reject) => {
+            audio.onloadedmetadata = () => {
+              try {
+                const uniqueId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                // Ensure duration is stored as an integer
+                const durationInSeconds = Math.round(audio.duration);
+                
+                console.log(`Processing track: ${file.name}, duration: ${audio.duration}, rounded to: ${durationInSeconds}`);
+                
+                const newTrack: Track = {
+                  id: uniqueId,
+                  name: file.name.replace(/\.(mp3|wav|ogg)$/i, ''),
+                  artistName: 'Local Artist',
+                  albumName: 'My Uploads',
+                  duration: durationInSeconds, // Store as integer
+                  previewURL: publicUrl,
+                  albumId: `local-album-${uniqueId}`,
+                  image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
+                  artistId: `local-artist-${uniqueId}`
+                };
+                
+                console.log(`Track processed: ${newTrack.name}, duration: ${durationInSeconds} seconds`);
+                
+                // Add track to local library for immediate use
+                addLocalTrack(newTrack);
+                
+                // Call the onTrackUploaded callback if provided
+                if (onTrackUploaded) {
+                  onTrackUploaded(newTrack);
+                }
+                
+                resolve();
+              } catch (err) {
+                console.error("Error processing audio metadata:", err);
+                reject(err);
+              }
             };
             
-            console.log(`Track processed: ${newTrack.name}, duration: ${durationInSeconds} seconds`);
+            audio.onerror = (e) => {
+              console.error(`Error loading audio file: ${file.name}`, e);
+              toast.error(`Could not process ${file.name}`);
+              reject(new Error(`Audio load error for ${file.name}`));
+            };
             
-            // Add track to local library for immediate use
-            addLocalTrack(newTrack);
-            
-            // Call the onTrackUploaded callback if provided
-            if (onTrackUploaded) {
-              onTrackUploaded(newTrack);
-            }
-            
-            resolve();
-          };
-          
-          audio.onerror = () => {
-            console.error(`Error loading audio file: ${file.name}`);
-            toast.error(`Could not process ${file.name}`);
-            resolve();
-          };
-        });
+            // Set a timeout in case metadata loading hangs
+            setTimeout(() => {
+              reject(new Error(`Timeout loading metadata for ${file.name}`));
+            }, 30000);
+          });
+        } catch (fileError) {
+          console.error(`Error processing file ${file.name}:`, fileError);
+          toast.error(`Error processing ${file.name}`);
+        }
       }
       
       toast.success(`Successfully added ${audioFiles.length} song${audioFiles.length > 1 ? 's' : ''} to publish.`);
