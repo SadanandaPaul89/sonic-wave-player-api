@@ -30,6 +30,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const [isLoading, setIsLoading] = useState(false);
   const [artistImage, setArtistImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,14 +61,24 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
     }
     
     setIsLoading(true);
+    setUploadProgress("Checking authentication...");
+    
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in to publish a song.");
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        toast.error("Authentication error: " + userError.message);
         setIsLoading(false);
         return;
       }
+      
+      if (!user) {
+        toast.error("You must be logged in to publish a song. Please sign in first.");
+        setIsLoading(false);
+        return;
+      }
+      
+      setUploadProgress("Processing artist image...");
       
       // Upload artist image if provided
       let imageUrl = track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg';
@@ -76,6 +87,8 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
+        
+        setUploadProgress("Uploading artist image...");
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from(ARTIST_IMAGE_BUCKET_NAME)
@@ -86,8 +99,11 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           toast.error("Failed to upload artist image. Using default image instead.");
         } else {
           imageUrl = getPublicUrl(ARTIST_IMAGE_BUCKET_NAME, filePath);
+          setUploadProgress("Image uploaded successfully.");
         }
       }
+      
+      setUploadProgress("Publishing song to database...");
       
       // Pass the bio to the publishSong function
       const result = await publishSong(
@@ -102,18 +118,20 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       );
       
       if (result) {
+        setUploadProgress("Song published successfully!");
         toast.success("Your song has been published.");
         if (onSuccess) {
           onSuccess();
         }
       } else {
-        toast.error("Failed to publish your song. Please check your connection and try again.");
+        toast.error("Failed to publish your song. Please check the console for details.");
       }
     } catch (error) {
       console.error('Error publishing song:', error);
       toast.error("Failed to publish your song. Please try again.");
     } finally {
       setIsLoading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -189,6 +207,12 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
             </div>
           )}
         </div>
+        
+        {uploadProgress && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-blue-700 dark:text-blue-300">{uploadProgress}</p>
+          </div>
+        )}
         
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Publishing..." : "Publish Song"}

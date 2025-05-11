@@ -231,25 +231,39 @@ export const publishSong = async (
   bio?: string // Add optional bio parameter
 ): Promise<Track | null> => {
   try {
+    console.log("Starting song publishing process...");
+    
     // First, check if the artist exists or create a new one
     let artistId: string;
-    const { data: existingArtist } = await supabase
+    const { data: existingArtist, error: artistCheckError } = await supabase
       .from('artists')
       .select('id')
       .eq('name', artistName)
       .maybeSingle();
+    
+    if (artistCheckError) {
+      console.error('Error checking for existing artist:', artistCheckError);
+      return null;
+    }
       
     if (existingArtist) {
+      console.log("Found existing artist:", existingArtist);
       artistId = existingArtist.id;
       
       // Update artist bio if provided
       if (bio) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('artists')
           .update({ bio })
           .eq('id', artistId);
+          
+        if (updateError) {
+          console.error('Error updating artist bio:', updateError);
+          // Continue anyway, not critical
+        }
       }
     } else {
+      console.log("Creating new artist...");
       // Insert the artist with the user_id and bio if provided
       const { data: newArtist, error: artistError } = await supabase
         .from('artists')
@@ -267,10 +281,12 @@ export const publishSong = async (
         return null;
       }
       
+      console.log("Artist created successfully:", newArtist);
       artistId = newArtist.id;
     }
     
     // Create a new album
+    console.log("Creating new album...");
     const { data: newAlbum, error: albumError } = await supabase
       .from('albums')
       .insert({
@@ -282,14 +298,22 @@ export const publishSong = async (
       .select()
       .single();
       
-    if (albumError || !newAlbum) {
+    if (albumError) {
       console.error('Error creating album:', albumError);
+      console.error('Error details:', albumError.details, albumError.hint, albumError.message);
       return null;
     }
     
+    if (!newAlbum) {
+      console.error('Album creation returned null without an error');
+      return null;
+    }
+    
+    console.log("Album created successfully:", newAlbum);
     const albumId = newAlbum.id;
     
     // Insert the song
+    console.log("Creating new song...");
     const { data: song, error: songError } = await supabase
       .from('songs')
       .insert({
@@ -304,10 +328,18 @@ export const publishSong = async (
       .select()
       .single();
       
-    if (songError || !song) {
+    if (songError) {
       console.error('Error creating song:', songError);
+      console.error('Error details:', songError.details, songError.hint, songError.message);
       return null;
     }
+    
+    if (!song) {
+      console.error('Song creation returned null without an error');
+      return null;
+    }
+    
+    console.log("Song created successfully:", song);
     
     // Return the newly created track
     return {
@@ -322,7 +354,7 @@ export const publishSong = async (
       image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
     };
   } catch (error) {
-    console.error('Error in publishSong:', error);
+    console.error('Unexpected error in publishSong:', error);
     return null;
   }
 };

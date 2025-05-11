@@ -19,6 +19,27 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const SONG_BUCKET_NAME = 'songs';
 export const ARTIST_IMAGE_BUCKET_NAME = 'artist-images';
 
+// Create storage buckets if they don't exist
+const createBucketIfNotExists = async (bucketName: string) => {
+  const { data, error } = await supabase.storage.getBucket(bucketName);
+  if (error && error.message.includes('not found')) {
+    console.log(`Creating bucket: ${bucketName}`);
+    await supabase.storage.createBucket(bucketName, {
+      public: true,
+    });
+  }
+};
+
+// Try to create required buckets
+(async () => {
+  try {
+    await createBucketIfNotExists(SONG_BUCKET_NAME);
+    await createBucketIfNotExists(ARTIST_IMAGE_BUCKET_NAME);
+  } catch (error) {
+    console.error("Error creating storage buckets:", error);
+  }
+})();
+
 // Helper function to get a public URL for a file
 export const getPublicUrl = (bucketName: string, filePath: string) => {
   const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
