@@ -40,11 +40,8 @@ const createBucketIfNotExists = async (bucketName: string) => {
           } else {
             console.log(`Bucket ${bucketName} created successfully`);
             
-            // Set public bucket policy
-            const { error: policyError } = await supabase.storage.from(bucketName).setPublic();
-            if (policyError) {
-              console.error(`Error setting bucket policy for ${bucketName}:`, policyError);
-            }
+            // Remove the incorrect setPublic call since buckets are created as public
+            // The 'public: true' parameter in createBucket already sets it as public
           }
         } catch (createErr) {
           console.error(`Could not create bucket ${bucketName}:`, createErr);
