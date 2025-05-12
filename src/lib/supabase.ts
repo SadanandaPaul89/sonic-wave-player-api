@@ -40,7 +40,6 @@ const createBucketIfNotExists = async (bucketName: string) => {
           } else {
             console.log(`Bucket ${bucketName} created successfully`);
             
-            // Remove the incorrect setPublic call since buckets are created as public
             // The 'public: true' parameter in createBucket already sets it as public
           }
         } catch (createErr) {
