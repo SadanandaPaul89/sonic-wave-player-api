@@ -6,6 +6,7 @@ import { Play, Pause } from 'lucide-react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import CardGrid from '@/components/CardGrid';
 import TrackList from '@/components/TrackList';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ArtistView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +14,7 @@ const ArtistView: React.FC = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchArtistData = async () => {
@@ -80,10 +82,10 @@ const ArtistView: React.FC = () => {
   return (
     <div className="pb-20">
       <div className="relative mb-8">
-        <div className="h-80 bg-gradient-to-b from-spotify-elevated to-spotify-base flex items-end">
-          <div className="container px-6 pb-6">
-            <div className="flex items-center gap-6">
-              <div className="w-40 h-40 rounded-full overflow-hidden shadow-xl">
+        <div className={`${isMobile ? 'h-auto py-8' : 'h-80'} bg-gradient-to-b from-spotify-elevated to-spotify-base flex items-end`}>
+          <div className="container px-4 md:px-6 pb-6">
+            <div className={`flex ${isMobile ? 'flex-col items-start space-y-4' : 'items-center'} gap-6`}>
+              <div className={`${isMobile ? 'w-24 h-24' : 'w-40 h-40'} rounded-full overflow-hidden shadow-xl`}>
                 <img
                   src={artist.image}
                   alt={artist.name}
@@ -92,7 +94,7 @@ const ArtistView: React.FC = () => {
               </div>
               <div>
                 <div className="text-xs uppercase font-bold mb-2">Artist</div>
-                <h1 className="text-5xl font-bold">{artist.name}</h1>
+                <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-bold`}>{artist.name}</h1>
                 {artist.bio && (
                   <p className="mt-4 text-gray-300 max-w-2xl">{artist.bio}</p>
                 )}
@@ -102,7 +104,7 @@ const ArtistView: React.FC = () => {
         </div>
       </div>
       
-      <div className="mb-8 px-6">
+      <div className="mb-8 px-4 md:px-6">
         {tracks.length > 0 && (
           <button
             onClick={handlePlayTopTracks}
@@ -113,10 +115,10 @@ const ArtistView: React.FC = () => {
         )}
       </div>
       
-      <div className="mt-8 px-6">
+      <div className="mt-8 px-4 md:px-6">
         <h2 className="text-2xl font-bold mb-4">{tracks.length > 0 ? 'Songs' : 'No songs available'}</h2>
         {tracks.length > 0 ? (
-          <TrackList tracks={tracks} showAlbum={true} />
+          <TrackList tracks={tracks} showAlbum={!isMobile} />
         ) : (
           <p className="text-gray-400">This artist hasn't published any songs yet.</p>
         )}
