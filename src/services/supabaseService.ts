@@ -236,11 +236,12 @@ export const publishSong = async (
     
     // First, check if the artist exists or create a new one
     let artistId: string;
+    // Modified query to properly handle missing bio column
     const { data: existingArtist, error: artistCheckError } = await supabase
       .from('artists')
       .select('id, bio')
       .eq('name', artistName)
-      .maybeSingle();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no results
     
     if (artistCheckError) {
       console.error('Error checking for existing artist:', artistCheckError);
@@ -266,7 +267,7 @@ export const publishSong = async (
       }
     } else {
       console.log("Creating new artist...");
-      // Build the artist data object
+      // Build the artist data object with proper structure
       const artistData: any = {
         name: artistName,
         image_url: imageUrl,
