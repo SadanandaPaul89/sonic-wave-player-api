@@ -1,3 +1,4 @@
+
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
@@ -50,7 +51,7 @@ const mapAlbumFromSupabase = async (album: SupabaseAlbum): Promise<Album> => {
     .from('artists')
     .select('name')
     .eq('id', album.artist_id)
-    .single();
+    .maybeSingle();
     
   return {
     id: album.id,
@@ -68,13 +69,13 @@ const mapSongFromSupabase = async (song: SupabaseSong): Promise<Track> => {
     .from('artists')
     .select('name')
     .eq('id', song.artist_id)
-    .single();
+    .maybeSingle();
     
   const { data: album } = await supabase
     .from('albums')
     .select('name')
     .eq('id', song.album_id)
-    .single();
+    .maybeSingle();
     
   return {
     id: song.id,
@@ -125,7 +126,7 @@ export const getArtistById = async (id: string): Promise<Artist | null> => {
     .from('artists')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
     
   if (error || !artist) {
     console.error(`Error fetching artist ${id}:`, error);
@@ -140,7 +141,7 @@ export const getAlbumById = async (id: string): Promise<Album | null> => {
     .from('albums')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
     
   if (error || !album) {
     console.error(`Error fetching album ${id}:`, error);
@@ -164,6 +165,43 @@ export const getTracksByAlbumId = async (albumId: string): Promise<Track[]> => {
   // Map each song to a Track
   const trackPromises = songs.map(mapSongFromSupabase);
   return await Promise.all(trackPromises);
+};
+
+// New function to get tracks by artist ID
+export const getTracksByArtistId = async (artistId: string): Promise<Track[]> => {
+  const { data: songs, error } = await supabase
+    .from('songs')
+    .select('*')
+    .eq('artist_id', artistId);
+    
+  if (error) {
+    console.error(`Error fetching tracks for artist ${artistId}:`, error);
+    return [];
+  }
+  
+  // Map each song to a Track
+  const trackPromises = songs.map(mapSongFromSupabase);
+  return await Promise.all(trackPromises);
+};
+
+// New function to get user's artist profile
+export const getUserArtistProfile = async (userId: string): Promise<Artist | null> => {
+  const { data: artist, error } = await supabase
+    .from('artists')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+    
+  if (error) {
+    console.error(`Error fetching artist profile for user ${userId}:`, error);
+    return null;
+  }
+  
+  if (!artist) {
+    return null;
+  }
+  
+  return mapArtistFromSupabase(artist);
 };
 
 export const searchContent = async (query: string, type = 'track', limit = 20): Promise<any[]> => {
@@ -228,45 +266,64 @@ export const publishSong = async (
   duration: number,
   imageUrl: string,
   userId: string,
-  bio?: string | null // Add optional bio parameter
+  bio?: string | null
 ): Promise<Track | null> => {
   try {
     console.log("Starting song publishing process...");
     console.log("Input parameters:", { songName, artistName, albumName, duration, bio });
     
-    // First, check if the artist exists or create a new one
-    let artistId: string;
-    // Modified query to properly handle missing bio column
-    const { data: existingArtist, error: artistCheckError } = await supabase
+    // First, check if the user already has an artist profile
+    const { data: existingUserArtist, error: userArtistError } = await supabase
       .from('artists')
-      .select('id, bio')
-      .eq('name', artistName)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no results
-    
-    if (artistCheckError) {
-      console.error('Error checking for existing artist:', artistCheckError);
+      .select('id, name, bio, image_url')
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    if (userArtistError) {
+      console.error('Error checking for existing user artist:', userArtistError);
       return null;
     }
+    
+    let artistId: string;
+    
+    if (existingUserArtist) {
+      console.log("User already has an artist profile:", existingUserArtist);
+      artistId = existingUserArtist.id;
       
-    if (existingArtist) {
-      console.log("Found existing artist:", existingArtist);
-      artistId = existingArtist.id;
+      // Update the artist profile if needed
+      const updates: any = {};
+      let needsUpdate = false;
       
-      // Update artist bio if provided and different from existing
-      if (bio && (!existingArtist.bio || existingArtist.bio !== bio)) {
-        console.log("Updating artist bio");
+      // Only update if values are different
+      if (artistName !== existingUserArtist.name) {
+        updates.name = artistName;
+        needsUpdate = true;
+      }
+      
+      if (bio && bio !== existingUserArtist.bio) {
+        updates.bio = bio;
+        needsUpdate = true;
+      }
+      
+      if (imageUrl && imageUrl !== existingUserArtist.image_url) {
+        updates.image_url = imageUrl;
+        needsUpdate = true;
+      }
+      
+      if (needsUpdate) {
+        console.log("Updating artist profile with:", updates);
         const { error: updateError } = await supabase
           .from('artists')
-          .update({ bio: bio })
+          .update(updates)
           .eq('id', artistId);
           
         if (updateError) {
-          console.error('Error updating artist bio:', updateError);
+          console.error('Error updating artist profile:', updateError);
           // Continue anyway, not critical
         }
       }
     } else {
-      console.log("Creating new artist...");
+      console.log("Creating new artist profile...");
       // Build the artist data object with proper structure
       const artistData: any = {
         name: artistName,
@@ -295,32 +352,51 @@ export const publishSong = async (
       artistId = newArtist.id;
     }
     
-    // Create a new album
-    console.log("Creating new album...");
-    const { data: newAlbum, error: albumError } = await supabase
+    // Check if an album with this name already exists for this artist
+    const { data: existingAlbum, error: albumCheckError } = await supabase
       .from('albums')
-      .insert({
-        name: albumName,
-        artist_id: artistId,
-        image_url: imageUrl,
-        release_date: new Date().toISOString()
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('artist_id', artistId)
+      .eq('name', albumName)
+      .maybeSingle();
       
-    if (albumError) {
-      console.error('Error creating album:', albumError);
-      console.error('Error details:', albumError.details, albumError.hint, albumError.message);
-      return null;
+    if (albumCheckError) {
+      console.error('Error checking for existing album:', albumCheckError);
+      // Continue anyway, we'll create a new album
     }
     
-    if (!newAlbum) {
-      console.error('Album creation returned null without an error');
-      return null;
-    }
+    let albumId: string;
     
-    console.log("Album created successfully:", newAlbum);
-    const albumId = newAlbum.id;
+    if (existingAlbum) {
+      console.log("Using existing album:", existingAlbum);
+      albumId = existingAlbum.id;
+    } else {
+      console.log("Creating new album...");
+      const { data: newAlbum, error: albumError } = await supabase
+        .from('albums')
+        .insert({
+          name: albumName,
+          artist_id: artistId,
+          image_url: imageUrl,
+          release_date: new Date().toISOString()
+        })
+        .select()
+        .single();
+        
+      if (albumError) {
+        console.error('Error creating album:', albumError);
+        console.error('Error details:', albumError.details, albumError.hint, albumError.message);
+        return null;
+      }
+      
+      if (!newAlbum) {
+        console.error('Album creation returned null without an error');
+        return null;
+      }
+      
+      console.log("Album created successfully:", newAlbum);
+      albumId = newAlbum.id;
+    }
     
     // Convert duration to integer before inserting
     const durationInteger = Math.round(duration);

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Track } from '@/services/supabaseService';
-import { publishSong } from '@/services/supabaseService';
+import { publishSong, getUserArtistProfile } from '@/services/supabaseService';
 import { supabase, ARTIST_IMAGE_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 
 interface PublishSongFormProps {
   track?: Track;
@@ -33,16 +33,45 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [existingArtist, setExistingArtist] = useState<any | null>(null);
+  const [userHasArtist, setUserHasArtist] = useState<boolean>(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       songName: track?.name || '',
-      artistName: track?.artistName || '',
+      artistName: '',
       bio: '',
-      albumName: track?.albumName || '',
+      albumName: '',
     },
   });
+
+  // Check if the user already has an artist profile
+  useEffect(() => {
+    const checkUserArtist = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const artistProfile = await getUserArtistProfile(user.id);
+        if (artistProfile) {
+          setExistingArtist(artistProfile);
+          setUserHasArtist(true);
+          
+          // Pre-fill the form with the existing artist's data
+          form.setValue('artistName', artistProfile.name);
+          if (artistProfile.bio) {
+            form.setValue('bio', artistProfile.bio);
+          }
+          
+          // Use existing artist's image
+          if (artistProfile.image) {
+            setArtistImage(artistProfile.image);
+          }
+        }
+      }
+    };
+    
+    checkUserArtist();
+  }, [form]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,6 +141,9 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           console.error("Error processing image:", imgError);
           toast.warning("Error processing image. Using default image instead.");
         }
+      } else if (existingArtist && existingArtist.image) {
+        // Use existing artist's image if no new image is uploaded
+        imageUrl = existingArtist.image;
       }
       
       setUploadProgress("Publishing song to database...");
@@ -171,6 +203,18 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           </div>
         )}
         
+        {userHasArtist && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md flex items-start gap-2">
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                You already have an artist profile as <strong>{existingArtist?.name}</strong>. 
+                Your song will be published under this artist name.
+              </p>
+            </div>
+          </div>
+        )}
+        
         <FormField
           control={form.control}
           name="songName"
@@ -192,8 +236,15 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
             <FormItem>
               <FormLabel>Artist Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter artist name" {...field} />
+                <Input 
+                  placeholder="Enter artist name" 
+                  {...field} 
+                  disabled={userHasArtist}
+                />
               </FormControl>
+              {userHasArtist && (
+                <p className="text-xs text-gray-400">Your artist name cannot be changed once set</p>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -206,8 +257,15 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
             <FormItem>
               <FormLabel>Artist Bio</FormLabel>
               <FormControl>
-                <Textarea placeholder="Tell us about yourself as an artist" {...field} />
+                <Textarea 
+                  placeholder="Tell us about yourself as an artist" 
+                  {...field} 
+                  disabled={userHasArtist && existingArtist?.bio}
+                />
               </FormControl>
+              {userHasArtist && existingArtist?.bio && (
+                <p className="text-xs text-gray-400">You already have a bio</p>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -227,19 +285,21 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           )}
         />
         
-        <div className="space-y-2">
-          <FormLabel>Artist Image</FormLabel>
-          <Input type="file" accept="image/*" onChange={handleImageUpload} />
-          {artistImage && (
-            <div className="mt-2">
-              <img 
-                src={artistImage} 
-                alt="Artist preview" 
-                className="w-24 h-24 object-cover rounded-full" 
-              />
-            </div>
-          )}
-        </div>
+        {!userHasArtist && (
+          <div className="space-y-2">
+            <FormLabel>Artist Image</FormLabel>
+            <Input type="file" accept="image/*" onChange={handleImageUpload} />
+            {artistImage && (
+              <div className="mt-2">
+                <img 
+                  src={artistImage} 
+                  alt="Artist preview" 
+                  className="w-24 h-24 object-cover rounded-full" 
+                />
+              </div>
+            )}
+          </div>
+        )}
         
         {uploadProgress && (
           <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800">

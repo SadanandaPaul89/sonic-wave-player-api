@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getArtistById, searchContent, Artist, Album, Track, getImageUrl } from '@/services/api';
+import { getArtistById, getTracksByArtistId, Artist, Track } from '@/services/supabaseService';
 import { Play, Pause } from 'lucide-react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import CardGrid from '@/components/CardGrid';
@@ -9,8 +10,7 @@ import TrackList from '@/components/TrackList';
 const ArtistView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [artist, setArtist] = useState<Artist | null>(null);
-  const [topTracks, setTopTracks] = useState<Track[]>([]);
-  const [albums, setAlbums] = useState<Album[]>([]);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
 
@@ -21,25 +21,15 @@ const ArtistView: React.FC = () => {
       setIsLoading(true);
       
       try {
+        // Get artist details
         const artistData = await getArtistById(id);
         
         if (artistData) {
           setArtist(artistData);
           
-          // Get top tracks by searching for the artist name
-          const artistName = artistData.name;
-          const tracksResults = await searchContent(artistName, 'track', 10);
-          const filteredTracks = tracksResults.filter(track => 
-            track.artistName.toLowerCase().includes(artistName.toLowerCase())
-          );
-          setTopTracks(filteredTracks);
-          
-          // Get albums by searching for the artist name
-          const albumsResults = await searchContent(artistName, 'album', 10);
-          const filteredAlbums = albumsResults.filter(album => 
-            album.artistName.toLowerCase().includes(artistName.toLowerCase())
-          );
-          setAlbums(filteredAlbums);
+          // Get all tracks by this artist directly from supabase
+          const artistTracks = await getTracksByArtistId(id);
+          setTracks(artistTracks);
         }
       } catch (error) {
         console.error('Error fetching artist data:', error);
@@ -52,17 +42,17 @@ const ArtistView: React.FC = () => {
   }, [id]);
 
   const handlePlayTopTracks = () => {
-    if (!topTracks.length) return;
+    if (!tracks.length) return;
     
     const isCurrentArtistPlaying = 
       currentTrack && 
-      topTracks.some(track => track.id === currentTrack.id) && 
+      tracks.some(track => track.id === currentTrack.id) && 
       isPlaying;
     
     if (isCurrentArtistPlaying) {
       togglePlayPause();
     } else {
-      playTrack(topTracks[0]);
+      playTrack(tracks[0]);
     }
   };
 
@@ -84,12 +74,8 @@ const ArtistView: React.FC = () => {
 
   const isCurrentArtistPlaying = 
     currentTrack && 
-    topTracks.some(track => track.id === currentTrack.id) && 
+    tracks.some(track => track.id === currentTrack.id) && 
     isPlaying;
-
-  const getArtistImage = () => {
-    return artist.image || 'https://api.napster.com/imageserver/images/v2/default/artist/500x500.png';
-  };
 
   return (
     <div className="pb-20">
@@ -99,7 +85,7 @@ const ArtistView: React.FC = () => {
             <div className="flex items-center gap-6">
               <div className="w-40 h-40 rounded-full overflow-hidden shadow-xl">
                 <img
-                  src={getArtistImage()}
+                  src={artist.image}
                   alt={artist.name}
                   className="w-full h-full object-cover"
                 />
@@ -107,39 +93,34 @@ const ArtistView: React.FC = () => {
               <div>
                 <div className="text-xs uppercase font-bold mb-2">Artist</div>
                 <h1 className="text-5xl font-bold">{artist.name}</h1>
+                {artist.bio && (
+                  <p className="mt-4 text-gray-300 max-w-2xl">{artist.bio}</p>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="mb-8">
-        <button
-          onClick={handlePlayTopTracks}
-          className="bg-spotify-green hover:bg-opacity-80 text-black font-bold rounded-full p-3 mr-4"
-        >
-          {isCurrentArtistPlaying ? <Pause size={24} /> : <Play size={24} />}
-        </button>
+      <div className="mb-8 px-6">
+        {tracks.length > 0 && (
+          <button
+            onClick={handlePlayTopTracks}
+            className="bg-spotify-green hover:bg-opacity-80 text-black font-bold rounded-full p-3 mr-4"
+          >
+            {isCurrentArtistPlaying ? <Pause size={24} /> : <Play size={24} />}
+          </button>
+        )}
       </div>
       
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Popular</h2>
-        <TrackList tracks={topTracks} showAlbum={true} />
+      <div className="mt-8 px-6">
+        <h2 className="text-2xl font-bold mb-4">{tracks.length > 0 ? 'Songs' : 'No songs available'}</h2>
+        {tracks.length > 0 ? (
+          <TrackList tracks={tracks} showAlbum={true} />
+        ) : (
+          <p className="text-gray-400">This artist hasn't published any songs yet.</p>
+        )}
       </div>
-      
-      {albums.length > 0 && (
-        <CardGrid
-          title="Albums"
-          cards={albums.map(album => ({
-            id: album.id,
-            name: album.name,
-            description: `${new Date(album.releaseDate).getFullYear()}`,
-            imageUrl: getImageUrl(album, 'md'),
-            type: 'album' as const,
-          }))}
-          cols={6}
-        />
-      )}
     </div>
   );
 };
