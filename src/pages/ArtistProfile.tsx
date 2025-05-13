@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   getArtistById, 
-  getPublishedTracksByArtistId,
+  getTracksByArtistId,
   getArtistVerificationStatus, 
   Artist, 
-  PublishedTrack
+  Track
 } from '@/services/supabaseService';
 import TrackList from '@/components/TrackList';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ import { BadgeCheck, Clock, XCircle } from 'lucide-react';
 const ArtistProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [artist, setArtist] = useState<Artist | null>(null);
-  const [tracks, setTracks] = useState<PublishedTrack[]>([]);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [verificationStatus, setVerificationStatus] = useState<string>('unverified');
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
@@ -39,7 +39,7 @@ const ArtistProfile: React.FC = () => {
           setArtist(artistData);
           
           // Get all tracks by this artist
-          const artistTracks = await getPublishedTracksByArtistId(id);
+          const artistTracks = await getTracksByArtistId(id);
           setTracks(artistTracks);
           
           // Get verification status
