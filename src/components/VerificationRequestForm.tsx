@@ -53,8 +53,8 @@ const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ artis
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Log the verification request
-      const success = await requestVerification(artistId, values.email);
+      // Submit verification request to the database
+      const success = await requestVerification(artistId, values.email, values.reason);
       
       if (success) {
         simulateVerification();
@@ -62,7 +62,7 @@ const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ artis
         setTimeout(() => {
           toast({
             title: "Verification requested",
-            description: `Your verification request has been sent to ${values.email}`,
+            description: `Your verification request has been sent for review`,
           });
         }, 3000);
       } else {

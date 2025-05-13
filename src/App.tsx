@@ -15,6 +15,7 @@ import ArtistView from "./pages/ArtistView";
 import ArtistProfile from "./pages/ArtistProfile";
 import PublishSong from "./pages/PublishSong";
 import ArtistRegistration from "./pages/ArtistRegistration";
+import AdminPanel from "./pages/AdminPanel";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { toast } from "sonner";
@@ -98,6 +99,7 @@ function App() {
             <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

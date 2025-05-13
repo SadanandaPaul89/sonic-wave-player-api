@@ -4,7 +4,7 @@ import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
 
 // Export these types so they can be used by other components
-export type Artist = ApiArtist & { bio?: string }; // Add bio field to Artist type
+export type Artist = ApiArtist & { bio?: string, verification_status?: string }; // Add verification_status field to Artist type
 export type Track = ApiTrack;
 export type Album = ApiAlbum;
 
@@ -13,8 +13,10 @@ interface SupabaseArtist {
   id: string;
   name: string;
   image_url: string;
-  bio?: string; // Add bio field
+  bio?: string;
   user_id?: string;
+  verification_status?: string;
+  is_admin?: boolean;
 }
 
 interface SupabaseAlbum {
@@ -36,13 +38,23 @@ interface SupabaseSong {
   user_id?: string;
 }
 
+interface VerificationRequest {
+  id: string;
+  artist_id: string;
+  email: string;
+  reason: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 // Helper functions to convert between Supabase and API types
 const mapArtistFromSupabase = (artist: SupabaseArtist): Artist => ({
   id: artist.id,
   name: artist.name,
   image: artist.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
   type: 'artist',
-  bio: artist.bio // Include bio in mapped artist
+  bio: artist.bio,
+  verification_status: artist.verification_status
 });
 
 const mapAlbumFromSupabase = async (album: SupabaseAlbum): Promise<Album> => {
@@ -167,7 +179,7 @@ export const getTracksByAlbumId = async (albumId: string): Promise<Track[]> => {
   return await Promise.all(trackPromises);
 };
 
-// New function to get tracks by artist ID
+// Function to get tracks by artist ID
 export const getTracksByArtistId = async (artistId: string): Promise<Track[]> => {
   const { data: songs, error } = await supabase
     .from('songs')
@@ -184,7 +196,7 @@ export const getTracksByArtistId = async (artistId: string): Promise<Track[]> =>
   return await Promise.all(trackPromises);
 };
 
-// New function to get user's artist profile
+// Function to get user's artist profile
 export const getUserArtistProfile = async (userId: string): Promise<Artist | null> => {
   const { data: artist, error } = await supabase
     .from('artists')
@@ -275,7 +287,7 @@ export const publishSong = async (
     // First, check if the user already has an artist profile
     const { data: existingUserArtist, error: userArtistError } = await supabase
       .from('artists')
-      .select('id, name, bio, image_url')
+      .select('id, name, bio, image_url, verification_status')
       .eq('user_id', userId)
       .maybeSingle();
       
@@ -328,7 +340,8 @@ export const publishSong = async (
       const artistData: any = {
         name: artistName,
         image_url: imageUrl,
-        user_id: userId
+        user_id: userId,
+        verification_status: 'unverified'
       };
       
       // Only add bio if it's not null or undefined
@@ -465,24 +478,233 @@ export const subscribeToSongs = (callback: (song: Track) => void) => {
     .subscribe();
 };
 
-// Helper function to add artist verification
-export const verifyArtist = async (artistId: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('artists')
-    .update({ verified: true })
-    .eq('id', artistId);
-    
-  return !error;
-};
-
-// Add functionality to send verification email
-export const requestVerification = async (artistId: string, email: string): Promise<boolean> => {
+// Function to add artist verification request
+export const requestVerification = async (artistId: string, email: string, reason?: string): Promise<boolean> => {
   try {
-    // Simply log this for now since we don't have a real email service
-    console.log(`Verification request email sent to ${email} for artist: ${artistId}`);
+    // First, check if the artist already has a pending request
+    const { data: existingRequests, error: checkError } = await supabase
+      .from('verification_requests')
+      .select('id')
+      .eq('artist_id', artistId)
+      .eq('status', 'pending');
+      
+    if (checkError) {
+      console.error('Error checking for existing requests:', checkError);
+      return false;
+    }
+    
+    if (existingRequests && existingRequests.length > 0) {
+      console.log('Artist already has a pending verification request');
+      return true; // Return true to simulate success and not confuse the user
+    }
+    
+    // Update artist verification status to pending
+    const { error: artistUpdateError } = await supabase
+      .from('artists')
+      .update({ verification_status: 'pending' })
+      .eq('id', artistId);
+      
+    if (artistUpdateError) {
+      console.error('Error updating artist verification status:', artistUpdateError);
+      // Continue anyway
+    }
+    
+    // Insert verification request
+    const { error: insertError } = await supabase
+      .from('verification_requests')
+      .insert({
+        artist_id: artistId,
+        email: email,
+        reason: reason || '',
+        status: 'pending'
+      });
+      
+    if (insertError) {
+      console.error('Error creating verification request:', insertError);
+      return false;
+    }
+    
     return true;
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Error submitting verification request:', error);
+    return false;
+  }
+};
+
+// Function to get artist verification status
+export const getArtistVerificationStatus = async (artistId: string): Promise<{ status: string, hasPendingRequest: boolean }> => {
+  try {
+    // Get artist verification status
+    const { data: artist, error: artistError } = await supabase
+      .from('artists')
+      .select('verification_status')
+      .eq('id', artistId)
+      .maybeSingle();
+      
+    if (artistError || !artist) {
+      console.error('Error fetching artist verification status:', artistError);
+      return { status: 'unverified', hasPendingRequest: false };
+    }
+    
+    // Check if there's a pending request
+    const { data: requests, error: requestError } = await supabase
+      .from('verification_requests')
+      .select('id')
+      .eq('artist_id', artistId)
+      .eq('status', 'pending');
+      
+    if (requestError) {
+      console.error('Error checking for pending requests:', requestError);
+      return { status: artist.verification_status || 'unverified', hasPendingRequest: false };
+    }
+    
+    return { 
+      status: artist.verification_status || 'unverified', 
+      hasPendingRequest: requests && requests.length > 0 
+    };
+  } catch (error) {
+    console.error('Error getting verification status:', error);
+    return { status: 'unverified', hasPendingRequest: false };
+  }
+};
+
+// Add functionality to get all verification requests
+export const getVerificationRequests = async (): Promise<any[]> => {
+  try {
+    const { data: requests, error } = await supabase
+      .from('verification_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching verification requests:', error);
+      return [];
+    }
+    
+    if (!requests || requests.length === 0) {
+      return [];
+    }
+    
+    // Fetch artists info for each request
+    const requestsWithArtistInfo = await Promise.all(
+      requests.map(async (request) => {
+        const { data: artist } = await supabase
+          .from('artists')
+          .select('name, image_url')
+          .eq('id', request.artist_id)
+          .maybeSingle();
+          
+        return {
+          ...request,
+          artist_name: artist?.name || 'Unknown Artist',
+          artist_image: artist?.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg'
+        };
+      })
+    );
+    
+    return requestsWithArtistInfo;
+  } catch (error) {
+    console.error('Error in getVerificationRequests:', error);
+    return [];
+  }
+};
+
+// Function to approve artist verification
+export const approveArtist = async (requestId: string, artistId: string): Promise<boolean> => {
+  try {
+    // First, update the artist's verification status
+    const { error: artistError } = await supabase
+      .from('artists')
+      .update({ verification_status: 'verified' })
+      .eq('id', artistId);
+      
+    if (artistError) {
+      console.error('Error updating artist verification status:', artistError);
+      return false;
+    }
+    
+    // Then, update the request status
+    const { error: requestError } = await supabase
+      .from('verification_requests')
+      .update({ status: 'approved' })
+      .eq('id', requestId);
+      
+    if (requestError) {
+      console.error('Error updating verification request:', requestError);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error approving artist:', error);
+    return false;
+  }
+};
+
+// Function to reject artist verification
+export const rejectArtist = async (requestId: string, artistId: string): Promise<boolean> => {
+  try {
+    // First, update the artist's verification status
+    const { error: artistError } = await supabase
+      .from('artists')
+      .update({ verification_status: 'rejected' })
+      .eq('id', artistId);
+      
+    if (artistError) {
+      console.error('Error updating artist verification status:', artistError);
+      return false;
+    }
+    
+    // Then, update the request status
+    const { error: requestError } = await supabase
+      .from('verification_requests')
+      .update({ status: 'rejected' })
+      .eq('id', requestId);
+      
+    if (requestError) {
+      console.error('Error updating verification request:', requestError);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error rejecting artist:', error);
+    return false;
+  }
+};
+
+// Check if a user is an admin
+export const isUserAdmin = async (userId: string): Promise<boolean> => {
+  try {
+    const { data: artist, error } = await supabase
+      .from('artists')
+      .select('is_admin')
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    if (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+    
+    return artist?.is_admin || false;
+  } catch (error) {
+    console.error('Error in isUserAdmin:', error);
+    return false;
+  }
+};
+
+// Set a user as admin (for development purposes)
+export const setUserAsAdmin = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('artists')
+      .update({ is_admin: true })
+      .eq('user_id', userId);
+      
+    return !error;
+  } catch (error) {
+    console.error('Error setting user as admin:', error);
     return false;
   }
 };

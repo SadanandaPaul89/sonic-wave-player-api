@@ -50,24 +50,30 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_admin: boolean | null
           name: string
           user_id: string | null
+          verification_status: string | null
         }
         Insert: {
           bio?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
+          is_admin?: boolean | null
           name: string
           user_id?: string | null
+          verification_status?: string | null
         }
         Update: {
           bio?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
+          is_admin?: boolean | null
           name?: string
           user_id?: string | null
+          verification_status?: string | null
         }
         Relationships: []
       }
@@ -130,6 +136,44 @@ export type Database = {
           },
           {
             foreignKeyName: "songs_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_requests: {
+        Row: {
+          admin_notes: string | null
+          artist_id: string
+          created_at: string | null
+          email: string
+          id: string
+          reason: string | null
+          status: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          artist_id: string
+          created_at?: string | null
+          email: string
+          id?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          artist_id?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_artist_id_fkey"
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
