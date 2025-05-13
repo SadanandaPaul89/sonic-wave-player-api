@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Search, Library, Plus, Upload, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isUserAdmin } from '@/services/supabaseService';
+import { isUserAdmin, setUserAsAdmin } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 
 const SidebarNav: React.FC = () => {

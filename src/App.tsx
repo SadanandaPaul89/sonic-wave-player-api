@@ -108,4 +108,53 @@ function App() {
   );
 }
 
+// Important: Run the code below in your browser console to make yourself an admin
+// (Only works if you're logged in as dynoaryan@gmail.com)
+// 
+// async function makeUserAdmin() {
+//   const { data: { session } } = await supabase.auth.getSession();
+//   if (!session) return console.error('Not logged in');
+//   
+//   // First, make sure the user has an artist record
+//   const { data: artist } = await supabase
+//     .from('artists')
+//     .select('id')
+//     .eq('user_id', session.user.id)
+//     .maybeSingle();
+//   
+//   if (!artist) {
+//     console.log('Creating artist record first...');
+//     const { data: newArtist, error: artistError } = await supabase
+//       .from('artists')
+//       .insert({ 
+//         name: session.user.email, 
+//         user_id: session.user.id,
+//         is_admin: true 
+//       })
+//       .select()
+//       .single();
+//       
+//     if (artistError) {
+//       console.error('Error creating artist:', artistError);
+//       return;
+//     }
+//     console.log('Created artist and set as admin:', newArtist);
+//     return;
+//   }
+//   
+//   // Update the artist to be an admin
+//   const { error } = await supabase
+//     .from('artists')
+//     .update({ is_admin: true })
+//     .eq('user_id', session.user.id);
+//     
+//   if (error) {
+//     console.error('Error setting as admin:', error);
+//   } else {
+//     console.log('Successfully set as admin!');
+//   }
+// }
+// 
+// console.log('Run makeUserAdmin() to make yourself an admin');
+
 export default App;
