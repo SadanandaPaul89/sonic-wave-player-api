@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -25,6 +25,32 @@ function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const handleAuthChange = useCallback((event: string, currentSession: any) => {
+    console.log("Auth state changed:", event, currentSession ? "Session exists" : "No session");
+    
+    if (event === 'SIGNED_IN' && currentSession) {
+      setSession(currentSession);
+      // Use setTimeout to avoid potential re-render cycles
+      setTimeout(() => {
+        toast({
+          title: "Successfully signed in!",
+          description: "Welcome to Sonic Wave",
+        });
+      }, 0);
+    } else if (event === 'SIGNED_OUT') {
+      setSession(null);
+      // Use setTimeout to avoid potential re-render cycles
+      setTimeout(() => {
+        toast({
+          title: "Successfully signed out!",
+          description: "We hope to see you again soon",
+        });
+      }, 0);
+    } else if (event === 'TOKEN_REFRESHED' && currentSession) {
+      setSession(currentSession);
+    }
+  }, []);
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -43,31 +69,17 @@ function App() {
       }
     };
 
-    initializeAuth();
-
+    // Setup auth listeners before checking session
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession ? "Session exists" : "No session");
-      
-      // Update state based on the authentication event
-      if (event === 'SIGNED_IN' && currentSession) {
-        setSession(currentSession);
-        toast({
-          title: "Successfully signed in!",
-          description: "Welcome to Sonic Wave",
-        });
-      } else if (event === 'SIGNED_OUT') {
-        setSession(null);
-        toast({
-          title: "Successfully signed out!",
-          description: "We hope to see you again soon",
-        });
-      }
-    });
+    } = supabase.auth.onAuthStateChange(handleAuthChange);
 
-    return () => subscription.unsubscribe();
-  }, []);
+    initializeAuth();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [handleAuthChange]);
 
   if (loading) {
     return (
@@ -80,7 +92,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
@@ -107,6 +118,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
   );
