@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, RefreshCw, Pencil, Trash2, Plus, Music } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -51,10 +52,15 @@ const AdminPanel: React.FC = () => {
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [artistTracks, setArtistTracks] = useState<Track[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const navigate = useNavigate();
 
+  // Use a strict admin check on component mount
   useEffect(() => {
     const checkAdminStatus = async () => {
+      setIsLoading(true);
+      setAdminChecked(false);
+      
       try {
         // First check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();
@@ -71,6 +77,7 @@ const AdminPanel: React.FC = () => {
         // Then check if user has admin privileges
         const adminStatus = await isUserAdmin(session.user.id);
         setIsAdmin(adminStatus);
+        setAdminChecked(true);
         
         if (!adminStatus) {
           toast({
@@ -83,9 +90,9 @@ const AdminPanel: React.FC = () => {
         }
 
         // If admin, load data
-        loadVerificationRequests();
-        loadArtists();
-        loadTracks();
+        await loadVerificationRequests();
+        await loadArtists();
+        await loadTracks();
       } catch (error) {
         console.error('Error checking admin status:', error);
         toast({
@@ -94,6 +101,8 @@ const AdminPanel: React.FC = () => {
           variant: "destructive",
         });
         navigate('/');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -186,8 +195,8 @@ const AdminPanel: React.FC = () => {
         title: "Success",
         description: "Artist verified successfully",
       });
-      loadVerificationRequests();
-      loadArtists(); // Refresh artists list
+      await loadVerificationRequests();
+      await loadArtists(); // Refresh artists list
     } catch (error) {
       console.error('Error approving artist:', error);
       toast({
@@ -205,7 +214,7 @@ const AdminPanel: React.FC = () => {
         title: "Success",
         description: "Artist verification rejected",
       });
-      loadVerificationRequests();
+      await loadVerificationRequests();
     } catch (error) {
       console.error('Error rejecting artist:', error);
       toast({
@@ -220,7 +229,7 @@ const AdminPanel: React.FC = () => {
     setEditingArtist(artist);
     setEditedName(artist.name);
     setEditedBio(artist.bio || '');
-    setEditedImage(artist.image);
+    setEditedImage(artist.image || '');
     setIsEditDialogOpen(true);
   };
 
@@ -228,21 +237,53 @@ const AdminPanel: React.FC = () => {
     if (!editingArtist) return;
     
     try {
-      const success = await updateArtist(editingArtist.id, {
-        name: editedName,
-        bio: editedBio,
-        image_url: editedImage
-      });
+      // Create an update object with the edited fields
+      const updateData: { 
+        name?: string; 
+        bio?: string; 
+        image_url?: string;
+      } = {};
       
-      if (!success) throw new Error("Failed to update artist");
+      if (editedName !== editingArtist.name) {
+        updateData.name = editedName;
+      }
       
-      toast({
-        title: "Success",
-        description: "Artist updated successfully",
-      });
+      if (editedBio !== editingArtist.bio) {
+        updateData.bio = editedBio;
+      }
+      
+      if (editedImage !== editingArtist.image) {
+        updateData.image_url = editedImage;
+      }
+      
+      // Only proceed with update if there are changes
+      if (Object.keys(updateData).length > 0) {
+        const success = await updateArtist(editingArtist.id, updateData);
+        
+        if (!success) throw new Error("Failed to update artist");
+        
+        toast({
+          title: "Success",
+          description: "Artist updated successfully",
+        });
+        
+        // Update the local artists state to reflect changes
+        setArtists(prevArtists => 
+          prevArtists.map(artist => 
+            artist.id === editingArtist.id 
+              ? { 
+                  ...artist, 
+                  name: editedName,
+                  bio: editedBio,
+                  image: editedImage
+                }
+              : artist
+          )
+        );
+      }
       
       setIsEditDialogOpen(false);
-      loadArtists();
+      await loadArtists(); // Refresh all artists to ensure data consistency
     } catch (error) {
       console.error('Error updating artist:', error);
       toast({
@@ -267,8 +308,13 @@ const AdminPanel: React.FC = () => {
         description: "Artist and all related content deleted successfully",
       });
       
-      loadArtists();
-      loadTracks();
+      // Update local state by removing the deleted artist
+      setArtists(prevArtists => prevArtists.filter(artist => artist.id !== artistId));
+      
+      // Remove tracks by this artist from the tracks list
+      setTracks(prevTracks => prevTracks.filter(track => track.artistId !== artistId));
+      
+      // Clear selected artist if it was the deleted one
       if (selectedArtist === artistId) {
         setSelectedArtist(null);
         setArtistTracks([]);
@@ -299,9 +345,12 @@ const AdminPanel: React.FC = () => {
         description: "Track deleted successfully",
       });
       
-      loadTracks();
+      // Update local state by removing the deleted track
+      setTracks(prevTracks => prevTracks.filter(track => track.id !== trackId));
+      
+      // Also update artistTracks if applicable
       if (selectedArtist) {
-        loadArtistTracks(selectedArtist);
+        setArtistTracks(prevTracks => prevTracks.filter(track => track.id !== trackId));
       }
     } catch (error) {
       console.error('Error deleting track:', error);
@@ -315,7 +364,20 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  if (!isAdmin) {
+  // If admin status is still being checked, show a loading indicator
+  if (isLoading && !adminChecked) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="text-lg mb-4">Checking admin status...</div>
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // If not admin, show access denied
+  if (!isAdmin && adminChecked) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center p-6 bg-spotify-elevated rounded-lg">
@@ -327,16 +389,17 @@ const AdminPanel: React.FC = () => {
     );
   }
 
+  // Render admin panel if user is admin
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
         <Button 
-          onClick={() => {
-            loadVerificationRequests();
-            loadArtists();
-            loadTracks();
-            if (selectedArtist) loadArtistTracks(selectedArtist);
+          onClick={async () => {
+            await loadVerificationRequests();
+            await loadArtists();
+            await loadTracks();
+            if (selectedArtist) await loadArtistTracks(selectedArtist);
           }} 
           variant="outline" 
           size="icon"
@@ -411,7 +474,7 @@ const AdminPanel: React.FC = () => {
                         <TableRow key={artist.id}>
                           <TableCell>
                             <img 
-                              src={artist.image} 
+                              src={artist.image || 'https://cdn.jamendo.com/default/default-artist_200.jpg'}
                               alt={artist.name} 
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -505,7 +568,7 @@ const AdminPanel: React.FC = () => {
                           <TableRow key={track.id}>
                             <TableCell>
                               <img 
-                                src={track.image} 
+                                src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
                                 alt={track.name} 
                                 className="w-10 h-10 rounded object-cover"
                               />
@@ -577,7 +640,7 @@ const AdminPanel: React.FC = () => {
                         <TableRow key={track.id}>
                           <TableCell>
                             <img 
-                              src={track.image} 
+                              src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
                               alt={track.name} 
                               className="w-10 h-10 rounded object-cover"
                             />
@@ -680,6 +743,7 @@ const AdminPanel: React.FC = () => {
   );
 };
 
+// Extract the requestsList rendering to a separate function for readability
 const renderRequestsList = (
   requests: VerificationRequest[],
   handleApprove: (id: string, artistId: string) => void,

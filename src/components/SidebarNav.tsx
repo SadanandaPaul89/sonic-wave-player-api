@@ -1,37 +1,54 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Search, Library, Plus, Upload, BadgeCheck, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isUserAdmin, setUserAsAdmin } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const SidebarNav: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Check authentication and admin status when component mounts
   useEffect(() => {
     const checkAdminStatus = async () => {
+      setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (session) {
         setIsAuthenticated(true);
-        const adminStatus = await isUserAdmin(session.user.id);
-        setIsAdmin(adminStatus);
+        try {
+          const adminStatus = await isUserAdmin(session.user.id);
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
       } else {
         setIsAuthenticated(false);
         setIsAdmin(false);
       }
+      setIsLoading(false);
     };
 
     checkAdminStatus();
 
+    // Listen for authentication state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
+      if (event === 'SIGNED_IN' && session) {
         setIsAuthenticated(true);
-        const adminStatus = await isUserAdmin(session.user.id);
-        setIsAdmin(adminStatus);
-      } else {
+        try {
+          const adminStatus = await isUserAdmin(session.user.id);
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
+      } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         setIsAdmin(false);
       }
@@ -61,8 +78,17 @@ const SidebarNav: React.FC = () => {
   };
 
   const handleMakeAdmin = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Not authenticated",
+          description: "You need to be logged in to become an admin.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const result = await setUserAsAdmin(session.user.id);
       if (result) {
         setIsAdmin(true);
@@ -77,6 +103,13 @@ const SidebarNav: React.FC = () => {
           variant: "destructive",
         });
       }
+    } catch (error) {
+      console.error('Error setting admin status:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
   };
 
