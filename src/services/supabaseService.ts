@@ -1,3 +1,4 @@
+
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
@@ -704,6 +705,100 @@ export const setUserAsAdmin = async (userId: string): Promise<boolean> => {
     return !error;
   } catch (error) {
     console.error('Error setting user as admin:', error);
+    return false;
+  }
+};
+
+// Function to delete an artist and all related content
+export const deleteArtist = async (artistId: string): Promise<boolean> => {
+  try {
+    // First, delete all songs by this artist
+    const { error: songsError } = await supabase
+      .from('songs')
+      .delete()
+      .eq('artist_id', artistId);
+    
+    if (songsError) {
+      console.error('Error deleting songs:', songsError);
+      throw songsError;
+    }
+    
+    // Then, delete all albums by this artist
+    const { error: albumsError } = await supabase
+      .from('albums')
+      .delete()
+      .eq('artist_id', artistId);
+    
+    if (albumsError) {
+      console.error('Error deleting albums:', albumsError);
+      throw albumsError;
+    }
+    
+    // Delete any verification requests
+    const { error: requestsError } = await supabase
+      .from('verification_requests')
+      .delete()
+      .eq('artist_id', artistId);
+    
+    if (requestsError) {
+      console.error('Error deleting verification requests:', requestsError);
+      // Continue anyway, not critical
+    }
+    
+    // Finally, delete the artist
+    const { error: artistError } = await supabase
+      .from('artists')
+      .delete()
+      .eq('id', artistId);
+    
+    if (artistError) {
+      console.error('Error deleting artist:', artistError);
+      throw artistError;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteArtist:', error);
+    return false;
+  }
+};
+
+// Function to delete a track
+export const deleteTrack = async (trackId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('songs')
+      .delete()
+      .eq('id', trackId);
+    
+    if (error) {
+      console.error('Error deleting track:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteTrack:', error);
+    return false;
+  }
+};
+
+// Function to update an artist
+export const updateArtist = async (artistId: string, data: { name?: string, bio?: string, image_url?: string }): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('artists')
+      .update(data)
+      .eq('id', artistId);
+    
+    if (error) {
+      console.error('Error updating artist:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateArtist:', error);
     return false;
   }
 };

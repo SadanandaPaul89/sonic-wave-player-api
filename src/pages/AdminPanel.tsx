@@ -1,7 +1,17 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getVerificationRequests, approveArtist, rejectArtist, isUserAdmin, getTopArtists, getTracksByArtistId, getTopTracks } from '@/services/supabaseService';
+import { 
+  getVerificationRequests, 
+  approveArtist, 
+  rejectArtist, 
+  isUserAdmin, 
+  getTopArtists, 
+  getTracksByArtistId, 
+  getTopTracks,
+  deleteArtist,
+  deleteTrack,
+  updateArtist
+} from '@/services/supabaseService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, RefreshCw, Pencil, Trash2, Plus, Music } from 'lucide-react';
@@ -218,16 +228,13 @@ const AdminPanel: React.FC = () => {
     if (!editingArtist) return;
     
     try {
-      const { error } = await supabase
-        .from('artists')
-        .update({
-          name: editedName,
-          bio: editedBio,
-          image_url: editedImage
-        })
-        .eq('id', editingArtist.id);
-
-      if (error) throw error;
+      const success = await updateArtist(editingArtist.id, {
+        name: editedName,
+        bio: editedBio,
+        image_url: editedImage
+      });
+      
+      if (!success) throw new Error("Failed to update artist");
       
       toast({
         title: "Success",
@@ -249,38 +256,10 @@ const AdminPanel: React.FC = () => {
   const handleDeleteArtist = async (artistId: string) => {
     try {
       setIsDeleting(true);
+      const success = await deleteArtist(artistId);
       
-      // First, delete all songs by this artist
-      const { error: songsError } = await supabase
-        .from('songs')
-        .delete()
-        .eq('artist_id', artistId);
-      
-      if (songsError) {
-        console.error('Error deleting songs:', songsError);
-        throw songsError;
-      }
-      
-      // Then, delete all albums by this artist
-      const { error: albumsError } = await supabase
-        .from('albums')
-        .delete()
-        .eq('artist_id', artistId);
-      
-      if (albumsError) {
-        console.error('Error deleting albums:', albumsError);
-        throw albumsError;
-      }
-      
-      // Finally, delete the artist
-      const { error: artistError } = await supabase
-        .from('artists')
-        .delete()
-        .eq('id', artistId);
-      
-      if (artistError) {
-        console.error('Error deleting artist:', artistError);
-        throw artistError;
+      if (!success) {
+        throw new Error("Failed to delete artist");
       }
       
       toast({
@@ -309,15 +288,10 @@ const AdminPanel: React.FC = () => {
   const handleDeleteTrack = async (trackId: string) => {
     try {
       setIsDeleting(true);
+      const success = await deleteTrack(trackId);
       
-      const { error } = await supabase
-        .from('songs')
-        .delete()
-        .eq('id', trackId);
-      
-      if (error) {
-        console.error('Error deleting track:', error);
-        throw error;
+      if (!success) {
+        throw new Error("Failed to delete track");
       }
       
       toast({
