@@ -9,18 +9,38 @@ import { toast } from '@/components/ui/use-toast';
 
 const SidebarNav: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        setIsAuthenticated(true);
         const adminStatus = await isUserAdmin(session.user.id);
         setIsAdmin(adminStatus);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
       }
     };
 
     checkAdminStatus();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        setIsAuthenticated(true);
+        const adminStatus = await isUserAdmin(session.user.id);
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -93,57 +113,59 @@ const SidebarNav: React.FC = () => {
         </NavLink>
       </div>
       
-      <div className="space-y-1">
-        <NavLink
-          to="/publish"
-          className={({ isActive }) =>
-            `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-gray-400 hover:text-white'}`
-          }
-        >
-          <Upload className="mr-3 h-5 w-5" />
-          Publish Song
-        </NavLink>
-        <NavLink
-          to="/artist-registration"
-          className={({ isActive }) =>
-            `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-gray-400 hover:text-white'}`
-          }
-        >
-          <Plus className="mr-3 h-5 w-5" />
-          Register as Artist
-        </NavLink>
-        
-        {isAdmin && (
+      {isAuthenticated && (
+        <div className="space-y-1">
           <NavLink
-            to="/admin"
+            to="/publish"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-green-500 hover:bg-green-900'}`
+              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-gray-400 hover:text-white'}`
             }
           >
-            <BadgeCheck className="mr-3 h-5 w-5" />
-            Admin Panel
+            <Upload className="mr-3 h-5 w-5" />
+            Publish Song
           </NavLink>
-        )}
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-red-500 hover:bg-red-900 hover:text-white w-full text-left"
-        >
-          <LogOut className="mr-3 h-5 w-5" />
-          Logout
-        </button>
-
-        {!isAdmin && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleMakeAdmin}
-            className="text-xs text-gray-400 hover:text-white w-full mt-2"
+          <NavLink
+            to="/artist-registration"
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-gray-400 hover:text-white'}`
+            }
           >
-            Become Admin
-          </Button>
-        )}
-      </div>
+            <Plus className="mr-3 h-5 w-5" />
+            Register as Artist
+          </NavLink>
+          
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-spotify-highlight text-white' : 'text-green-500 hover:bg-green-900'}`
+              }
+            >
+              <BadgeCheck className="mr-3 h-5 w-5" />
+              Admin Panel
+            </NavLink>
+          )}
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-red-500 hover:bg-red-900 hover:text-white w-full text-left"
+          >
+            <LogOut className="mr-3 h-5 w-5" />
+            Logout
+          </button>
+
+          {!isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMakeAdmin}
+              className="text-xs text-gray-400 hover:text-white w-full mt-2"
+            >
+              Become Admin
+            </Button>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

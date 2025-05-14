@@ -13,6 +13,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Artist, Track } from '@/services/supabaseService';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface VerificationRequest {
   id: string;
@@ -39,17 +40,25 @@ const AdminPanel: React.FC = () => {
   const [editedImage, setEditedImage] = useState('');
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [artistTracks, setArtistTracks] = useState<Track[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
+        // First check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access this page",
+            variant: "destructive",
+          });
           navigate('/auth');
           return;
         }
 
+        // Then check if user has admin privileges
         const adminStatus = await isUserAdmin(session.user.id);
         setIsAdmin(adminStatus);
         
@@ -63,16 +72,35 @@ const AdminPanel: React.FC = () => {
           return;
         }
 
+        // If admin, load data
         loadVerificationRequests();
         loadArtists();
         loadTracks();
       } catch (error) {
         console.error('Error checking admin status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to verify admin status",
+          variant: "destructive",
+        });
         navigate('/');
       }
     };
 
     checkAdminStatus();
+  }, [navigate]);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const loadVerificationRequests = async () => {
@@ -219,18 +247,19 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleDeleteArtist = async (artistId: string) => {
-    if (!confirm('Are you sure you want to delete this artist? This will delete all their songs and albums.')) {
-      return;
-    }
-    
     try {
+      setIsDeleting(true);
+      
       // First, delete all songs by this artist
       const { error: songsError } = await supabase
         .from('songs')
         .delete()
         .eq('artist_id', artistId);
       
-      if (songsError) throw songsError;
+      if (songsError) {
+        console.error('Error deleting songs:', songsError);
+        throw songsError;
+      }
       
       // Then, delete all albums by this artist
       const { error: albumsError } = await supabase
@@ -238,7 +267,10 @@ const AdminPanel: React.FC = () => {
         .delete()
         .eq('artist_id', artistId);
       
-      if (albumsError) throw albumsError;
+      if (albumsError) {
+        console.error('Error deleting albums:', albumsError);
+        throw albumsError;
+      }
       
       // Finally, delete the artist
       const { error: artistError } = await supabase
@@ -246,7 +278,10 @@ const AdminPanel: React.FC = () => {
         .delete()
         .eq('id', artistId);
       
-      if (artistError) throw artistError;
+      if (artistError) {
+        console.error('Error deleting artist:', artistError);
+        throw artistError;
+      }
       
       toast({
         title: "Success",
@@ -263,24 +298,27 @@ const AdminPanel: React.FC = () => {
       console.error('Error deleting artist:', error);
       toast({
         title: "Error",
-        description: "Failed to delete artist",
+        description: "Failed to delete artist. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleDeleteTrack = async (trackId: string) => {
-    if (!confirm('Are you sure you want to delete this track?')) {
-      return;
-    }
-    
     try {
+      setIsDeleting(true);
+      
       const { error } = await supabase
         .from('songs')
         .delete()
         .eq('id', trackId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting track:', error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -295,27 +333,42 @@ const AdminPanel: React.FC = () => {
       console.error('Error deleting track:', error);
       toast({
         title: "Error",
-        description: "Failed to delete track",
+        description: "Failed to delete track. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   if (!isAdmin) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center p-6 bg-spotify-elevated rounded-lg">
+          <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+          <p className="mb-4">You don't have permission to access this page.</p>
+          <Button onClick={() => navigate('/')}>Return to Home</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
-        <Button onClick={() => {
-          loadVerificationRequests();
-          loadArtists();
-          loadTracks();
-          if (selectedArtist) loadArtistTracks(selectedArtist);
-        }} variant="outline" size="icon">
-          <RefreshCw className="h-4 w-4" />
+        <Button 
+          onClick={() => {
+            loadVerificationRequests();
+            loadArtists();
+            loadTracks();
+            if (selectedArtist) loadArtistTracks(selectedArtist);
+          }} 
+          variant="outline" 
+          size="icon"
+          disabled={isLoading || isDeleting}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
@@ -417,14 +470,36 @@ const AdminPanel: React.FC = () => {
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => handleDeleteArtist(artist.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="text-red-500 hover:text-red-700"
+                                  disabled={isDeleting}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Artist</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently delete the artist "{artist.name}" and all their songs and albums. 
+                                    This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteArtist(artist.id)}
+                                    className="bg-red-500 hover:bg-red-600"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </TableCell>
                         </TableRow>
                       ))
@@ -464,14 +539,36 @@ const AdminPanel: React.FC = () => {
                             <TableCell>{track.name}</TableCell>
                             <TableCell>{track.albumName}</TableCell>
                             <TableCell className="text-right">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                className="text-red-500 hover:text-red-700"
-                                onClick={() => handleDeleteTrack(track.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="text-red-500 hover:text-red-700"
+                                    disabled={isDeleting}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Track</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete the track "{track.name}". 
+                                      This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteTrack(track.id)}
+                                      className="bg-red-500 hover:bg-red-600"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -515,14 +612,36 @@ const AdminPanel: React.FC = () => {
                           <TableCell>{track.artistName}</TableCell>
                           <TableCell>{track.albumName}</TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => handleDeleteTrack(track.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="text-red-500 hover:text-red-700"
+                                  disabled={isDeleting}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Track</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently delete the track "{track.name}". 
+                                    This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteTrack(track.id)}
+                                    className="bg-red-500 hover:bg-red-600"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </TableCell>
                         </TableRow>
                       ))
