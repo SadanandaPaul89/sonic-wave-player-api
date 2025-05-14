@@ -1,5 +1,5 @@
 
-// Import from the correct location
+// Export the toast components from the correct location
 import { useToast, toast } from "@/hooks/use-toast";
 
 export { useToast, toast };

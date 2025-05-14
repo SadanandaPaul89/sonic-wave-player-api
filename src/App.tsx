@@ -1,6 +1,5 @@
 
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -18,7 +17,7 @@ import ArtistRegistration from "./pages/ArtistRegistration";
 import AdminPanel from "./pages/AdminPanel";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -54,10 +53,16 @@ function App() {
       // Update state based on the authentication event
       if (event === 'SIGNED_IN' && currentSession) {
         setSession(currentSession);
-        toast.success("Successfully signed in!");
+        toast({
+          title: "Successfully signed in!",
+          description: "Welcome to Sonic Wave",
+        });
       } else if (event === 'SIGNED_OUT') {
         setSession(null);
-        toast.success("Successfully signed out!");
+        toast({
+          title: "Successfully signed out!",
+          description: "We hope to see you again soon",
+        });
       }
     });
 
@@ -76,7 +81,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
