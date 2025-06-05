@@ -1,4 +1,3 @@
-
 import { supabase, getPublicUrl, SONG_BUCKET_NAME } from '@/lib/supabase';
 // Import types from the API service to maintain compatibility
 import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } from '@/services/api';
@@ -614,10 +613,17 @@ export const approveArtist = async (requestId: string, artistId: string): Promis
   try {
     console.log('Starting artist approval process:', { requestId, artistId });
     
-    // Check current user session
+    // Check current user session and verify admin status
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('No valid session for artist approval:', sessionError);
+      return false;
+    }
+    
+    // Verify user is admin
+    const adminStatus = await isUserAdmin(session.user.id);
+    if (!adminStatus) {
+      console.error('User is not admin, cannot approve artist');
       return false;
     }
     
@@ -658,10 +664,17 @@ export const rejectArtist = async (requestId: string, artistId: string): Promise
   try {
     console.log('Starting artist rejection process:', { requestId, artistId });
     
-    // Check current user session
+    // Check current user session and verify admin status
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('No valid session for artist rejection:', sessionError);
+      return false;
+    }
+    
+    // Verify user is admin
+    const adminStatus = await isUserAdmin(session.user.id);
+    if (!adminStatus) {
+      console.error('User is not admin, cannot reject artist');
       return false;
     }
     
@@ -733,23 +746,26 @@ export const setUserAsAdmin = async (userId: string): Promise<boolean> => {
   }
 };
 
-// Function to delete an artist and all related content
+// Function to delete an artist and all related content - UPDATED with better RLS handling
 export const deleteArtist = async (artistId: string): Promise<boolean> => {
   try {
     console.log('Starting artist deletion process for ID:', artistId);
     
-    // Check current user session and admin status
+    // Check current user session and verify admin status
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('No valid session for artist deletion:', sessionError);
       return false;
     }
     
-    const isAdmin = await isUserAdmin(session.user.id);
-    if (!isAdmin) {
+    // Verify user is admin
+    const adminStatus = await isUserAdmin(session.user.id);
+    if (!adminStatus) {
       console.error('User is not admin, cannot delete artist');
       return false;
     }
+    
+    console.log('Admin status verified, proceeding with deletion');
     
     // First, delete all songs by this artist
     const { error: songsError } = await supabase
@@ -809,23 +825,26 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
   }
 };
 
-// Function to delete a track
+// Function to delete a track - UPDATED with better RLS handling
 export const deleteTrack = async (trackId: string): Promise<boolean> => {
   try {
     console.log('Starting track deletion process for ID:', trackId);
     
-    // Check current user session and admin status
+    // Check current user session and verify admin status
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('No valid session for track deletion:', sessionError);
       return false;
     }
     
-    const isAdmin = await isUserAdmin(session.user.id);
-    if (!isAdmin) {
+    // Verify user is admin
+    const adminStatus = await isUserAdmin(session.user.id);
+    if (!adminStatus) {
       console.error('User is not admin, cannot delete track');
       return false;
     }
+    
+    console.log('Admin status verified, proceeding with track deletion');
     
     const { error } = await supabase
       .from('songs')
@@ -845,23 +864,26 @@ export const deleteTrack = async (trackId: string): Promise<boolean> => {
   }
 };
 
-// Function to update an artist
+// Function to update an artist - UPDATED with better RLS handling
 export const updateArtist = async (artistId: string, data: { name?: string, bio?: string, image_url?: string }): Promise<boolean> => {
   try {
     console.log('Starting artist update process:', { artistId, data });
     
-    // Check current user session and admin status
+    // Check current user session and verify admin status
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('No valid session for artist update:', sessionError);
       return false;
     }
     
-    const isAdmin = await isUserAdmin(session.user.id);
-    if (!isAdmin) {
+    // Verify user is admin
+    const adminStatus = await isUserAdmin(session.user.id);
+    if (!adminStatus) {
       console.error('User is not admin, cannot update artist');
       return false;
     }
+    
+    console.log('Admin status verified, proceeding with artist update');
     
     const { error } = await supabase
       .from('artists')
