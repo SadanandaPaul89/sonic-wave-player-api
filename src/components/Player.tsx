@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, BadgeCheck } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, BadgeCheck, Maximize2 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { getArtistById, isArtistVerified } from '@/services/localLibrary';
+import FullScreenPlayer from './FullScreenPlayer';
+import { Button } from '@/components/ui/button';
 
 const Player: React.FC = () => {
   const {
@@ -24,6 +26,7 @@ const Player: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState(volume);
   const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
   // Handle mute toggle
   const toggleMute = () => {
@@ -64,86 +67,110 @@ const Player: React.FC = () => {
   }
 
   return (
-    <div className="h-20 border-t border-spotify-highlight bg-spotify-elevated px-4 flex items-center">
-      {/* Track Info */}
-      <div className="w-1/4 flex items-center">
-        <div className="w-14 h-14 bg-gray-600 mr-3 rounded flex-shrink-0">
-          <img
-            src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
-            alt={currentTrack.albumName}
-            className="w-full h-full rounded object-cover"
-          />
-        </div>
-        <div className="truncate">
-          <div className="text-sm font-medium truncate">{currentTrack.name}</div>
-          <div className="flex items-center text-xs text-gray-400 truncate">
-            {currentTrack.artistId ? (
-              <Link to={`/artist-profile/${currentTrack.artistId}`} className="hover:text-white transition-colors">
-                {currentTrack.artistName}
-              </Link>
-            ) : (
-              <span>{currentTrack.artistName}</span>
-            )}
-            
-            {isArtistVerifiedState && (
-              <BadgeCheck size={14} className="ml-1 text-blue-500" />
-            )}
+    <>
+      <div className="h-20 border-t border-spotify-highlight bg-spotify-elevated px-4 flex items-center">
+        {/* Track Info */}
+        <div className="w-1/4 flex items-center">
+          <div 
+            className="w-14 h-14 bg-gray-600 mr-3 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => setIsFullScreenOpen(true)}
+          >
+            <img
+              src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+              alt={currentTrack.albumName}
+              className="w-full h-full rounded object-cover"
+            />
+          </div>
+          <div className="truncate">
+            <div 
+              className="text-sm font-medium truncate cursor-pointer hover:underline"
+              onClick={() => setIsFullScreenOpen(true)}
+            >
+              {currentTrack.name}
+            </div>
+            <div className="flex items-center text-xs text-gray-400 truncate">
+              {currentTrack.artistId ? (
+                <Link to={`/artist-profile/${currentTrack.artistId}`} className="hover:text-white transition-colors">
+                  {currentTrack.artistName}
+                </Link>
+              ) : (
+                <span>{currentTrack.artistName}</span>
+              )}
+              
+              {isArtistVerifiedState && (
+                <BadgeCheck size={14} className="ml-1 text-blue-500" />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Controls */}
-      <div className="w-2/4 flex flex-col items-center">
-        <div className="flex items-center mb-2">
-          <button 
-            onClick={playPreviousTrack} 
-            className="mx-2 p-1 text-gray-300 hover:text-white transition-colors"
-          >
-            <SkipBack size={20} />
-          </button>
-          <button 
-            onClick={togglePlayPause} 
-            className="mx-2 p-2 bg-white rounded-full text-black hover:scale-105 transition-transform"
-          >
-            {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-          </button>
-          <button 
-            onClick={playNextTrack} 
-            className="mx-2 p-1 text-gray-300 hover:text-white transition-colors"
-          >
-            <SkipForward size={20} />
-          </button>
+        
+        {/* Controls */}
+        <div className="w-2/4 flex flex-col items-center">
+          <div className="flex items-center mb-2">
+            <button 
+              onClick={playPreviousTrack} 
+              className="mx-2 p-1 text-gray-300 hover:text-white transition-colors"
+            >
+              <SkipBack size={20} />
+            </button>
+            <button 
+              onClick={togglePlayPause} 
+              className="mx-2 p-2 bg-white rounded-full text-black hover:scale-105 transition-transform"
+            >
+              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+            <button 
+              onClick={playNextTrack} 
+              className="mx-2 p-1 text-gray-300 hover:text-white transition-colors"
+            >
+              <SkipForward size={20} />
+            </button>
+          </div>
+          
+          <div className="w-full flex items-center">
+            <span className="text-xs text-gray-400 w-10 text-right">{formatTime(progress)}</span>
+            <Slider
+              value={[progress]}
+              max={duration || 100}
+              step={0.1}
+              className="mx-2 flex-1"
+              onValueChange={(values) => seekToPosition(values[0])}
+            />
+            <span className="text-xs text-gray-400 w-10">{formatTime(duration)}</span>
+          </div>
         </div>
         
-        <div className="w-full flex items-center">
-          <span className="text-xs text-gray-400 w-10 text-right">{formatTime(progress)}</span>
-          <Slider
-            value={[progress]}
-            max={duration || 100}
-            step={0.1}
-            className="mx-2 flex-1"
-            onValueChange={(values) => seekToPosition(values[0])}
+        {/* Volume Control & Full Screen Button */}
+        <div className="w-1/4 flex justify-end items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsFullScreenOpen(true)}
+            className="mr-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <Maximize2 size={16} />
+          </Button>
+          <button 
+            onClick={toggleMute}
+            className="mr-2 text-gray-300 hover:text-white transition-colors"
+          >
+            {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+          <Slider 
+            value={[volume * 100]}
+            max={100}
+            className="w-24"
+            onValueChange={(values) => setVolumeLevel(values[0] / 100)}
           />
-          <span className="text-xs text-gray-400 w-10">{formatTime(duration)}</span>
         </div>
       </div>
-      
-      {/* Volume Control */}
-      <div className="w-1/4 flex justify-end items-center">
-        <button 
-          onClick={toggleMute}
-          className="mr-2 text-gray-300 hover:text-white transition-colors"
-        >
-          {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
-        </button>
-        <Slider 
-          value={[volume * 100]}
-          max={100}
-          className="w-24"
-          onValueChange={(values) => setVolumeLevel(values[0] / 100)}
-        />
-      </div>
-    </div>
+
+      {/* Full Screen Player */}
+      <FullScreenPlayer 
+        isOpen={isFullScreenOpen}
+        onClose={() => setIsFullScreenOpen(false)}
+      />
+    </>
   );
 };
 
