@@ -22,6 +22,13 @@ export const ARTIST_IMAGE_BUCKET_NAME = 'artist-images';
 // Helper function for more reliable bucket creation
 const createBucketIfNotExists = async (bucketName: string) => {
   try {
+    // Check if user is authenticated before trying to create buckets
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.log(`Skipping bucket creation for ${bucketName} - no authenticated session`);
+      return;
+    }
+    
     // First check if bucket exists
     const { data, error } = await supabase.storage.getBucket(bucketName);
     
@@ -35,15 +42,13 @@ const createBucketIfNotExists = async (bucketName: string) => {
           });
           
           if (createError) {
-            console.error(`Error creating bucket ${bucketName}:`, createError);
-            // Continue execution - we'll handle errors at upload time if needed
+            console.log(`Could not create bucket ${bucketName}:`, createError.message);
+            // This is expected for regular users - only admins can create buckets
           } else {
             console.log(`Bucket ${bucketName} created successfully`);
-            
-            // The 'public: true' parameter in createBucket already sets it as public
           }
         } catch (createErr) {
-          console.error(`Could not create bucket ${bucketName}:`, createErr);
+          console.log(`Could not create bucket ${bucketName}:`, createErr);
         }
       } else {
         // Log the error but continue
@@ -53,19 +58,9 @@ const createBucketIfNotExists = async (bucketName: string) => {
       console.log(`Bucket ${bucketName} already exists`);
     }
   } catch (err) {
-    console.error(`Error checking/creating bucket ${bucketName}:`, err);
+    console.log(`Error checking/creating bucket ${bucketName}:`, err);
   }
 };
-
-// Try to create required buckets
-(async () => {
-  try {
-    await createBucketIfNotExists(SONG_BUCKET_NAME);
-    await createBucketIfNotExists(ARTIST_IMAGE_BUCKET_NAME);
-  } catch (error) {
-    console.error("Error creating storage buckets:", error);
-  }
-})();
 
 // Helper function to get a public URL for a file
 export const getPublicUrl = (bucketName: string, filePath: string) => {
@@ -77,6 +72,15 @@ export const getPublicUrl = (bucketName: string, filePath: string) => {
 supabase.auth.getSession().then(({ data }) => {
   if (data.session) {
     console.info('Initial session check: Session found');
+    // Try to create required buckets only if user is authenticated
+    (async () => {
+      try {
+        await createBucketIfNotExists(SONG_BUCKET_NAME);
+        await createBucketIfNotExists(ARTIST_IMAGE_BUCKET_NAME);
+      } catch (error) {
+        console.log("Note: Storage bucket setup requires admin permissions");
+      }
+    })();
   } else {
     console.info('Initial session check: No session');
   }
@@ -85,4 +89,16 @@ supabase.auth.getSession().then(({ data }) => {
 // Listen for auth changes
 supabase.auth.onAuthStateChange((event, session) => {
   console.info(`Auth state changed: ${event}`, session ? 'Session exists' : 'No session');
+  
+  if (event === 'SIGNED_IN' && session) {
+    // Try to create buckets when user signs in
+    (async () => {
+      try {
+        await createBucketIfNotExists(SONG_BUCKET_NAME);
+        await createBucketIfNotExists(ARTIST_IMAGE_BUCKET_NAME);
+      } catch (error) {
+        console.log("Note: Storage bucket setup requires admin permissions");
+      }
+    })();
+  }
 });

@@ -612,6 +612,15 @@ export const getVerificationRequests = async (): Promise<any[]> => {
 // Function to approve artist verification
 export const approveArtist = async (requestId: string, artistId: string): Promise<boolean> => {
   try {
+    console.log('Starting artist approval process:', { requestId, artistId });
+    
+    // Check current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('No valid session for artist approval:', sessionError);
+      return false;
+    }
+    
     // First, update the artist's verification status
     const { error: artistError } = await supabase
       .from('artists')
@@ -622,6 +631,8 @@ export const approveArtist = async (requestId: string, artistId: string): Promis
       console.error('Error updating artist verification status:', artistError);
       return false;
     }
+    
+    console.log('Artist verification status updated successfully');
     
     // Then, update the request status
     const { error: requestError } = await supabase
@@ -634,6 +645,7 @@ export const approveArtist = async (requestId: string, artistId: string): Promis
       return false;
     }
     
+    console.log('Verification request updated successfully');
     return true;
   } catch (error) {
     console.error('Error approving artist:', error);
@@ -644,6 +656,15 @@ export const approveArtist = async (requestId: string, artistId: string): Promis
 // Function to reject artist verification
 export const rejectArtist = async (requestId: string, artistId: string): Promise<boolean> => {
   try {
+    console.log('Starting artist rejection process:', { requestId, artistId });
+    
+    // Check current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('No valid session for artist rejection:', sessionError);
+      return false;
+    }
+    
     // First, update the artist's verification status
     const { error: artistError } = await supabase
       .from('artists')
@@ -654,6 +675,8 @@ export const rejectArtist = async (requestId: string, artistId: string): Promise
       console.error('Error updating artist verification status:', artistError);
       return false;
     }
+    
+    console.log('Artist verification status updated to rejected');
     
     // Then, update the request status
     const { error: requestError } = await supabase
@@ -666,6 +689,7 @@ export const rejectArtist = async (requestId: string, artistId: string): Promise
       return false;
     }
     
+    console.log('Verification request status updated to rejected');
     return true;
   } catch (error) {
     console.error('Error rejecting artist:', error);
@@ -712,6 +736,21 @@ export const setUserAsAdmin = async (userId: string): Promise<boolean> => {
 // Function to delete an artist and all related content
 export const deleteArtist = async (artistId: string): Promise<boolean> => {
   try {
+    console.log('Starting artist deletion process for ID:', artistId);
+    
+    // Check current user session and admin status
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('No valid session for artist deletion:', sessionError);
+      return false;
+    }
+    
+    const isAdmin = await isUserAdmin(session.user.id);
+    if (!isAdmin) {
+      console.error('User is not admin, cannot delete artist');
+      return false;
+    }
+    
     // First, delete all songs by this artist
     const { error: songsError } = await supabase
       .from('songs')
@@ -720,8 +759,10 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
     
     if (songsError) {
       console.error('Error deleting songs:', songsError);
-      throw songsError;
+      return false;
     }
+    
+    console.log('Songs deleted successfully');
     
     // Then, delete all albums by this artist
     const { error: albumsError } = await supabase
@@ -731,8 +772,10 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
     
     if (albumsError) {
       console.error('Error deleting albums:', albumsError);
-      throw albumsError;
+      return false;
     }
+    
+    console.log('Albums deleted successfully');
     
     // Delete any verification requests
     const { error: requestsError } = await supabase
@@ -745,6 +788,8 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
       // Continue anyway, not critical
     }
     
+    console.log('Verification requests deleted');
+    
     // Finally, delete the artist
     const { error: artistError } = await supabase
       .from('artists')
@@ -753,9 +798,10 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
     
     if (artistError) {
       console.error('Error deleting artist:', artistError);
-      throw artistError;
+      return false;
     }
     
+    console.log('Artist deleted successfully');
     return true;
   } catch (error) {
     console.error('Error in deleteArtist:', error);
@@ -766,6 +812,21 @@ export const deleteArtist = async (artistId: string): Promise<boolean> => {
 // Function to delete a track
 export const deleteTrack = async (trackId: string): Promise<boolean> => {
   try {
+    console.log('Starting track deletion process for ID:', trackId);
+    
+    // Check current user session and admin status
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('No valid session for track deletion:', sessionError);
+      return false;
+    }
+    
+    const isAdmin = await isUserAdmin(session.user.id);
+    if (!isAdmin) {
+      console.error('User is not admin, cannot delete track');
+      return false;
+    }
+    
     const { error } = await supabase
       .from('songs')
       .delete()
@@ -776,6 +837,7 @@ export const deleteTrack = async (trackId: string): Promise<boolean> => {
       return false;
     }
     
+    console.log('Track deleted successfully');
     return true;
   } catch (error) {
     console.error('Error in deleteTrack:', error);
@@ -786,6 +848,21 @@ export const deleteTrack = async (trackId: string): Promise<boolean> => {
 // Function to update an artist
 export const updateArtist = async (artistId: string, data: { name?: string, bio?: string, image_url?: string }): Promise<boolean> => {
   try {
+    console.log('Starting artist update process:', { artistId, data });
+    
+    // Check current user session and admin status
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('No valid session for artist update:', sessionError);
+      return false;
+    }
+    
+    const isAdmin = await isUserAdmin(session.user.id);
+    if (!isAdmin) {
+      console.error('User is not admin, cannot update artist');
+      return false;
+    }
+    
     const { error } = await supabase
       .from('artists')
       .update(data)
@@ -796,6 +873,7 @@ export const updateArtist = async (artistId: string, data: { name?: string, bio?
       return false;
     }
     
+    console.log('Artist updated successfully');
     return true;
   } catch (error) {
     console.error('Error in updateArtist:', error);
