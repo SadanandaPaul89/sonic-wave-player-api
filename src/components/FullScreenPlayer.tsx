@@ -79,6 +79,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
 
   // Handle mute toggle
   const toggleMute = () => {
+    console.log('Mute toggle clicked', { isMuted, volume, prevVolume });
     if (isMuted) {
       setVolumeLevel(prevVolume);
     } else {
@@ -120,12 +121,32 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
 
   // Handle progress bar change
   const handleProgressChange = (values: number[]) => {
+    console.log('Progress change:', values[0]);
     seekToPosition(values[0]);
   };
 
   // Handle volume change
   const handleVolumeChange = (values: number[]) => {
+    console.log('Volume change:', values[0]);
     setVolumeLevel(values[0] / 100);
+  };
+
+  // Handle play/pause
+  const handlePlayPause = () => {
+    console.log('Play/pause clicked', { isPlaying });
+    togglePlayPause();
+  };
+
+  // Handle next track
+  const handleNextTrack = () => {
+    console.log('Next track clicked');
+    playNextTrack();
+  };
+
+  // Handle previous track
+  const handlePreviousTrack = () => {
+    console.log('Previous track clicked');
+    playPreviousTrack();
   };
 
   if (!isOpen || !currentTrack) return null;
@@ -240,14 +261,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={playPreviousTrack}
+              onClick={handlePreviousTrack}
               className="text-white hover:bg-white/10"
             >
               <SkipBack size={28} />
             </Button>
             
             <Button 
-              onClick={togglePlayPause}
+              onClick={handlePlayPause}
               className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform"
             >
               {isPlaying ? <Pause size={32} /> : <Play size={32} />}
@@ -256,7 +277,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={playNextTrack}
+              onClick={handleNextTrack}
               className="text-white hover:bg-white/10"
             >
               <SkipForward size={28} />
