@@ -18,11 +18,16 @@ import {
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { isArtistVerified } from '@/services/localLibrary';
+import { isArtistVerified, getLyricsBySongId } from '@/services/supabaseService';
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface LyricLine {
+  time: number;
+  text: string;
 }
 
 const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) => {
@@ -42,27 +47,33 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState(volume);
   const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
-  const [showLyrics, setShowLyrics] = useState(true);
+  const [lyrics, setLyrics] = useState<LyricLine[]>([]);
+  const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
 
-  // Mock lyrics data - in a real app, this would come from an API
-  const lyrics = [
-    { time: 0, text: "Welcome to this amazing song" },
-    { time: 15, text: "Feel the rhythm and the beat" },
-    { time: 30, text: "Music flowing through your soul" },
-    { time: 45, text: "Let the melody take control" },
-    { time: 60, text: "Dancing to the sound of freedom" },
-    { time: 75, text: "Every note tells a story" },
-    { time: 90, text: "In this moment we are one" },
-    { time: 105, text: "Music brings us all together" },
-  ];
-
-  // Check if artist is verified
+  // Check if artist is verified and load lyrics
   useEffect(() => {
     if (currentTrack && currentTrack.artistId) {
       const verified = isArtistVerified(currentTrack.artistId);
       setIsArtistVerifiedState(verified);
+      
+      // Load lyrics for current track
+      const loadLyrics = async () => {
+        setIsLoadingLyrics(true);
+        try {
+          const lyricsData = await getLyricsBySongId(currentTrack.id);
+          setLyrics(lyricsData);
+        } catch (error) {
+          console.error('Error loading lyrics:', error);
+          setLyrics([]);
+        } finally {
+          setIsLoadingLyrics(false);
+        }
+      };
+      
+      loadLyrics();
     } else {
       setIsArtistVerifiedState(false);
+      setLyrics([]);
     }
   }, [currentTrack]);
 
@@ -87,7 +98,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   }, [volume]);
 
   // Find current lyric based on progress
-  const getCurrentLyric = () => {
+  const getCurrentLyric = (): LyricLine | null => {
     if (!lyrics.length) return null;
     
     for (let i = lyrics.length - 1; i >= 0; i--) {
@@ -99,7 +110,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   };
 
   // Get upcoming lyrics
-  const getUpcomingLyrics = () => {
+  const getUpcomingLyrics = (): LyricLine[] => {
     const currentLyric = getCurrentLyric();
     if (!currentLyric) return [];
     
@@ -169,23 +180,30 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         </div>
 
         {/* Lyrics Section */}
-        {showLyrics && (
-          <div className="mb-8 text-center min-h-[120px] flex flex-col justify-center">
-            <div className="text-2xl font-semibold mb-4">
-              {getCurrentLyric()?.text || "♪ Instrumental ♪"}
-            </div>
-            <div className="space-y-2">
-              {getUpcomingLyrics().map((lyric, index) => (
-                <div 
-                  key={index} 
-                  className={`text-lg opacity-${60 - index * 20} transition-opacity duration-300`}
-                >
-                  {lyric.text}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="mb-8 text-center min-h-[120px] flex flex-col justify-center">
+          {isLoadingLyrics ? (
+            <div className="text-xl text-gray-400">Loading lyrics...</div>
+          ) : lyrics.length > 0 ? (
+            <>
+              <div className="text-2xl font-semibold mb-4">
+                {getCurrentLyric()?.text || "♪ Instrumental ♪"}
+              </div>
+              <div className="space-y-2">
+                {getUpcomingLyrics().map((lyric, index) => (
+                  <div 
+                    key={index} 
+                    className={`text-lg transition-opacity duration-300`}
+                    style={{ opacity: Math.max(0.6 - index * 0.2, 0.2) }}
+                  >
+                    {lyric.text}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-xl text-gray-400">♪ No lyrics available ♪</div>
+          )}
+        </div>
 
         {/* Progress Bar */}
         <div className="mb-6">

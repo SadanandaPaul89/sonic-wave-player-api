@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      lyrics: {
+        Row: {
+          artist_id: string
+          created_at: string | null
+          id: string
+          lyrics_data: Json
+          song_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string | null
+          id?: string
+          lyrics_data: Json
+          song_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string | null
+          id?: string
+          lyrics_data?: Json
+          song_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lyrics_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lyrics_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       songs: {
         Row: {
           album_id: string | null

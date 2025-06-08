@@ -902,3 +902,75 @@ export const updateArtist = async (artistId: string, data: { name?: string, bio?
     return false;
   }
 };
+
+// Add lyrics management functions
+export const getLyricsBySongId = async (songId: string): Promise<any[]> => {
+  try {
+    const { data: lyrics, error } = await supabase
+      .from('lyrics')
+      .select('lyrics_data')
+      .eq('song_id', songId)
+      .maybeSingle();
+      
+    if (error) {
+      console.error('Error fetching lyrics:', error);
+      return [];
+    }
+    
+    return lyrics?.lyrics_data || [];
+  } catch (error) {
+    console.error('Error in getLyricsBySongId:', error);
+    return [];
+  }
+};
+
+export const saveLyrics = async (songId: string, artistId: string, lyricsData: any[]): Promise<boolean> => {
+  try {
+    // Check if lyrics already exist for this song
+    const { data: existingLyrics, error: checkError } = await supabase
+      .from('lyrics')
+      .select('id')
+      .eq('song_id', songId)
+      .maybeSingle();
+      
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing lyrics:', checkError);
+      return false;
+    }
+    
+    if (existingLyrics) {
+      // Update existing lyrics
+      const { error: updateError } = await supabase
+        .from('lyrics')
+        .update({ 
+          lyrics_data: lyricsData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingLyrics.id);
+        
+      if (updateError) {
+        console.error('Error updating lyrics:', updateError);
+        return false;
+      }
+    } else {
+      // Create new lyrics
+      const { error: insertError } = await supabase
+        .from('lyrics')
+        .insert({
+          song_id: songId,
+          artist_id: artistId,
+          lyrics_data: lyricsData
+        });
+        
+      if (insertError) {
+        console.error('Error creating lyrics:', insertError);
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in saveLyrics:', error);
+    return false;
+  }
+};

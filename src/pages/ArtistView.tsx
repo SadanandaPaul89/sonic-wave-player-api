@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getArtistById, getTracksByArtistId, Artist, Track } from '@/services/supabaseService';
@@ -7,12 +6,18 @@ import { usePlayer } from '@/contexts/PlayerContext';
 import CardGrid from '@/components/CardGrid';
 import TrackList from '@/components/TrackList';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useState as useReactState } from 'react';
+import LyricsEditor from '@/components/LyricsEditor';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Edit } from 'lucide-react';
 
 const ArtistView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [artist, setArtist] = useState<Artist | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTrackForLyrics, setSelectedTrackForLyrics] = useReactState<Track | null>(null);
+  const [isLyricsDialogOpen, setIsLyricsDialogOpen] = useReactState(false);
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
   const isMobile = useIsMobile();
 
@@ -57,6 +62,19 @@ const ArtistView: React.FC = () => {
       playTrack(tracks[0]);
     }
   };
+
+  const openLyricsEditor = (track: Track) => {
+    setSelectedTrackForLyrics(track);
+    setIsLyricsDialogOpen(true);
+  };
+
+  const closeLyricsEditor = () => {
+    setSelectedTrackForLyrics(null);
+    setIsLyricsDialogOpen(false);
+  };
+
+  // Check if current user owns this artist profile
+  const isOwner = artist?.verification_status === 'verified'; // Simplified check for demo
 
   if (isLoading) {
     return (
@@ -118,11 +136,72 @@ const ArtistView: React.FC = () => {
       <div className="mt-8 px-4 md:px-6">
         <h2 className="text-2xl font-bold mb-4">{tracks.length > 0 ? 'Songs' : 'No songs available'}</h2>
         {tracks.length > 0 ? (
-          <TrackList tracks={tracks} showAlbum={!isMobile} />
+          <div className="space-y-2">
+            {tracks.map((track, index) => (
+              <div key={track.id} className="flex items-center justify-between p-3 hover:bg-spotify-highlight rounded-lg group">
+                <div className="flex items-center space-x-4 flex-1">
+                  <span className="text-gray-400 w-4">{index + 1}</span>
+                  <div 
+                    className="w-12 h-12 bg-gray-600 rounded cursor-pointer"
+                    onClick={() => playTrack(track)}
+                  >
+                    <img
+                      src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                      alt={track.name}
+                      className="w-full h-full rounded object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div 
+                      className="text-sm font-medium truncate cursor-pointer hover:underline"
+                      onClick={() => playTrack(track)}
+                    >
+                      {track.name}
+                    </div>
+                    <div className="text-xs text-gray-400 truncate">
+                      {track.artistName}
+                    </div>
+                  </div>
+                  {!isMobile && (
+                    <div className="text-sm text-gray-400 truncate min-w-0 flex-1">
+                      {track.albumName}
+                    </div>
+                  )}
+                  <div className="text-sm text-gray-400">
+                    {formatTime(track.duration)}
+                  </div>
+                </div>
+                
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => openLyricsEditor(track)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                  >
+                    <Edit size={16} />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <p className="text-gray-400">This artist hasn't published any songs yet.</p>
         )}
       </div>
+
+      {/* Lyrics Editor Dialog */}
+      <Dialog open={isLyricsDialogOpen} onOpenChange={setIsLyricsDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          {selectedTrackForLyrics && (
+            <LyricsEditor
+              songId={selectedTrackForLyrics.id}
+              artistId={selectedTrackForLyrics.artistId || ''}
+              onClose={closeLyricsEditor}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
