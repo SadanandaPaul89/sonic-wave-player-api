@@ -974,3 +974,24 @@ export const saveLyrics = async (songId: string, artistId: string, lyricsData: a
     return false;
   }
 };
+
+// Function to check if an artist is verified
+export const isArtistVerified = async (artistId: string): Promise<boolean> => {
+  try {
+    const { data: artist, error } = await supabase
+      .from('artists')
+      .select('verification_status')
+      .eq('id', artistId)
+      .maybeSingle();
+      
+    if (error || !artist) {
+      console.error('Error checking artist verification:', error);
+      return false;
+    }
+    
+    return artist.verification_status === 'verified';
+  } catch (error) {
+    console.error('Error in isArtistVerified:', error);
+    return false;
+  }
+};

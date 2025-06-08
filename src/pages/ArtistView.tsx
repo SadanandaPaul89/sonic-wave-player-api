@@ -10,6 +10,8 @@ import { useState as useReactState } from 'react';
 import LyricsEditor from '@/components/LyricsEditor';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { formatTime } from '@/utils/formatTime';
 
 const ArtistView: React.FC = () => {
   const { id } = useParams<{ id: string }>();

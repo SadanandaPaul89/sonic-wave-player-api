@@ -53,11 +53,11 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   // Check if artist is verified and load lyrics
   useEffect(() => {
     if (currentTrack && currentTrack.artistId) {
-      const verified = isArtistVerified(currentTrack.artistId);
-      setIsArtistVerifiedState(verified);
-      
-      // Load lyrics for current track
-      const loadLyrics = async () => {
+      const checkVerificationAndLoadLyrics = async () => {
+        const verified = await isArtistVerified(currentTrack.artistId);
+        setIsArtistVerifiedState(verified);
+        
+        // Load lyrics for current track
         setIsLoadingLyrics(true);
         try {
           const lyricsData = await getLyricsBySongId(currentTrack.id);
@@ -70,7 +70,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         }
       };
       
-      loadLyrics();
+      checkVerificationAndLoadLyrics();
     } else {
       setIsArtistVerifiedState(false);
       setLyrics([]);
