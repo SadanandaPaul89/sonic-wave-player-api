@@ -14,11 +14,14 @@ import {
   MoreHorizontal,
   Shuffle,
   Repeat,
-  BadgeCheck
+  BadgeCheck,
+  Edit
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { isArtistVerified, getLyricsBySongId } from '@/services/supabaseService';
+import LyricsEditor from './LyricsEditor';
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
@@ -49,6 +52,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
+  const [isLyricsDialogOpen, setIsLyricsDialogOpen] = useState(false);
 
   // Check if artist is verified and load lyrics
   useEffect(() => {
@@ -132,21 +136,35 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   };
 
   // Handle play/pause
-  const handlePlayPause = () => {
+  const handlePlayPause = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('Play/pause clicked', { isPlaying });
     togglePlayPause();
   };
 
   // Handle next track
-  const handleNextTrack = () => {
+  const handleNextTrack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('Next track clicked');
     playNextTrack();
   };
 
   // Handle previous track
-  const handlePreviousTrack = () => {
+  const handlePreviousTrack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('Previous track clicked');
     playPreviousTrack();
+  };
+
+  const openLyricsEditor = () => {
+    setIsLyricsDialogOpen(true);
+  };
+
+  const closeLyricsEditor = () => {
+    setIsLyricsDialogOpen(false);
   };
 
   if (!isOpen || !currentTrack) return null;
@@ -168,13 +186,25 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           <div className="text-sm opacity-60">Playing from Sonic Wave</div>
         </div>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/10"
-        >
-          <MoreHorizontal size={24} />
-        </Button>
+        <div className="flex items-center space-x-2">
+          {isArtistVerifiedState && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openLyricsEditor}
+              className="text-white hover:bg-white/10"
+            >
+              <Edit size={20} />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10"
+          >
+            <MoreHorizontal size={24} />
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col h-full px-6 pb-6">
@@ -204,6 +234,16 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
               <Heart size={24} />
             </Button>
+            {isArtistVerifiedState && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={openLyricsEditor}
+                className="text-white hover:bg-white/10"
+              >
+                <Edit size={24} />
+              </Button>
+            )}
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
               <MoreHorizontal size={24} />
             </Button>
@@ -307,6 +347,19 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           />
         </div>
       </div>
+
+      {/* Lyrics Editor Dialog */}
+      <Dialog open={isLyricsDialogOpen} onOpenChange={setIsLyricsDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          {currentTrack && (
+            <LyricsEditor
+              songId={currentTrack.id}
+              artistId={currentTrack.artistId || ''}
+              onClose={closeLyricsEditor}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
