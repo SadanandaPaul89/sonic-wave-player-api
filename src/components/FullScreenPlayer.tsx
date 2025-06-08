@@ -118,6 +118,16 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     return lyrics.slice(currentIndex + 1, currentIndex + 4);
   };
 
+  // Handle progress bar change
+  const handleProgressChange = (values: number[]) => {
+    seekToPosition(values[0]);
+  };
+
+  // Handle volume change
+  const handleVolumeChange = (values: number[]) => {
+    setVolumeLevel(values[0] / 100);
+  };
+
   if (!isOpen || !currentTrack) return null;
 
   return (
@@ -212,7 +222,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             max={duration || 100}
             step={0.1}
             className="mb-2"
-            onValueChange={(values) => seekToPosition(values[0])}
+            onValueChange={handleProgressChange}
           />
           <div className="flex justify-between text-sm text-gray-400">
             <span>{formatTime(progress)}</span>
@@ -272,7 +282,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             value={[volume * 100]}
             max={100}
             className="w-32"
-            onValueChange={(values) => setVolumeLevel(values[0] / 100)}
+            onValueChange={handleVolumeChange}
           />
         </div>
       </div>
