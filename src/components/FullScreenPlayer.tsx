@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -135,27 +134,22 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     setVolumeLevel(values[0] / 100);
   };
 
-  // Handle play/pause
-  const handlePlayPause = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Play/pause clicked', { isPlaying });
+  // Handle play/pause with explicit logging
+  const handlePlayPause = () => {
+    console.log('FullScreen Play/pause button clicked - Current state:', { isPlaying });
     togglePlayPause();
+    console.log('FullScreen Play/pause after toggle');
   };
 
   // Handle next track
-  const handleNextTrack = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Next track clicked');
+  const handleNextTrack = () => {
+    console.log('FullScreen Next track clicked');
     playNextTrack();
   };
 
   // Handle previous track
-  const handlePreviousTrack = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Previous track clicked');
+  const handlePreviousTrack = () => {
+    console.log('FullScreen Previous track clicked');
     playPreviousTrack();
   };
 
@@ -291,7 +285,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
         </div>
 
-        {/* Controls */}
+        {/* Main Controls - Fixed Play/Pause Button */}
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
             <Shuffle size={20} />
@@ -307,12 +301,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               <SkipBack size={28} />
             </Button>
             
-            <Button 
+            {/* Main Play/Pause Button - Made more explicit */}
+            <button 
               onClick={handlePlayPause}
-              className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform"
+              className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center"
+              type="button"
             >
-              {isPlaying ? <Pause size={32} /> : <Play size={32} />}
-            </Button>
+              {isPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
+            </button>
             
             <Button 
               variant="ghost" 
