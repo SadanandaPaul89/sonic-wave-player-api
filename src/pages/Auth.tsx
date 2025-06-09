@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -19,8 +18,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('login');
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<HCaptcha | null>(null);
 
   useEffect(() => {
     // Clear error when switching tabs
@@ -40,10 +37,6 @@ const Auth = () => {
       setError('Password must be at least 6 characters');
       return false;
     }
-    if (!captchaToken) {
-      setError('Please complete the captcha verification');
-      return false;
-    }
     return true;
   };
 
@@ -60,9 +53,6 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          captchaToken: captchaToken || '',
-        },
       });
       
       if (error) throw error;
@@ -73,12 +63,6 @@ const Auth = () => {
       console.error('Sign in error:', error);
       setError(error.message || 'Failed to sign in');
       toast.error(error.message || 'Failed to sign in');
-      
-      // Reset captcha on error
-      if (captchaRef.current) {
-        captchaRef.current.resetCaptcha();
-      }
-      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -97,9 +81,6 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          captchaToken: captchaToken || '',
-        },
       });
       
       if (error) throw error;
@@ -121,29 +102,9 @@ const Auth = () => {
       console.error('Sign up error:', error);
       setError(error.message || 'Failed to create account');
       toast.error(error.message || 'Failed to create account');
-      
-      // Reset captcha on error
-      if (captchaRef.current) {
-        captchaRef.current.resetCaptcha();
-      }
-      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCaptchaVerify = (token: string) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaExpire = () => {
-    setCaptchaToken(null);
-  };
-
-  const handleCaptchaError = (err: any) => {
-    console.error("hCaptcha Error:", err);
-    setError("There was an issue with the captcha. Please try again.");
-    setCaptchaToken(null);
   };
 
   return (
@@ -192,15 +153,6 @@ const Auth = () => {
                     disabled={loading}
                   />
                 </div>
-                <div className="flex justify-center my-4">
-                  <HCaptcha
-                    sitekey="5af2aaaa-a180-4dfc-a27c-64f6e504ccfc"
-                    onVerify={handleCaptchaVerify}
-                    onExpire={handleCaptchaExpire}
-                    onError={handleCaptchaError}
-                    ref={captchaRef}
-                  />
-                </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
@@ -240,15 +192,6 @@ const Auth = () => {
                     disabled={loading}
                   />
                   <p className="text-xs text-gray-400">Password must be at least 6 characters</p>
-                </div>
-                <div className="flex justify-center my-4">
-                  <HCaptcha
-                    sitekey="5af2aaaa-a180-4dfc-a27c-64f6e504ccfc"
-                    onVerify={handleCaptchaVerify}
-                    onExpire={handleCaptchaExpire}
-                    onError={handleCaptchaError}
-                    ref={captchaRef}
-                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
