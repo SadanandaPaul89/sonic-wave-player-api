@@ -28,6 +28,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [playHistory, setPlayHistory] = useState<Track[]>([]);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -78,12 +79,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [isPlaying]);
   
   const playTrack = (track: Track) => {
+    // Add current track to history if there is one
+    if (currentTrack) {
+      setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]); // Keep last 10 tracks
+    }
     setCurrentTrack(track);
     setIsPlaying(true);
   };
   
   const togglePlayPause = () => {
-    setIsPlaying(prev => !prev);
+    console.log('PlayerContext: togglePlayPause called, current isPlaying:', isPlaying);
+    setIsPlaying(prev => {
+      console.log('PlayerContext: setting isPlaying to:', !prev);
+      return !prev;
+    });
   };
   
   const setVolumeLevel = (level: number) => {
@@ -114,31 +123,54 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const playNextTrack = () => {
+    console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
     if (queue.length > 0) {
       const nextTrack = queue[0];
       const newQueue = queue.slice(1);
       setQueue(newQueue);
       playTrack(nextTrack);
+      console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
     } else {
+      console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
     }
   };
   
   const playPreviousTrack = () => {
-    // Since we don't have a history stack, this is a simple implementation
-    // that just restarts the current track
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      setProgress(0);
-      audioRef.current.play().catch(e => console.error('Error playing audio:', e));
+    console.log('PlayerContext: playPreviousTrack called, history length:', playHistory.length);
+    if (playHistory.length > 0) {
+      const previousTrack = playHistory[0];
+      const newHistory = playHistory.slice(1);
+      setPlayHistory(newHistory);
+      
+      // Add current track back to the beginning of queue
+      if (currentTrack) {
+        setQueue(prev => [currentTrack, ...prev]);
+      }
+      
+      setCurrentTrack(previousTrack);
+      setIsPlaying(true);
+      console.log('PlayerContext: Playing previous track:', previousTrack.name);
+    } else {
+      // If no history, just restart current track
+      console.log('PlayerContext: No history, restarting current track');
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        setProgress(0);
+        if (!isPlaying) {
+          setIsPlaying(true);
+        }
+      }
     }
   };
   
   const addToQueue = (track: Track) => {
+    console.log('PlayerContext: Adding track to queue:', track.name);
     setQueue(prev => [...prev, track]);
   };
   
   const clearQueue = () => {
+    console.log('PlayerContext: Clearing queue');
     setQueue([]);
   };
   

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -43,7 +44,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
-    playPreviousTrack
+    playPreviousTrack,
+    queue
   } = usePlayer();
 
   const [isMuted, setIsMuted] = useState(false);
@@ -141,13 +143,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     console.log('FullScreen Play/pause after toggle');
   };
 
-  // Handle next track
+  // Handle next track - improved to work with queue
   const handleNextTrack = () => {
-    console.log('FullScreen Next track clicked');
+    console.log('FullScreen Next track clicked - Queue length:', queue.length);
     playNextTrack();
   };
 
-  // Handle previous track
+  // Handle previous track - improved to work with queue
   const handlePreviousTrack = () => {
     console.log('FullScreen Previous track clicked');
     playPreviousTrack();
@@ -202,8 +204,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       </div>
 
       <div className="flex flex-col h-full px-6 pb-6">
-        {/* Album Art */}
-        <div className="flex-1 flex items-center justify-center mb-8">
+        {/* Album Art - Reduced bottom margin */}
+        <div className="flex-1 flex items-center justify-center mb-4">
           <div className="w-80 h-80 max-w-[80vw] max-h-[40vh] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
             <img
               src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
@@ -213,18 +215,18 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
         </div>
 
-        {/* Track Info */}
-        <div className="text-center mb-6">
+        {/* Track Info - Reduced margins */}
+        <div className="text-center mb-4">
           <h1 className="text-3xl font-bold mb-2 truncate">{currentTrack.name}</h1>
-          <div className="flex items-center justify-center text-xl text-gray-300 mb-4">
+          <div className="flex items-center justify-center text-xl text-gray-300 mb-2">
             <span className="truncate">{currentTrack.artistName}</span>
             {isArtistVerifiedState && (
               <BadgeCheck size={20} className="ml-2 text-blue-500" />
             )}
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex items-center justify-center space-x-8 mb-6">
+          {/* Action Buttons - Reduced margin */}
+          <div className="flex items-center justify-center space-x-8 mb-4">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
               <Heart size={24} />
             </Button>
@@ -244,17 +246,17 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
         </div>
 
-        {/* Lyrics Section */}
-        <div className="mb-8 text-center min-h-[120px] flex flex-col justify-center">
+        {/* Lyrics Section - Reduced height and margin */}
+        <div className="mb-4 text-center min-h-[80px] flex flex-col justify-center">
           {isLoadingLyrics ? (
             <div className="text-xl text-gray-400">Loading lyrics...</div>
           ) : lyrics.length > 0 ? (
             <>
-              <div className="text-2xl font-semibold mb-4">
+              <div className="text-2xl font-semibold mb-2">
                 {getCurrentLyric()?.text || "♪ Instrumental ♪"}
               </div>
-              <div className="space-y-2">
-                {getUpcomingLyrics().map((lyric, index) => (
+              <div className="space-y-1">
+                {getUpcomingLyrics().slice(0, 2).map((lyric, index) => (
                   <div 
                     key={index} 
                     className={`text-lg transition-opacity duration-300`}
@@ -270,8 +272,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
+        {/* Progress Bar - Reduced margin */}
+        <div className="mb-4">
           <Slider
             value={[progress]}
             max={duration || 100}
@@ -285,8 +287,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
         </div>
 
-        {/* Main Controls - Fixed Play/Pause Button */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Main Controls - Moved up with reduced margin */}
+        <div className="flex items-center justify-between mb-4">
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
             <Shuffle size={20} />
           </Button>
@@ -301,7 +303,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               <SkipBack size={28} />
             </Button>
             
-            {/* Main Play/Pause Button - Made more explicit */}
+            {/* Main Play/Pause Button */}
             <button 
               onClick={handlePlayPause}
               className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center"
