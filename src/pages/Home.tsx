@@ -42,8 +42,8 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className={`pb-20 ${isMobile ? 'px-4' : ''}`}>
-      <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-6`}>
+    <div className={`pb-20 ${isMobile ? 'px-3 sm:px-4' : 'px-6'}`}>
+      <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold mb-4 sm:mb-6`}>
         Welcome to Sonic Wave
       </h1>
       
@@ -60,8 +60,8 @@ const Home: React.FC = () => {
         />
       )}
       
-      <div className="mt-8">
-        <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4`}>Top Tracks</h2>
+      <div className="mt-6 sm:mt-8">
+        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-3 sm:mb-4`}>Top Tracks</h2>
         <TrackList tracks={topTracks} />
       </div>
     </div>

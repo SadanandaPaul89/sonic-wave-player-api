@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,12 +47,12 @@ const Player: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-spotify-elevated border-t border-gray-700 px-4 py-2 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-spotify-elevated border-t border-gray-700 px-2 sm:px-4 py-2 z-40">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
             <div 
-              className="w-12 h-12 bg-gray-600 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+              className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gray-600 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform`}
               onClick={() => setIsFullScreenOpen(true)}
             >
               <img
@@ -62,47 +63,47 @@ const Player: React.FC = () => {
             </div>
             <div className="min-w-0 flex-1">
               <div 
-                className="text-sm font-medium truncate cursor-pointer hover:underline"
+                className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium truncate cursor-pointer hover:underline`}
                 onClick={() => setIsFullScreenOpen(true)}
               >
                 {currentTrack.name}
               </div>
-              <div className="text-xs text-gray-400 truncate">{currentTrack.artistName}</div>
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>{currentTrack.artistName}</div>
             </div>
           </div>
 
           {/* Player Controls */}
-          <div className="flex flex-col items-center space-y-2 flex-1 max-w-md">
-            <div className="flex items-center space-x-4">
+          <div className={`flex flex-col items-center ${isMobile ? 'space-y-1' : 'space-y-2'} flex-1 max-w-md`}>
+            <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
               <Button
                 variant="ghost"
-                size="icon"
+                size={isMobile ? "sm" : "icon"}
                 onClick={playPreviousTrack}
                 className="text-gray-400 hover:text-white"
               >
-                <SkipBack size={20} />
+                <SkipBack size={isMobile ? 16 : 20} />
               </Button>
               
               <Button
                 variant="ghost"
-                size="icon"
+                size={isMobile ? "sm" : "icon"}
                 onClick={togglePlayPause}
-                className="bg-white text-black hover:bg-gray-200 w-10 h-10 rounded-full"
+                className={`bg-white text-black hover:bg-gray-200 ${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full`}
               >
-                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                {isPlaying ? <Pause size={isMobile ? 16 : 20} /> : <Play size={isMobile ? 16 : 20} />}
               </Button>
               
               <Button
                 variant="ghost"
-                size="icon"
+                size={isMobile ? "sm" : "icon"}
                 onClick={playNextTrack}
                 className="text-gray-400 hover:text-white"
               >
-                <SkipForward size={20} />
+                <SkipForward size={isMobile ? 16 : 20} />
               </Button>
             </div>
 
-            {/* Progress Bar */}
+            {/* Progress Bar - Desktop only in header */}
             {!isMobile && (
               <div className="flex items-center space-x-2 w-full">
                 <span className="text-xs text-gray-400 w-10 text-right">
@@ -123,7 +124,7 @@ const Player: React.FC = () => {
           </div>
 
           {/* Volume, Lyrics, and Full Screen Controls */}
-          <div className="flex items-center space-x-2 flex-1 justify-end">
+          <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'} flex-1 justify-end ${isMobile ? 'max-w-[80px]' : ''}`}>
             {!isMobile && (
               <div className="flex items-center space-x-2">
                 <Button
@@ -160,11 +161,11 @@ const Player: React.FC = () => {
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size={isMobile ? "sm" : "icon"}
                   className="text-gray-400 hover:text-white"
                   title="Show Lyrics"
                 >
-                  <Mic2 size={20} />
+                  <Mic2 size={isMobile ? 16 : 20} />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md max-h-[80vh]">
@@ -181,12 +182,12 @@ const Player: React.FC = () => {
             {/* Full Screen Button */}
             <Button
               variant="ghost"
-              size="icon"
+              size={isMobile ? "sm" : "icon"}
               onClick={() => setIsFullScreenOpen(true)}
               className="text-gray-400 hover:text-white"
               title="Full Screen Player"
             >
-              <Maximize2 size={20} />
+              <Maximize2 size={isMobile ? 16 : 20} />
             </Button>
           </div>
         </div>

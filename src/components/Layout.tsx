@@ -23,8 +23,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             // Mobile drawer navigation
             <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
               <DrawerTrigger asChild>
-                <button className="p-3 m-2 text-white absolute top-0 left-0 z-20 bg-black/50 rounded-lg backdrop-blur-sm">
-                  <Menu size={24} />
+                <button className="p-2 sm:p-3 m-2 text-white absolute top-0 left-0 z-20 bg-black/50 rounded-lg backdrop-blur-sm">
+                  <Menu size={isMobile ? 20 : 24} />
                 </button>
               </DrawerTrigger>
               <DrawerContent className="h-[85vh] bg-black border-t border-spotify-highlight">
@@ -37,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             // Desktop sidebar
             <Sidebar />
           )}
-          <main className={`flex-1 overflow-auto ${isMobile ? 'pt-16' : ''}`}>
+          <main className={`flex-1 overflow-auto ${isMobile ? 'pt-12 sm:pt-16' : ''}`}>
             {children}
           </main>
         </div>
