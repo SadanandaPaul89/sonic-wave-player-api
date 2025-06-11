@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getArtistById, getTracksByArtistId, Artist, Track } from '@/services/supabaseService';
@@ -7,7 +8,7 @@ import CardGrid from '@/components/CardGrid';
 import TrackList from '@/components/TrackList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState as useReactState } from 'react';
-import LyricsEditor from '@/components/LyricsEditor';
+import EnhancedLyricsEditor from '@/components/EnhancedLyricsEditor';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -180,6 +181,7 @@ const ArtistView: React.FC = () => {
                     size="icon"
                     onClick={() => openLyricsEditor(track)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                    title="Edit Lyrics"
                   >
                     <Edit size={16} />
                   </Button>
@@ -192,13 +194,14 @@ const ArtistView: React.FC = () => {
         )}
       </div>
 
-      {/* Lyrics Editor Dialog */}
+      {/* Enhanced Lyrics Editor Dialog */}
       <Dialog open={isLyricsDialogOpen} onOpenChange={setIsLyricsDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
           {selectedTrackForLyrics && (
-            <LyricsEditor
+            <EnhancedLyricsEditor
               songId={selectedTrackForLyrics.id}
               artistId={selectedTrackForLyrics.artistId || ''}
+              songUrl={selectedTrackForLyrics.previewURL}
               onClose={closeLyricsEditor}
             />
           )}
