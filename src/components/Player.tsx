@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
 import { useIsMobile } from '@/hooks/use-mobile';
 import LyricsDisplay from '@/components/LyricsDisplay';
+import FullScreenPlayer from '@/components/FullScreenPlayer';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const Player: React.FC = () => {
@@ -25,6 +26,7 @@ const Player: React.FC = () => {
 
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
   const isMobile = useIsMobile();
 
   if (!currentTrack) {
@@ -49,15 +51,23 @@ const Player: React.FC = () => {
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <div className="w-12 h-12 bg-gray-600 rounded flex-shrink-0">
+            <div 
+              className="w-12 h-12 bg-gray-600 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => setIsFullScreenOpen(true)}
+            >
               <img
-                src={currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
+                src={currentTrack.albumArt || currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
                 alt={currentTrack.name}
                 className="w-full h-full rounded object-cover"
               />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium truncate">{currentTrack.name}</div>
+              <div 
+                className="text-sm font-medium truncate cursor-pointer hover:underline"
+                onClick={() => setIsFullScreenOpen(true)}
+              >
+                {currentTrack.name}
+              </div>
               <div className="text-xs text-gray-400 truncate">{currentTrack.artistName}</div>
             </div>
           </div>
@@ -113,7 +123,7 @@ const Player: React.FC = () => {
             )}
           </div>
 
-          {/* Volume and Lyrics Controls */}
+          {/* Volume, Lyrics, and Full Screen Controls */}
           <div className="flex items-center space-x-2 flex-1 justify-end">
             {!isMobile && (
               <div className="flex items-center space-x-2">
@@ -168,6 +178,17 @@ const Player: React.FC = () => {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Full Screen Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsFullScreenOpen(true)}
+              className="text-gray-400 hover:text-white"
+              title="Full Screen Player"
+            >
+              <Maximize2 size={20} />
+            </Button>
           </div>
         </div>
 
@@ -188,6 +209,12 @@ const Player: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Full Screen Player */}
+      <FullScreenPlayer
+        isOpen={isFullScreenOpen}
+        onClose={() => setIsFullScreenOpen(false)}
+      />
     </>
   );
 };
