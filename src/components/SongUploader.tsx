@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, Plus, Music } from 'lucide-react';
+import { Upload, Plus, Music, Image } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Track } from '@/services/supabaseService';
 import { addLocalTrack } from '@/services/localLibrary';
@@ -17,7 +17,62 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
   const { toast: uiToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [albumArt, setAlbumArt] = useState<File | null>(null);
+  const [albumArtPreview, setAlbumArtPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const albumArtInputRef = useRef<HTMLInputElement>(null);
+
+  // Validate album art format and dimensions
+  const validateAlbumArt = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // Check file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Album art must be JPEG or PNG format");
+        resolve(false);
+        return;
+      }
+
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Album art file size must be less than 10MB");
+        resolve(false);
+        return;
+      }
+
+      // Check dimensions
+      const img = new Image();
+      img.onload = () => {
+        if (img.width < 500 || img.height < 500) {
+          toast.error("Album art must be at least 500x500 pixels");
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      };
+      img.onerror = () => {
+        toast.error("Invalid image file");
+        resolve(false);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleAlbumArtSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const isValid = await validateAlbumArt(file);
+      if (isValid) {
+        setAlbumArt(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setAlbumArtPreview(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+        toast.success("Album art added successfully");
+      }
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -42,6 +97,32 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
     }
   };
 
+  const uploadAlbumArt = async (session: any): Promise<string | null> => {
+    if (!albumArt) return null;
+
+    try {
+      const fileExt = albumArt.name.split('.').pop();
+      const fileName = `album-art-${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `${session.user.id}/album-art/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(SONG_BUCKET_NAME)
+        .upload(filePath, albumArt);
+
+      if (uploadError) {
+        console.error("Error uploading album art:", uploadError);
+        toast.error("Failed to upload album art");
+        return null;
+      }
+
+      return getPublicUrl(SONG_BUCKET_NAME, filePath);
+    } catch (error) {
+      console.error("Error processing album art:", error);
+      toast.error("Error processing album art");
+      return null;
+    }
+  };
+
   const processFiles = async (files: File[]) => {
     const audioFiles = files.filter(file => file.type.startsWith('audio/'));
     
@@ -59,6 +140,12 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
         toast.error("You must be logged in to upload songs.");
         setIsUploading(false);
         return;
+      }
+
+      // Upload album art first if provided
+      let albumArtUrl: string | null = null;
+      if (albumArt) {
+        albumArtUrl = await uploadAlbumArt(session);
       }
 
       for (const file of audioFiles) {
@@ -105,11 +192,12 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
                   duration: durationInSeconds, // Store as integer
                   previewURL: publicUrl,
                   albumId: `local-album-${uniqueId}`,
-                  image: 'https://cdn.jamendo.com/default/default-track_200.jpg',
+                  // Prioritize album art, fallback to default placeholder (NOT artist image)
+                  image: albumArtUrl || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center',
                   artistId: `local-artist-${uniqueId}`
                 };
                 
-                console.log(`Track processed: ${newTrack.name}, duration: ${durationInSeconds} seconds`);
+                console.log(`Track processed: ${newTrack.name}, duration: ${durationInSeconds} seconds, image: ${newTrack.image}`);
                 
                 // Add track to local library for immediate use
                 addLocalTrack(newTrack);
@@ -153,15 +241,66 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
       toast.error("There was an error adding your songs. Please try again.");
     } finally {
       setIsUploading(false);
-      // Reset the file input
+      // Reset the file inputs
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      if (albumArtInputRef.current) {
+        albumArtInputRef.current.value = '';
+      }
+      // Reset album art state
+      setAlbumArt(null);
+      setAlbumArtPreview(null);
     }
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6">
+      {/* Album Art Upload Section */}
+      <div className="bg-spotify-elevated rounded-lg p-4 border border-gray-600">
+        <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+          <Image size={20} />
+          Album Art (Optional)
+        </h3>
+        <p className="text-sm text-gray-400 mb-4">
+          Upload album art for your track. Must be JPEG or PNG, minimum 500x500px.
+        </p>
+        
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => albumArtInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            Choose Album Art
+          </Button>
+          
+          {albumArtPreview && (
+            <div className="flex items-center gap-3">
+              <img 
+                src={albumArtPreview} 
+                alt="Album art preview" 
+                className="w-16 h-16 object-cover rounded border border-gray-500" 
+              />
+              <div className="text-sm">
+                <p className="text-green-400">✓ Album art ready</p>
+                <p className="text-gray-400">{albumArt?.name}</p>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <input
+          ref={albumArtInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png"
+          className="hidden"
+          onChange={handleAlbumArtSelect}
+          disabled={isUploading}
+        />
+      </div>
+
+      {/* Audio Upload Section */}
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           isDragging ? 'border-spotify-green bg-spotify-green bg-opacity-10' : 'border-gray-600 hover:border-gray-400'

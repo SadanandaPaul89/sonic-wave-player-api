@@ -8,10 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Track } from '@/services/supabaseService';
 import { publishSong, getUserArtistProfile } from '@/services/supabaseService';
-import { supabase, ARTIST_IMAGE_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
+import { supabase, SONG_BUCKET_NAME, getPublicUrl } from '@/lib/supabase';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, Image } from 'lucide-react';
 
 interface PublishSongFormProps {
   track?: Track;
@@ -35,6 +35,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
   const [error, setError] = useState<string | null>(null);
   const [existingArtist, setExistingArtist] = useState<any | null>(null);
   const [userHasArtist, setUserHasArtist] = useState<boolean>(false);
+  const [trackHasAlbumArt, setTrackHasAlbumArt] = useState<boolean>(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -46,7 +47,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
     },
   });
 
-  // Check if the user already has an artist profile
+  // Check if track has album art and if user has artist profile
   useEffect(() => {
     const checkUserArtist = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -62,7 +63,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
             form.setValue('bio', artistProfile.bio);
           }
           
-          // Use existing artist's image
+          // Use existing artist's image ONLY for artist profile
           if (artistProfile.image) {
             setArtistImage(artistProfile.image);
           }
@@ -70,18 +71,63 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       }
     };
     
+    // Check if track has album art (not default placeholder or artist image)
+    if (track?.image && 
+        track.image !== 'https://cdn.jamendo.com/default/default-track_200.jpg' &&
+        !track.image.includes('default-artist') &&
+        track.image !== 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f') {
+      setTrackHasAlbumArt(true);
+    }
+    
     checkUserArtist();
-  }, [form]);
+  }, [form, track]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Validate album art format and dimensions (same as SongUploader)
+  const validateAlbumArt = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Album art must be JPEG or PNG format");
+        resolve(false);
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Album art file size must be less than 10MB");
+        resolve(false);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        if (img.width < 500 || img.height < 500) {
+          toast.error("Album art must be at least 500x500 pixels");
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      };
+      img.onerror = () => {
+        toast.error("Invalid image file");
+        resolve(false);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setArtistImage(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      const isValid = await validateAlbumArt(file);
+      if (isValid) {
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setArtistImage(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+        toast.success("Album art updated successfully");
+      }
     }
   };
 
@@ -113,37 +159,38 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         return;
       }
       
-      setUploadProgress("Processing artist image...");
+      setUploadProgress("Processing album art...");
       
-      // Upload artist image if provided
-      let imageUrl = track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg';
+      // Determine final image URL priority:
+      // 1. Track's existing album art (if exists)
+      // 2. Newly uploaded album art (if provided)
+      // 3. Default placeholder (NOT artist image)
+      let imageUrl = track.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
       
+      // If user uploaded new album art, use that instead
       if (imageFile) {
         try {
           const fileExt = imageFile.name.split('.').pop();
-          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-          const filePath = `${user.id}/${fileName}`;
+          const fileName = `album-art-${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `${user.id}/album-art/${fileName}`;
           
-          setUploadProgress("Uploading artist image...");
+          setUploadProgress("Uploading album art...");
           
           const { data: uploadData, error: uploadError } = await supabase.storage
-            .from(ARTIST_IMAGE_BUCKET_NAME)
+            .from(SONG_BUCKET_NAME)
             .upload(filePath, imageFile);
             
           if (uploadError) {
-            console.error("Error uploading artist image:", uploadError);
-            toast.warning("Failed to upload artist image. Using default image instead.");
+            console.error("Error uploading album art:", uploadError);
+            toast.warning("Failed to upload new album art. Using existing image.");
           } else {
-            imageUrl = getPublicUrl(ARTIST_IMAGE_BUCKET_NAME, filePath);
-            setUploadProgress("Image uploaded successfully.");
+            imageUrl = getPublicUrl(SONG_BUCKET_NAME, filePath);
+            setUploadProgress("Album art uploaded successfully.");
           }
         } catch (imgError) {
-          console.error("Error processing image:", imgError);
-          toast.warning("Error processing image. Using default image instead.");
+          console.error("Error processing album art:", imgError);
+          toast.warning("Error processing album art. Using existing image.");
         }
-      } else if (existingArtist && existingArtist.image) {
-        // Use existing artist's image if no new image is uploaded
-        imageUrl = existingArtist.image;
       }
       
       setUploadProgress("Publishing song to database...");
@@ -151,6 +198,7 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
       // Ensure duration is an integer
       const durationInteger = Math.round(track.duration);
       console.log(`Using integer duration for publishing: ${durationInteger}`);
+      console.log(`Using album art URL: ${imageUrl}`);
       
       // Log the values we're sending to the publishSong function
       console.log("Publishing song with values:", { 
@@ -159,7 +207,8 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         albumName: values.albumName,
         duration: durationInteger,
         userId: user.id,
-        bio: values.bio || null
+        bio: values.bio || null,
+        albumArt: imageUrl
       });
       
       // Pass the bio to the publishSong function
@@ -169,14 +218,14 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
         values.albumName,
         track.previewURL,
         durationInteger, // Use integer duration
-        imageUrl,
+        imageUrl, // Use album art URL (NOT artist image)
         user.id,
         values.bio || null // Pass the bio value
       );
       
       if (result) {
         setUploadProgress("Song published successfully!");
-        toast.success("Your song has been published.");
+        toast.success("Your song has been published with album art.");
         if (onSuccess) {
           onSuccess();
         }
@@ -210,6 +259,17 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
               <p className="text-sm text-blue-600 dark:text-blue-400">
                 You already have an artist profile as <strong>{existingArtist?.name}</strong>. 
                 Your song will be published under this artist name.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {trackHasAlbumArt && (
+          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md flex items-start gap-2">
+            <Image className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-green-600 dark:text-green-400">
+                ✓ This track has album art that will be used as the main visual.
               </p>
             </div>
           </div>
@@ -285,21 +345,43 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
           )}
         />
         
-        {!userHasArtist && (
-          <div className="space-y-2">
-            <FormLabel>Artist Image</FormLabel>
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            {artistImage && (
-              <div className="mt-2">
-                <img 
-                  src={artistImage} 
-                  alt="Artist preview" 
-                  className="w-24 h-24 object-cover rounded-full" 
-                />
+        {/* Album Art Section - only show if user doesn't have artist or wants to override */}
+        <div className="space-y-2">
+          <FormLabel className="flex items-center gap-2">
+            <Image size={16} />
+            Album Art {trackHasAlbumArt ? "(Override existing)" : "(Optional)"}
+          </FormLabel>
+          
+          {track?.image && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded border">
+              <img 
+                src={track.image} 
+                alt="Current album art" 
+                className="w-16 h-16 object-cover rounded border border-gray-300" 
+              />
+              <div className="text-sm">
+                <p className="font-medium">Current Album Art</p>
+                <p className="text-gray-500">This will be used unless you upload a new one</p>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+          
+          <Input type="file" accept="image/jpeg,image/jpg,image/png" onChange={handleImageUpload} />
+          <p className="text-xs text-gray-400">
+            Upload new album art (JPEG/PNG, min 500x500px) to override the current image
+          </p>
+          
+          {artistImage && imageFile && (
+            <div className="mt-2">
+              <img 
+                src={artistImage} 
+                alt="New album art preview" 
+                className="w-24 h-24 object-cover rounded border border-green-500" 
+              />
+              <p className="text-xs text-green-600 mt-1">✓ New album art ready</p>
+            </div>
+          )}
+        </div>
         
         {uploadProgress && (
           <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800">

@@ -30,6 +30,21 @@ const Player: React.FC = () => {
   const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
+  // Function to get the correct track image (prioritize album art, never artist image)
+  const getTrackImage = (track: any): string => {
+    if (!track) return 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+    
+    // Always prioritize track's own image (album art)
+    if (track.image && 
+        !track.image.includes('default-artist') && 
+        track.image !== 'https://cdn.jamendo.com/default/default-artist_200.jpg') {
+      return track.image;
+    }
+    
+    // Fallback to default placeholder (NOT artist image)
+    return 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+  };
+
   // Handle mute toggle
   const toggleMute = () => {
     if (isMuted) {
@@ -68,6 +83,8 @@ const Player: React.FC = () => {
     );
   }
 
+  const trackImageUrl = getTrackImage(currentTrack);
+
   if (isMobile) {
     return (
       <>
@@ -79,9 +96,13 @@ const Player: React.FC = () => {
               onClick={() => setIsFullScreenOpen(true)}
             >
               <img
-                src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
-                alt={currentTrack.albumName}
+                src={trackImageUrl}
+                alt={`${currentTrack.name} album art`}
                 className="w-full h-full rounded object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+                }}
               />
             </div>
             <div className="truncate min-w-0">
@@ -149,9 +170,13 @@ const Player: React.FC = () => {
             onClick={() => setIsFullScreenOpen(true)}
           >
             <img
-              src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
-              alt={currentTrack.albumName}
+              src={trackImageUrl}
+              alt={`${currentTrack.name} album art`}
               className="w-full h-full rounded object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+              }}
             />
           </div>
           <div className="truncate">

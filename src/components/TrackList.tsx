@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Track } from '@/services/api';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -25,6 +26,19 @@ const TrackList: React.FC<TrackListProps> = ({
     }
   };
 
+  // Function to get the correct track image (prioritize album art)
+  const getTrackImage = (track: Track): string => {
+    // Always prioritize track's own image (album art)
+    if (track.image && 
+        !track.image.includes('default-artist') && 
+        track.image !== 'https://cdn.jamendo.com/default/default-artist_200.jpg') {
+      return track.image;
+    }
+    
+    // Fallback to default placeholder (NOT artist image)
+    return 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+  };
+
   if (!tracks || tracks.length === 0) {
     return (
       <div className="w-full flex flex-col items-center justify-center py-16 text-gray-400">
@@ -49,6 +63,7 @@ const TrackList: React.FC<TrackListProps> = ({
         {tracks.map((track, index) => {
           const isCurrentTrack = currentTrack && currentTrack.id === track.id;
           const isCurrentPlaying = isCurrentTrack && isPlaying;
+          const trackImageUrl = getTrackImage(track);
 
           return (
             <div 
@@ -73,7 +88,20 @@ const TrackList: React.FC<TrackListProps> = ({
                   </button>
                 </div>
               </div>
-              <div className="col-span-5 flex items-center truncate">
+              <div className="col-span-5 flex items-center gap-3 truncate">
+                {/* Track album art (not artist image) */}
+                <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
+                  <img
+                    src={trackImageUrl}
+                    alt={`${track.name} album art`}
+                    className="w-full h-full rounded object-cover"
+                    onError={(e) => {
+                      // If image fails to load, use default placeholder
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+                    }}
+                  />
+                </div>
                 <div className="truncate">
                   <div className="font-medium truncate">{track.name}</div>
                   <div className="text-sm text-gray-400 truncate">{track.artistName}</div>
