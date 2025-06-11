@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,7 +55,7 @@ const Player: React.FC = () => {
               onClick={() => setIsFullScreenOpen(true)}
             >
               <img
-                src={currentTrack.albumArt || currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
+                src={currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
                 alt={currentTrack.name}
                 className="w-full h-full rounded object-cover"
               />
