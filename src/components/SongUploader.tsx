@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, Plus, Music, Image } from 'lucide-react';
@@ -41,7 +40,7 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
       }
 
       // Check dimensions
-      const img = new Image();
+      const img = document.createElement('img') as HTMLImageElement;
       img.onload = () => {
         if (img.width < 500 || img.height < 500) {
           toast.error("Album art must be at least 500x500 pixels");
@@ -172,7 +171,7 @@ const SongUploader: React.FC<SongUploaderProps> = ({ onUploadComplete, onTrackUp
           const publicUrl = getPublicUrl(SONG_BUCKET_NAME, filePath);
           
           // Get metadata from the file
-          const audio = new Audio();
+          const audio = document.createElement('audio') as HTMLAudioElement;
           audio.src = publicUrl;
           
           await new Promise<void>((resolve, reject) => {
