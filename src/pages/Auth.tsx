@@ -10,9 +10,11 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -108,17 +110,21 @@ const Auth = () => {
   };
 
   return (
-    <div className="container flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-md bg-spotify-elevated">
+    <div className={`container flex items-center justify-center min-h-screen ${isMobile ? 'px-4 py-8' : ''}`}>
+      <Card className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} bg-spotify-elevated`}>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Welcome to Sonic Wave</CardTitle>
-          <CardDescription>Sign in or create an account to continue</CardDescription>
+          <CardTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center`}>
+            Welcome to Sonic Wave
+          </CardTitle>
+          <CardDescription className="text-center">
+            Sign in or create an account to continue
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsTrigger value="login" className={`${isMobile ? 'text-sm' : ''}`}>Login</TabsTrigger>
+              <TabsTrigger value="register" className={`${isMobile ? 'text-sm' : ''}`}>Register</TabsTrigger>
             </TabsList>
             
             {error && (
@@ -140,6 +146,7 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
+                    className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                 </div>
                 <div className="space-y-2">
@@ -151,9 +158,14 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
+                    className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className={`w-full ${isMobile ? 'h-12 text-base' : ''}`} 
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -178,6 +190,7 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
+                    className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                 </div>
                 <div className="space-y-2">
@@ -190,10 +203,15 @@ const Auth = () => {
                     required
                     minLength={6}
                     disabled={loading}
+                    className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                   <p className="text-xs text-gray-400">Password must be at least 6 characters</p>
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className={`w-full ${isMobile ? 'h-12 text-base' : ''}`} 
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

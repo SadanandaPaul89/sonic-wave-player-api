@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { getArtistById, isArtistVerified } from '@/services/localLibrary';
 import FullScreenPlayer from './FullScreenPlayer';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Player: React.FC = () => {
   const {
@@ -23,6 +24,7 @@ const Player: React.FC = () => {
     playPreviousTrack
   } = usePlayer();
   
+  const isMobile = useIsMobile();
   const [isMuted, setIsMuted] = useState(false);
   const [prevVolume, setPrevVolume] = useState(volume);
   const [isArtistVerifiedState, setIsArtistVerifiedState] = useState(false);
@@ -60,12 +62,83 @@ const Player: React.FC = () => {
 
   if (!currentTrack) {
     return (
-      <div className="h-20 border-t border-spotify-highlight bg-spotify-elevated px-4 flex items-center justify-center text-gray-400">
+      <div className={`${isMobile ? 'h-16' : 'h-20'} border-t border-spotify-highlight bg-spotify-elevated px-4 flex items-center justify-center text-gray-400`}>
         No track selected
       </div>
     );
   }
 
+  if (isMobile) {
+    return (
+      <>
+        <div className="h-16 border-t border-spotify-highlight bg-spotify-elevated px-3 flex items-center">
+          {/* Mobile Track Info */}
+          <div className="flex items-center flex-1 min-w-0 mr-3">
+            <div 
+              className="w-12 h-12 bg-gray-600 mr-3 rounded flex-shrink-0 cursor-pointer"
+              onClick={() => setIsFullScreenOpen(true)}
+            >
+              <img
+                src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                alt={currentTrack.albumName}
+                className="w-full h-full rounded object-cover"
+              />
+            </div>
+            <div className="truncate min-w-0">
+              <div 
+                className="text-sm font-medium truncate cursor-pointer"
+                onClick={() => setIsFullScreenOpen(true)}
+              >
+                {currentTrack.name}
+              </div>
+              <div className="flex items-center text-xs text-gray-400 truncate">
+                {currentTrack.artistId ? (
+                  <Link to={`/artist-profile/${currentTrack.artistId}`} className="hover:text-white transition-colors truncate">
+                    {currentTrack.artistName}
+                  </Link>
+                ) : (
+                  <span className="truncate">{currentTrack.artistName}</span>
+                )}
+                {isArtistVerifiedState && (
+                  <BadgeCheck size={12} className="ml-1 text-blue-500 flex-shrink-0" />
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile Controls */}
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={playPreviousTrack} 
+              className="p-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <SkipBack size={20} />
+            </button>
+            <button 
+              onClick={togglePlayPause} 
+              className="p-2 bg-white rounded-full text-black hover:scale-105 transition-transform"
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button 
+              onClick={playNextTrack} 
+              className="p-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <SkipForward size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Full Screen Player */}
+        <FullScreenPlayer 
+          isOpen={isFullScreenOpen}
+          onClose={() => setIsFullScreenOpen(false)}
+        />
+      </>
+    );
+  }
+
+  // Desktop layout
   return (
     <>
       <div className="h-20 border-t border-spotify-highlight bg-spotify-elevated px-4 flex items-center">

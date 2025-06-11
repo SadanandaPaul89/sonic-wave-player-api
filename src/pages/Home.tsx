@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { getTopArtists, getTopTracks, Artist, Track } from '@/services/supabaseService';
 import CardGrid from '@/components/CardGrid';
 import TrackList from '@/components/TrackList';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Home: React.FC = () => {
   const [topArtists, setTopArtists] = useState<Artist[]>([]);
   const [topTracks, setTopTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,8 +42,10 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="pb-20">
-      <h1 className="text-3xl font-bold mb-6">Welcome to Sonic Wave</h1>
+    <div className={`pb-20 ${isMobile ? 'px-4' : ''}`}>
+      <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-6`}>
+        Welcome to Sonic Wave
+      </h1>
       
       {topArtists.length > 0 && (
         <CardGrid
@@ -52,12 +56,12 @@ const Home: React.FC = () => {
             imageUrl: artist.image,
             type: 'artist' as const,
           }))}
-          cols={5}
+          cols={isMobile ? 2 : 5}
         />
       )}
       
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Top Tracks</h2>
+        <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4`}>Top Tracks</h2>
         <TrackList tracks={topTracks} />
       </div>
     </div>
