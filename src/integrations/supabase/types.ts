@@ -134,6 +134,48 @@ export type Database = {
           },
         ]
       }
+      song_likes: {
+        Row: {
+          created_at: string
+          id: string
+          song_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          song_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          song_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      song_plays: {
+        Row: {
+          id: string
+          played_at: string
+          song_id: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          played_at?: string
+          song_id: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          played_at?: string
+          song_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       songs: {
         Row: {
           album_id: string | null
@@ -143,7 +185,9 @@ export type Database = {
           duration: number
           id: string
           image_url: string | null
+          like_count: number | null
           name: string
+          play_count: number | null
           user_id: string | null
         }
         Insert: {
@@ -154,7 +198,9 @@ export type Database = {
           duration: number
           id?: string
           image_url?: string | null
+          like_count?: number | null
           name: string
+          play_count?: number | null
           user_id?: string | null
         }
         Update: {
@@ -165,7 +211,9 @@ export type Database = {
           duration?: number
           id?: string
           image_url?: string | null
+          like_count?: number | null
           name?: string
+          play_count?: number | null
           user_id?: string | null
         }
         Relationships: [

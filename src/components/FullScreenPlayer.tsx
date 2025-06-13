@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -20,7 +19,8 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { isArtistVerified, getLyricsBySongId } from '@/services/supabaseService';
+import { isArtistVerified, getLyricsBySongId, toggleSongLike, getSongLikeStatus } from '@/services/supabaseService';
+import { supabase } from '@/lib/supabase';
 import LyricsEditor from './LyricsEditor';
 
 interface FullScreenPlayerProps {
@@ -54,8 +54,19 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
   const [isLyricsDialogOpen, setIsLyricsDialogOpen] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if artist is verified and load lyrics
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+  }, []);
+
+  // Check if artist is verified, load lyrics, and check like status
   useEffect(() => {
     if (currentTrack && currentTrack.artistId) {
       const checkVerificationAndLoadLyrics = async () => {
@@ -73,14 +84,32 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         } finally {
           setIsLoadingLyrics(false);
         }
+
+        // Check if current track is liked
+        if (isAuthenticated) {
+          const likeStatus = await getSongLikeStatus(currentTrack.id);
+          setIsLiked(likeStatus);
+        }
       };
       
       checkVerificationAndLoadLyrics();
     } else {
       setIsArtistVerifiedState(false);
       setLyrics([]);
+      setIsLiked(false);
     }
-  }, [currentTrack]);
+  }, [currentTrack, isAuthenticated]);
+
+  // Handle like toggle
+  const handleLikeToggle = async () => {
+    if (!currentTrack || !isAuthenticated) {
+      console.log('User must be logged in to like songs');
+      return;
+    }
+    
+    const newLikeStatus = await toggleSongLike(currentTrack.id);
+    setIsLiked(newLikeStatus);
+  };
 
   // Handle mute toggle
   const toggleMute = () => {
@@ -227,8 +256,17 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           
           {/* Action Buttons - Reduced margin */}
           <div className="flex items-center justify-center space-x-8 mb-4">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-              <Heart size={24} />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleLikeToggle}
+              className={`text-white hover:bg-white/10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!isAuthenticated}
+            >
+              <Heart 
+                size={24} 
+                className={isLiked ? 'text-red-500 fill-current' : ''} 
+              />
             </Button>
             {isArtistVerifiedState && (
               <Button 

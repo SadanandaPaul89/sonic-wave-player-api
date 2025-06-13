@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Track } from '@/services/api';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause, Music } from 'lucide-react';
+import { Play, Pause, Music, Heart, Headphones } from 'lucide-react';
+import { toggleSongLike, getSongLikeStatus } from '@/services/supabaseService';
+import { supabase } from '@/lib/supabase';
 
 interface TrackListProps {
   tracks: Track[];
@@ -17,6 +19,35 @@ const TrackList: React.FC<TrackListProps> = ({
   showAlbum = true
 }) => {
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
+  const [likedTracks, setLikedTracks] = useState<Set<string>>(new Set());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+  }, []);
+
+  // Load liked status for all tracks
+  useEffect(() => {
+    const loadLikedStatus = async () => {
+      if (!isAuthenticated) return;
+      
+      const likedSet = new Set<string>();
+      for (const track of tracks) {
+        const isLiked = await getSongLikeStatus(track.id);
+        if (isLiked) {
+          likedSet.add(track.id);
+        }
+      }
+      setLikedTracks(likedSet);
+    };
+    
+    loadLikedStatus();
+  }, [tracks, isAuthenticated]);
 
   const handlePlayClick = (track: Track) => {
     if (currentTrack && currentTrack.id === track.id) {
@@ -24,6 +55,27 @@ const TrackList: React.FC<TrackListProps> = ({
     } else {
       playTrack(track);
     }
+  };
+
+  const handleLikeClick = async (track: Track, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      console.log('User must be logged in to like songs');
+      return;
+    }
+    
+    const isNowLiked = await toggleSongLike(track.id);
+    
+    setLikedTracks(prev => {
+      const newSet = new Set(prev);
+      if (isNowLiked) {
+        newSet.add(track.id);
+      } else {
+        newSet.delete(track.id);
+      }
+      return newSet;
+    });
   };
 
   // Function to get the correct track image (prioritize album art)
@@ -54,8 +106,9 @@ const TrackList: React.FC<TrackListProps> = ({
       {showHeader && (
         <div className="grid grid-cols-12 gap-4 px-4 py-2 border-b border-spotify-highlight text-gray-400 text-sm">
           <div className="col-span-1 text-center">#</div>
-          <div className="col-span-5">TITLE</div>
-          {showAlbum && <div className="col-span-4">ALBUM</div>}
+          <div className="col-span-4">TITLE</div>
+          {showAlbum && <div className="col-span-3">ALBUM</div>}
+          <div className="col-span-2 text-center">STATS</div>
           <div className="col-span-2 text-right">DURATION</div>
         </div>
       )}
@@ -64,6 +117,7 @@ const TrackList: React.FC<TrackListProps> = ({
           const isCurrentTrack = currentTrack && currentTrack.id === track.id;
           const isCurrentPlaying = isCurrentTrack && isPlaying;
           const trackImageUrl = getTrackImage(track);
+          const isLiked = likedTracks.has(track.id);
 
           return (
             <div 
@@ -88,7 +142,7 @@ const TrackList: React.FC<TrackListProps> = ({
                   </button>
                 </div>
               </div>
-              <div className="col-span-5 flex items-center gap-3 truncate">
+              <div className="col-span-4 flex items-center gap-3 truncate">
                 {/* Track album art (not artist image) */}
                 <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
                   <img
@@ -108,10 +162,26 @@ const TrackList: React.FC<TrackListProps> = ({
                 </div>
               </div>
               {showAlbum && (
-                <div className="col-span-4 flex items-center text-sm text-gray-400 truncate">
+                <div className="col-span-3 flex items-center text-sm text-gray-400 truncate">
                   {track.albumName}
                 </div>
               )}
+              <div className="col-span-2 flex items-center justify-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Heart 
+                    size={14} 
+                    className={`cursor-pointer transition-colors ${
+                      isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
+                    } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={(e) => handleLikeClick(track, e)}
+                  />
+                  <span>{track.like_count || 0}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Headphones size={14} />
+                  <span>{track.play_count || 0}</span>
+                </div>
+              </div>
               <div className="col-span-2 flex items-center justify-end text-sm text-gray-400">
                 {formatTime(track.duration)}
               </div>

@@ -4,7 +4,7 @@ import { Track as ApiTrack, Artist as ApiArtist, Album as ApiAlbum, Playlist } f
 
 // Export these types so they can be used by other components
 export type Artist = ApiArtist & { bio?: string, verification_status?: string }; // Add verification_status field to Artist type
-export type Track = ApiTrack;
+export type Track = ApiTrack & { like_count?: number, play_count?: number, is_liked?: boolean };
 export type Album = ApiAlbum;
 
 // Interface for Supabase data models
@@ -97,7 +97,9 @@ const mapSongFromSupabase = async (song: SupabaseSong): Promise<Track> => {
     albumId: song.album_id || '',
     duration: song.duration,
     previewURL: song.audio_url,
-    image: song.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: song.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+    like_count: song.like_count || 0,
+    play_count: song.play_count || 0
   };
 };
 
@@ -127,8 +129,26 @@ export const getTopTracks = async (limit = 20): Promise<Track[]> => {
     return [];
   }
   
-  // Map each song to a Track
-  const trackPromises = songs.map(mapSongFromSupabase);
+  // Map each song to a Track and check if user has liked it
+  const trackPromises = songs.map(async (song) => {
+    const track = await mapSongFromSupabase(song);
+    
+    // Check if current user has liked this song
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: like } = await supabase
+        .from('song_likes')
+        .select('id')
+        .eq('song_id', song.id)
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      
+      track.is_liked = !!like;
+    }
+    
+    return track;
+  });
+  
   return await Promise.all(trackPromises);
 };
 
@@ -992,6 +1012,96 @@ export const isArtistVerified = async (artistId: string): Promise<boolean> => {
     return artist.verification_status === 'verified';
   } catch (error) {
     console.error('Error in isArtistVerified:', error);
+    return false;
+  }
+};
+
+// Add like/unlike functionality
+export const toggleSongLike = async (songId: string): Promise<boolean> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('User must be logged in to like songs');
+      return false;
+    }
+    
+    // Check if user has already liked this song
+    const { data: existingLike } = await supabase
+      .from('song_likes')
+      .select('id')
+      .eq('song_id', songId)
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    
+    if (existingLike) {
+      // Unlike the song
+      const { error } = await supabase
+        .from('song_likes')
+        .delete()
+        .eq('id', existingLike.id);
+      
+      if (error) {
+        console.error('Error unliking song:', error);
+        return false;
+      }
+      return false; // Song is now unliked
+    } else {
+      // Like the song
+      const { error } = await supabase
+        .from('song_likes')
+        .insert({
+          song_id: songId,
+          user_id: session.user.id
+        });
+      
+      if (error) {
+        console.error('Error liking song:', error);
+        return false;
+      }
+      return true; // Song is now liked
+    }
+  } catch (error) {
+    console.error('Error toggling song like:', error);
+    return false;
+  }
+};
+
+// Add play tracking
+export const recordSongPlay = async (songId: string): Promise<void> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const { error } = await supabase
+      .from('song_plays')
+      .insert({
+        song_id: songId,
+        user_id: session?.user.id || null
+      });
+    
+    if (error) {
+      console.error('Error recording song play:', error);
+    }
+  } catch (error) {
+    console.error('Error recording song play:', error);
+  }
+};
+
+// Get song like status for current user
+export const getSongLikeStatus = async (songId: string): Promise<boolean> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return false;
+    
+    const { data: like } = await supabase
+      .from('song_likes')
+      .select('id')
+      .eq('song_id', songId)
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    
+    return !!like;
+  } catch (error) {
+    console.error('Error checking song like status:', error);
     return false;
   }
 };

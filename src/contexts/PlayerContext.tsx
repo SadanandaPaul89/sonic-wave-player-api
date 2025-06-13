@@ -1,6 +1,6 @@
-
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
+import { recordSongPlay } from '@/services/supabaseService';
 
 interface PlayerContextProps {
   currentTrack: Track | null;
@@ -29,6 +29,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [duration, setDuration] = useState(0);
   const [queue, setQueue] = useState<Track[]>([]);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
+  const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -77,6 +78,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     }
   }, [isPlaying]);
+  
+  // Record play when song starts playing
+  useEffect(() => {
+    if (isPlaying && currentTrack && !hasRecordedPlay && progress > 5) {
+      // Record play after 5 seconds of playback
+      recordSongPlay(currentTrack.id);
+      setHasRecordedPlay(true);
+    }
+  }, [isPlaying, currentTrack, hasRecordedPlay, progress]);
+  
+  // Reset play recording when track changes
+  useEffect(() => {
+    setHasRecordedPlay(false);
+  }, [currentTrack]);
   
   const playTrack = (track: Track) => {
     // Add current track to history if there is one
@@ -205,3 +220,5 @@ export const usePlayer = (): PlayerContextProps => {
   }
   return context;
 };
+
+export default PlayerProvider;
