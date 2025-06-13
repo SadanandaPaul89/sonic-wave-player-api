@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -201,7 +200,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   return (
     <div className="fixed inset-0 bg-black z-50 text-white overflow-hidden">
       {/* Dynamic Carousel Background */}
-      <div className="absolute inset-0 opacity-30">
+      <div className="absolute inset-0 opacity-20">
         <Carousel 
           className="w-full h-full"
           opts={{
@@ -213,11 +212,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             {backgroundImages.map((image, index) => (
               <CarouselItem key={index} className="h-full basis-full">
                 <div 
-                  className="w-full h-full bg-cover bg-center transition-transform duration-[8000ms] ease-linear transform scale-110 animate-pulse"
+                  className="w-full h-full bg-cover bg-center transition-all duration-[10000ms] ease-linear"
                   style={{
                     backgroundImage: `url(${image})`,
-                    filter: 'blur(60px) brightness(0.4)',
-                    animation: `slideBackground 20s infinite linear ${index * 4}s`,
+                    filter: 'blur(40px) brightness(0.3)',
+                    transform: `translateX(${index * -100}%) scale(1.1)`,
+                    animation: `smoothSlide 25s infinite linear ${index * 5}s`,
                   }}
                 />
               </CarouselItem>
@@ -226,34 +226,35 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         </Carousel>
       </div>
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-blue-900/10" />
+      {/* Professional Gradient Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-transparent to-blue-900/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 backdrop-blur-sm bg-black/10">
+        <div className="flex items-center justify-between p-6 backdrop-blur-xl bg-black/20">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-white hover:bg-white/20 backdrop-blur-sm"
+            className="text-white hover:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10"
           >
             <ChevronDown size={24} />
           </Button>
           
           <div className="text-center">
-            <div className="text-sm opacity-80">Playing from Sonic Wave</div>
+            <div className="text-sm opacity-70 font-medium">Playing from Sonic Wave</div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {isArtistVerifiedState && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={openLyricsEditor}
-                className="text-white hover:bg-white/20 backdrop-blur-sm"
+                className="text-white hover:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10"
               >
                 <Edit size={20} />
               </Button>
@@ -261,48 +262,49 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20 backdrop-blur-sm"
+              className="text-white hover:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10"
             >
               <MoreHorizontal size={24} />
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-col flex-1 px-6 pb-6">
-          {/* Album Art - Large with Glow Effect */}
-          <div className="flex-1 flex items-center justify-center mb-6">
+        <div className="flex flex-col flex-1 px-8 pb-8">
+          {/* Large Circular Album Art with Professional Glow */}
+          <div className="flex-1 flex items-center justify-center mb-8">
             <div className="relative">
-              <div className="w-80 h-80 max-w-[80vw] max-h-[50vh] rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 blur-3xl scale-110 animate-pulse" />
+              
+              {/* Main album container */}
+              <div className="relative w-80 h-80 max-w-[70vw] max-h-[40vh] rounded-full shadow-2xl overflow-hidden backdrop-blur-sm bg-gradient-to-br from-white/5 to-white/10 border border-white/20">
                 <img
                   src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
                   alt={currentTrack.albumName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-full"
                 />
               </div>
-              {/* Glow Effect */}
-              <div 
-                className="absolute inset-0 rounded-3xl opacity-20 blur-2xl -z-10"
-                style={{
-                  background: `radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 70%)`,
-                  transform: 'scale(1.1)',
-                }}
-              />
+              
+              {/* Inner reflection effect */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-transparent to-white/10" />
             </div>
           </div>
 
-          {/* Track Info */}
-          <div className="text-center mb-6 backdrop-blur-sm bg-black/10 rounded-2xl p-4">
-            <h1 className="text-3xl font-bold mb-2 truncate">{currentTrack.name}</h1>
-            <div className="flex items-center justify-center text-xl text-gray-300 mb-4">
+          {/* Track Info with Glass Effect */}
+          <div className="text-center mb-8 backdrop-blur-xl bg-black/30 rounded-3xl p-6 border border-white/10">
+            <h1 className="text-4xl font-bold mb-3 truncate bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+              {currentTrack.name}
+            </h1>
+            <div className="flex items-center justify-center text-xl text-gray-300 mb-6">
               <span className="truncate">{currentTrack.artistName}</span>
               {isArtistVerifiedState && (
-                <BadgeCheck size={20} className="ml-2 text-blue-400" />
+                <BadgeCheck size={24} className="ml-2 text-blue-400" />
               )}
             </div>
             
             {/* Action Buttons */}
-            <div className="flex items-center justify-center space-x-8">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+            <div className="flex items-center justify-center space-x-6">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
                 <Heart size={24} />
               </Button>
               {isArtistVerifiedState && (
@@ -310,31 +312,31 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost" 
                   size="icon" 
                   onClick={openLyricsEditor}
-                  className="text-white hover:bg-white/20"
+                  className="text-white hover:bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10"
                 >
                   <Edit size={24} />
                 </Button>
               )}
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-2xl backdrop-blur-sm border border-white/10">
                 <MoreHorizontal size={24} />
               </Button>
             </div>
           </div>
 
           {/* Lyrics Section */}
-          <div className="mb-6 text-center min-h-[100px] flex flex-col justify-center backdrop-blur-sm bg-black/10 rounded-2xl p-4">
+          <div className="mb-8 text-center min-h-[120px] flex flex-col justify-center backdrop-blur-xl bg-black/20 rounded-3xl p-6 border border-white/10">
             {isLoadingLyrics ? (
               <div className="text-xl text-gray-400">Loading lyrics...</div>
             ) : lyrics.length > 0 ? (
               <>
-                <div className="text-2xl font-semibold mb-2 text-white">
+                <div className="text-3xl font-bold mb-4 text-white leading-relaxed">
                   {getCurrentLyric()?.text || "♪ Instrumental ♪"}
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {getUpcomingLyrics().slice(0, 2).map((lyric, index) => (
                     <div 
                       key={index} 
-                      className={`text-lg transition-opacity duration-300 text-gray-400`}
+                      className={`text-lg transition-all duration-500 text-gray-400`}
                       style={{ opacity: Math.max(0.6 - index * 0.2, 0.2) }}
                     >
                       {lyric.text}
@@ -347,84 +349,78 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             )}
           </div>
 
-          {/* Progress Bar */}
-          <div className="mb-6 backdrop-blur-sm bg-black/10 rounded-2xl p-4">
+          {/* Progress Bar with Gradient */}
+          <div className="mb-8 backdrop-blur-xl bg-black/20 rounded-3xl p-6 border border-white/10">
             <Slider
               value={[progress]}
               max={duration || 100}
               step={0.1}
-              className="mb-2"
+              className="mb-3 [&>span:first-child]:bg-gradient-to-r [&>span:first-child]:from-purple-500 [&>span:first-child]:to-pink-500 [&>span:first-child]:h-2 [&>span:first-child]:rounded-full"
               onValueChange={handleProgressChange}
             />
-            <div className="flex justify-between text-sm text-gray-400">
+            <div className="flex justify-between text-sm text-gray-400 font-medium">
               <span>{formatTime(progress)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
-          {/* Main Controls */}
-          <div className="flex items-center justify-between mb-6 backdrop-blur-sm bg-black/20 rounded-2xl p-4">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <Shuffle size={20} />
+          {/* Floating Control Bar */}
+          <div className="flex items-center justify-between mb-6 backdrop-blur-xl bg-black/30 rounded-3xl p-6 border border-white/10 shadow-2xl">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-2xl transition-all duration-300">
+              <Shuffle size={24} />
             </Button>
             
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-8">
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={handlePreviousTrack}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/10 rounded-2xl transition-all duration-300 hover:scale-110"
               >
-                <SkipBack size={28} />
+                <SkipBack size={32} />
               </Button>
               
-              {/* Main Play/Pause Button with Glow */}
+              {/* Professional Play/Pause Button */}
               <div className="relative">
                 <button 
                   onClick={handlePlayPause}
-                  className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-2xl"
+                  className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:scale-105 transition-all duration-300 flex items-center justify-center shadow-2xl border-2 border-white/20"
                   type="button"
                 >
-                  {isPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
+                  {isPlaying ? <Pause size={36} /> : <Play size={36} className="ml-1" />}
                 </button>
-                <div 
-                  className="absolute inset-0 rounded-full opacity-30 blur-xl -z-10"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%)',
-                    transform: 'scale(1.2)',
-                  }}
-                />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/40 to-pink-500/40 blur-xl scale-125 -z-10 animate-pulse" />
               </div>
               
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={handleNextTrack}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/10 rounded-2xl transition-all duration-300 hover:scale-110"
               >
-                <SkipForward size={28} />
+                <SkipForward size={32} />
               </Button>
             </div>
             
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <Repeat size={20} />
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-2xl transition-all duration-300">
+              <Repeat size={24} />
             </Button>
           </div>
 
           {/* Volume Control */}
-          <div className="flex items-center justify-center space-x-4 backdrop-blur-sm bg-black/10 rounded-2xl p-4">
+          <div className="flex items-center justify-center space-x-4 backdrop-blur-xl bg-black/20 rounded-3xl p-4 border border-white/10">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={toggleMute}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/10 rounded-2xl"
             >
-              {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              {isMuted || volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
             </Button>
             <Slider 
               value={[volume * 100]}
               max={100}
-              className="w-32"
+              className="w-40 [&>span:first-child]:bg-gradient-to-r [&>span:first-child]:from-purple-500 [&>span:first-child]:to-pink-500 [&>span:first-child]:h-2 [&>span:first-child]:rounded-full"
               onValueChange={handleVolumeChange}
             />
           </div>
@@ -444,10 +440,10 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         </DialogContent>
       </Dialog>
 
-      <style jsx>{`
-        @keyframes slideBackground {
-          0% { transform: translateX(-100%) scale(1.1); }
-          100% { transform: translateX(100%) scale(1.1); }
+      <style>{`
+        @keyframes smoothSlide {
+          0% { transform: translateX(0) scale(1.1); }
+          100% { transform: translateX(-100%) scale(1.1); }
         }
       `}</style>
     </div>
