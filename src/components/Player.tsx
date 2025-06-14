@@ -9,6 +9,7 @@ import LyricsDisplay from '@/components/LyricsDisplay';
 import FullScreenPlayer from '@/components/FullScreenPlayer';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
+import ArtistNameWithBadge from "./ArtistNameWithBadge";
 
 const Player: React.FC = () => {
   const {
@@ -83,23 +84,25 @@ const Player: React.FC = () => {
             <div className="min-w-0 flex-1">
               <Link
                 to={`/artist/${currentTrack.artistId}`}
-                className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium truncate cursor-pointer hover:underline text-white`}
+                className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-white`}
                 tabIndex={0}
                 aria-label={`Go to artist: ${currentTrack.artistName}`}
                 onClick={(e) => e.stopPropagation()}
               >
-                {currentTrack.name}
+                <span className="sr-only">{currentTrack.name}</span>
+                <ArtistNameWithBadge
+                  artistId={currentTrack.artistId}
+                  artistName={currentTrack.name}
+                  plain
+                />
               </Link>
               <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>
-                <Link
-                  to={`/artist/${currentTrack.artistId}`}
+                <ArtistNameWithBadge
+                  artistId={currentTrack.artistId}
+                  artistName={currentTrack.artistName}
                   className="hover:underline text-gray-400"
-                  tabIndex={0}
-                  aria-label={`Go to artist: ${currentTrack.artistName}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {currentTrack.artistName}
-                </Link>
+                  linkToProfile
+                />
               </div>
             </div>
           </div>

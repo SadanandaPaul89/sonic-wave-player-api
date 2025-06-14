@@ -25,6 +25,7 @@ import { isArtistVerified, getLyricsBySongId, toggleSongLike, getSongLikeStatus 
 import { supabase } from '@/lib/supabase';
 import LyricsEditor from './LyricsEditor';
 import ShareModal from './ShareModal';
+import ArtistNameWithBadge from "./ArtistNameWithBadge";
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
@@ -408,18 +409,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold mb-2 truncate drop-shadow-lg">{currentTrack.name}</h1>
             <div className="flex items-center justify-center text-xl text-gray-200 mb-2">
-              <a
-                href={`/artist/${currentTrack.artistId}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <ArtistNameWithBadge
+                artistId={currentTrack.artistId}
+                artistName={currentTrack.artistName}
                 className="truncate hover:underline"
-                aria-label={`Go to artist: ${currentTrack.artistName}`}
-              >
-                {currentTrack.artistName}
-              </a>
-              {isArtistVerifiedState && (
-                <BadgeCheck size={20} className="ml-2 text-blue-400" />
-              )}
+                linkToProfile
+              />
             </div>
             
             {/* Action Buttons */}

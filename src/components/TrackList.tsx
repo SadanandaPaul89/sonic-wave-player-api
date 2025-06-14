@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import ShareModal from './ShareModal';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import ArtistNameWithBadge from "./ArtistNameWithBadge";
 
 interface TrackListProps {
   tracks: Track[];
@@ -166,7 +167,14 @@ const TrackList: React.FC<TrackListProps> = ({
                 </div>
                 <div className="truncate">
                   <div className="font-medium truncate">{track.name}</div>
-                  <div className="text-sm text-gray-400 truncate">{track.artistName}</div>
+                  <div className="text-sm text-gray-400 truncate">
+                    <ArtistNameWithBadge
+                      artistId={track.artistId}
+                      artistName={track.artistName}
+                      className="hover:underline"
+                      linkToProfile
+                    />
+                  </div>
                 </div>
               </div>
               {showAlbum && (
