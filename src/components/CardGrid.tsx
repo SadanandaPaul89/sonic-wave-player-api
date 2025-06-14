@@ -50,12 +50,26 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
     }
   };
 
+  // Helper: map title to a "See all" destination
+  const getSeeAllLink = () => {
+    // Normalize title for mapping
+    const normalized = title.trim().toLowerCase();
+    if (normalized.includes('artist')) return '/artists';
+    if (normalized.includes('album')) return '/albums';
+    if (normalized.includes('playlist')) return '/playlists';
+    // Can extend as needed for other types
+    return '/';
+  };
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-main">{title}</h2>
         {cards.length > 0 && (
-          <Link to="#" className="text-sm text-gray-400 hover:text-black">
+          <Link
+            to={getSeeAllLink()}
+            className="text-sm text-gray-400 hover:text-main transition-colors"
+          >
             See all
           </Link>
         )}
