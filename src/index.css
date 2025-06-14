@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -103,20 +102,35 @@
   }
 }
 
-/* Apple Music/Spotify style strong shadow for card elements */
+/* Apple Music/Spotify style strong shadow for card elements in LIGHT MODE ONLY */
 @layer components {
-  .music-card {
-    /* Deep shadow, pure black border in light mode for more visual lift */
+  :root .music-card {
+    /* Light mode: deep shadow, pure black border, very visible card */
     @apply border border-black shadow-[0_4px_24px_4px_rgba(0,0,0,0.12)] bg-white;
   }
-  .music-card .text-main, .music-card .main-title {
+  :root .music-card .main-title,
+  :root .music-card .text-main {
     @apply text-black;
+  }
+
+  /* In dark mode: subtle shadow, softer border, text inherits default colors */
+  .dark .music-card {
+    @apply border border-[#222] shadow-lg bg-card;
+  }
+  .dark .music-card .main-title,
+  .dark .music-card .text-main {
+    @apply text-white;
   }
 }
 
-/* Force pure black for important headings/titles in cards */
+/* Force pure black for important headings/titles in cards in light; softer in dark */
 .card-title,
 .artist-title,
 .album-title {
   color: #000 !important;
+}
+.dark .card-title,
+.dark .artist-title,
+.dark .album-title {
+  color: #FFF !important;
 }
