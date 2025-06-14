@@ -55,7 +55,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
   
-  // Update audio src when current track changes
   useEffect(() => {
     if (currentTrack && audioRef.current) {
       audioRef.current.src = currentTrack.previewURL;
@@ -66,14 +65,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [currentTrack]);
   
-  // Update volume when volume state changes
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
   
-  // Play/pause audio when isPlaying state changes
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -84,24 +81,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [isPlaying]);
   
-  // Record play when song starts playing
   useEffect(() => {
     if (isPlaying && currentTrack && !hasRecordedPlay && progress > 5) {
-      // Record play after 5 seconds of playback
       recordSongPlay(currentTrack.id);
       setHasRecordedPlay(true);
     }
   }, [isPlaying, currentTrack, hasRecordedPlay, progress]);
   
-  // Reset play recording when track changes
   useEffect(() => {
     setHasRecordedPlay(false);
   }, [currentTrack]);
   
   const playTrack = (track: Track) => {
-    // Add current track to history if there is one
     if (currentTrack) {
-      setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]); // Keep last 10 tracks
+      setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
     }
     setCurrentTrack(track);
     setIsPlaying(true);
@@ -140,20 +133,22 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const handleTrackEnd = () => {
     console.log('PlayerContext: Track ended, repeat mode:', repeatMode);
+    
     if (repeatMode === 'one') {
-      // Repeat current track
-      console.log('PlayerContext: Repeating current track');
+      console.log('PlayerContext: Repeating current track (mode: one)');
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         setProgress(0);
         audioRef.current.play().catch(e => console.error('Error repeating track:', e));
       }
-    } else if (repeatMode === 'all') {
-      // For repeat all mode, try to play next track from queue
+      return;
+    }
+    
+    if (repeatMode === 'all') {
       if (queue.length > 0) {
+        console.log('PlayerContext: Playing next track from queue (repeat all)');
         playNextTrack();
       } else {
-        // If no queue, restart current track
         console.log('PlayerContext: Repeat all - restarting current track (no queue)');
         if (audioRef.current) {
           audioRef.current.currentTime = 0;
@@ -161,15 +156,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           audioRef.current.play().catch(e => console.error('Error repeating track:', e));
         }
       }
+      return;
+    }
+    
+    if (queue.length > 0) {
+      console.log('PlayerContext: Playing next track from queue (repeat off)');
+      playNextTrack();
     } else {
-      // Repeat mode is 'off' - stop playing
       console.log('PlayerContext: Repeat off - stopping playback');
       setIsPlaying(false);
     }
   };
   
   const playNextTrack = () => {
-    console.log('PlayerContext: playNextTrack called, queue length:', queue.length, 'repeat mode:', repeatMode);
+    console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
     if (queue.length > 0) {
       const nextTrack = queue[0];
       const newQueue = queue.slice(1);
@@ -189,7 +189,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const newHistory = playHistory.slice(1);
       setPlayHistory(newHistory);
       
-      // Add current track back to the beginning of queue
       if (currentTrack) {
         setQueue(prev => [currentTrack, ...prev]);
       }
@@ -198,7 +197,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIsPlaying(true);
       console.log('PlayerContext: Playing previous track:', previousTrack.name);
     } else {
-      // If no history, just restart current track
       console.log('PlayerContext: No history, restarting current track');
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
