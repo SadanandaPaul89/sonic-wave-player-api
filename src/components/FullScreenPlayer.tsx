@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -371,7 +370,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 onClick={openLyricsEditor}
                 className="text-white hover:bg-white/10 transition-colors"
               >
-                <Edit size={20} />
+                <Edit size={24} />
               </Button>
             )}
             <Button
@@ -409,7 +408,15 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold mb-2 truncate drop-shadow-lg">{currentTrack.name}</h1>
             <div className="flex items-center justify-center text-xl text-gray-200 mb-2">
-              <span className="truncate">{currentTrack.artistName}</span>
+              <a
+                href={`/artist/${currentTrack.artistId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate hover:underline"
+                aria-label={`Go to artist: ${currentTrack.artistName}`}
+              >
+                {currentTrack.artistName}
+              </a>
               {isArtistVerifiedState && (
                 <BadgeCheck size={20} className="ml-2 text-blue-400" />
               )}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import LyricsDisplay from '@/components/LyricsDisplay';
 import FullScreenPlayer from '@/components/FullScreenPlayer';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom';
 
 const Player: React.FC = () => {
   const {
@@ -67,24 +67,40 @@ const Player: React.FC = () => {
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
-            <div 
+            <Link
+              to={`/artist/${currentTrack.artistId}`}
               className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gray-600 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform`}
-              onClick={() => setIsFullScreenOpen(true)}
+              tabIndex={0}
+              aria-label={`Go to artist: ${currentTrack.artistName}`}
+              onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
                 alt={currentTrack.name}
                 className="w-full h-full rounded object-cover"
               />
-            </div>
+            </Link>
             <div className="min-w-0 flex-1">
-              <div 
-                className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium truncate cursor-pointer hover:underline`}
-                onClick={() => setIsFullScreenOpen(true)}
+              <Link
+                to={`/artist/${currentTrack.artistId}`}
+                className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium truncate cursor-pointer hover:underline text-white`}
+                tabIndex={0}
+                aria-label={`Go to artist: ${currentTrack.artistName}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 {currentTrack.name}
+              </Link>
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>
+                <Link
+                  to={`/artist/${currentTrack.artistId}`}
+                  className="hover:underline text-gray-400"
+                  tabIndex={0}
+                  aria-label={`Go to artist: ${currentTrack.artistName}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {currentTrack.artistName}
+                </Link>
               </div>
-              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>{currentTrack.artistName}</div>
             </div>
           </div>
 
