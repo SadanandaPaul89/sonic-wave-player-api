@@ -35,15 +35,8 @@ interface SupabaseSong {
   audio_url: string;
   image_url: string;
   user_id?: string;
-}
-
-interface VerificationRequest {
-  id: string;
-  artist_id: string;
-  email: string;
-  reason: string;
-  created_at: string;
-  status: 'pending' | 'approved' | 'rejected';
+  like_count?: number;
+  play_count?: number;
 }
 
 // Helper functions to convert between Supabase and API types
