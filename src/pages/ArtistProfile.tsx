@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
@@ -84,6 +83,15 @@ const ArtistProfile: React.FC = () => {
 
   return (
     <div className="pb-20">
+      {/* --- DEBUG PANEL --- */}
+      <div className="bg-yellow-100 text-yellow-800 border border-yellow-300 rounded p-2 mx-4 my-2 text-xs mb-4">
+        <div><b>Debug Info:</b></div>
+        <div><b>verificationStatus:</b> {String(verificationStatus)}</div>
+        <div><b>hasPendingRequest:</b> {String(hasPendingRequest)}</div>
+        <div><b>artist.id:</b> {artist.id}</div>
+        <div><b>artist.name:</b> {artist.name}</div>
+      </div>
+
       <div className="relative mb-8">
         <div className={`${isMobile ? 'h-auto py-8' : 'h-80'} bg-gradient-to-b from-spotify-elevated to-spotify-base flex items-end`}>
           <div className="container px-4 md:px-6 pb-6">
