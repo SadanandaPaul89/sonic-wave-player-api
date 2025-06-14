@@ -80,11 +80,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
+        console.log('Playing audio, current src:', audioRef.current.src);
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(e => console.error('Error playing audio:', e));
         }
       } else {
+        console.log('Pausing audio');
         audioRef.current.pause();
       }
     }
@@ -141,90 +143,118 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  const restartCurrentTrack = useCallback(() => {
-    console.log('PlayerContext: Restarting current track - repeat mode:', repeatMode);
-    if (audioRef.current && currentTrack) {
-      console.log('PlayerContext: Audio element exists, restarting...');
+  const restartCurrentTrack = useCallback(async () => {
+    console.log('RESTART: Starting restart process, repeat mode:', repeatMode);
+    if (!audioRef.current || !currentTrack) {
+      console.log('RESTART: No audio ref or current track');
+      return;
+    }
+
+    try {
+      console.log('RESTART: Pausing and resetting audio');
+      audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setProgress(0);
       
-      // Ensure we're in playing state
+      // Reload the audio source to ensure it's fresh
+      console.log('RESTART: Reloading audio source');
+      audioRef.current.load();
+      
+      // Wait for the audio to be ready
+      await new Promise((resolve) => {
+        const onCanPlay = () => {
+          console.log('RESTART: Audio ready to play');
+          audioRef.current?.removeEventListener('canplay', onCanPlay);
+          resolve(true);
+        };
+        audioRef.current?.addEventListener('canplay', onCanPlay);
+        
+        // Fallback timeout
+        setTimeout(() => {
+          console.log('RESTART: Timeout waiting for canplay, proceeding anyway');
+          audioRef.current?.removeEventListener('canplay', onCanPlay);
+          resolve(true);
+        }, 1000);
+      });
+      
+      console.log('RESTART: Setting isPlaying to true');
       setIsPlaying(true);
       
-      // Force play the audio
-      setTimeout(() => {
-        if (audioRef.current) {
-          const playPromise = audioRef.current.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                console.log('PlayerContext: Track restarted successfully');
-              })
-              .catch(e => {
-                console.error('Error restarting track:', e);
-                // Try to reload and play again
-                audioRef.current?.load();
-                setTimeout(() => {
-                  audioRef.current?.play().catch(err => console.error('Second restart attempt failed:', err));
-                }, 100);
-              });
-          }
-        }
-      }, 50);
+      // Play the audio
+      console.log('RESTART: Attempting to play');
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+        console.log('RESTART: Successfully restarted track');
+      }
+    } catch (error) {
+      console.error('RESTART: Error restarting track:', error);
+      // Try a simpler approach as fallback
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        setProgress(0);
+        setIsPlaying(true);
+        setTimeout(() => {
+          audioRef.current?.play().catch(e => console.error('RESTART: Fallback play failed:', e));
+        }, 100);
+      }
     }
   }, [currentTrack, repeatMode]);
   
   const handleTrackEnd = useCallback(() => {
-    console.log('PlayerContext: Track ended, repeat mode:', repeatMode, 'isHandling:', isHandlingTrackEndRef.current);
+    console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'isHandling:', isHandlingTrackEndRef.current);
     
     // Prevent multiple simultaneous calls
     if (isHandlingTrackEndRef.current) {
-      console.log('PlayerContext: Already handling track end, ignoring');
+      console.log('TRACK_END: Already handling track end, ignoring');
       return;
     }
     
     isHandlingTrackEndRef.current = true;
     
-    if (repeatMode === 'one') {
-      console.log('PlayerContext: Repeating current track (mode: one)');
-      restartCurrentTrack();
-    } else if (repeatMode === 'all') {
-      if (queue.length > 0) {
-        console.log('PlayerContext: Playing next track from queue (repeat all)');
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        setQueue(newQueue);
-        if (currentTrack) {
-          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-        }
-        setCurrentTrack(nextTrack);
-        setIsPlaying(true);
-      } else {
-        console.log('PlayerContext: Repeat all - restarting current track (no queue)');
-        restartCurrentTrack();
-      }
-    } else {
-      // Repeat mode is 'off'
-      if (queue.length > 0) {
-        console.log('PlayerContext: Playing next track from queue (repeat off)');
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        setQueue(newQueue);
-        if (currentTrack) {
-          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-        }
-        setCurrentTrack(nextTrack);
-        setIsPlaying(true);
-      } else {
-        console.log('PlayerContext: Repeat off - stopping playback');
-        setIsPlaying(false);
-      }
-    }
-    
-    // Reset the flag after a small delay
+    // Set a timeout to handle the track end logic
     setTimeout(() => {
+      console.log('TRACK_END: Processing track end with repeat mode:', repeatMode);
+      
+      if (repeatMode === 'one') {
+        console.log('TRACK_END: Repeat ONE - restarting current track');
+        restartCurrentTrack();
+      } else if (repeatMode === 'all') {
+        if (queue.length > 0) {
+          console.log('TRACK_END: Repeat ALL - playing next track from queue');
+          const nextTrack = queue[0];
+          const newQueue = queue.slice(1);
+          setQueue(newQueue);
+          if (currentTrack) {
+            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+          }
+          setCurrentTrack(nextTrack);
+          setIsPlaying(true);
+        } else {
+          console.log('TRACK_END: Repeat ALL - no queue, restarting current track');
+          restartCurrentTrack();
+        }
+      } else {
+        // Repeat mode is 'off'
+        if (queue.length > 0) {
+          console.log('TRACK_END: Repeat OFF - playing next track from queue');
+          const nextTrack = queue[0];
+          const newQueue = queue.slice(1);
+          setQueue(newQueue);
+          if (currentTrack) {
+            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+          }
+          setCurrentTrack(nextTrack);
+          setIsPlaying(true);
+        } else {
+          console.log('TRACK_END: Repeat OFF - stopping playback');
+          setIsPlaying(false);
+        }
+      }
+      
+      // Reset the flag
       isHandlingTrackEndRef.current = false;
-    }, 200);
+    }, 100);
   }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
   
   const playNextTrack = () => {
