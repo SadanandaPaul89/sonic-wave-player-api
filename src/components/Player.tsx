@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1, Share } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -7,7 +8,6 @@ import { formatTime } from '@/utils/formatTime';
 import { useIsMobile } from '@/hooks/use-mobile';
 import LyricsDisplay from '@/components/LyricsDisplay';
 import FullScreenPlayer from '@/components/FullScreenPlayer';
-import ShareModal from '@/components/ShareModal';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const Player: React.FC = () => {
@@ -29,7 +29,6 @@ const Player: React.FC = () => {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
-  const [isShareOpen, setIsShareOpen] = useState(false);
   const isMobile = useIsMobile();
 
   if (!currentTrack) {
@@ -151,8 +150,8 @@ const Player: React.FC = () => {
             )}
           </div>
 
-          {/* Volume, Lyrics, Share, and Full Screen Controls */}
-          <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'} flex-1 justify-end ${isMobile ? 'max-w-[100px]' : ''}`}>
+          {/* Volume, Lyrics, and Full Screen Controls */}
+          <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'} flex-1 justify-end ${isMobile ? 'max-w-[80px]' : ''}`}>
             {!isMobile && (
               <div className="flex items-center space-x-2">
                 <Button
@@ -183,17 +182,6 @@ const Player: React.FC = () => {
                 )}
               </div>
             )}
-
-            {/* Share Button */}
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "icon"}
-              onClick={() => setIsShareOpen(true)}
-              className="text-gray-400 hover:text-white"
-              title="Share Track"
-            >
-              <Share size={isMobile ? 16 : 20} />
-            </Button>
 
             {/* Lyrics Button */}
             <Dialog open={isLyricsOpen} onOpenChange={setIsLyricsOpen}>
@@ -248,13 +236,6 @@ const Player: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Share Modal */}
-      <ShareModal
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
-        track={currentTrack}
-      />
 
       {/* Full Screen Player */}
       <FullScreenPlayer
