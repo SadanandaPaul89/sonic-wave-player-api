@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Track } from '@/services/supabaseService';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -166,7 +167,9 @@ const TrackList: React.FC<TrackListProps> = ({
                   />
                 </div>
                 <div className="truncate">
+                  {/* Track name: PLAIN - no badge! */}
                   <div className="font-medium truncate">{track.name}</div>
+                  {/* Artist name: WITH BADGE */}
                   <div className="text-sm text-gray-400 truncate">
                     <ArtistNameWithBadge
                       artistId={track.artistId}
@@ -242,3 +245,4 @@ const TrackList: React.FC<TrackListProps> = ({
 };
 
 export default TrackList;
+
