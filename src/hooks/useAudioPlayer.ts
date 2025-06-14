@@ -55,14 +55,8 @@ export const useAudioPlayer = ({
       console.log('Loading track:', currentTrack.name);
       audioRef.current.src = currentTrack.previewURL;
       audioRef.current.load();
-      if (isPlaying) {
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => console.error('Error playing audio:', e));
-        }
-      }
     }
-  }, [currentTrack, isPlaying]);
+  }, [currentTrack]);
   
   useEffect(() => {
     if (audioRef.current) {
@@ -71,7 +65,7 @@ export const useAudioPlayer = ({
   }, [volume]);
   
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && currentTrack) {
       if (isPlaying) {
         console.log('Playing audio, current src:', audioRef.current.src);
         const playPromise = audioRef.current.play();
@@ -83,7 +77,7 @@ export const useAudioPlayer = ({
         audioRef.current.pause();
       }
     }
-  }, [isPlaying]);
+  }, [isPlaying, currentTrack]);
 
   const seekTo = useCallback((position: number) => {
     if (audioRef.current) {
