@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -139,7 +140,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         setProgress(0);
-        audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+        // Force a small delay to ensure the audio element is ready
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+          }
+        }, 100);
       }
       return;
     }
@@ -153,12 +159,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (audioRef.current) {
           audioRef.current.currentTime = 0;
           setProgress(0);
-          audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+          // Force a small delay to ensure the audio element is ready
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+            }
+          }, 100);
         }
       }
       return;
     }
     
+    // Repeat mode is 'off'
     if (queue.length > 0) {
       console.log('PlayerContext: Playing next track from queue (repeat off)');
       playNextTrack();
