@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			colors: {
-				// CSS Variable-based Spotify Colors that adapt to theme
+				// CSS Variable-based colors that adapt to theme
 				spotify: {
 					base: 'hsl(var(--spotify-base))',
 					elevated: 'hsl(var(--spotify-elevated))',
