@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -35,16 +36,76 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
   
-  // Repeat Modes - using your exact pattern
+  // Repeat Modes
   const repeatModes: RepeatMode[] = ['off', 'all', 'one'];
   const [repeatIndex, setRepeatIndex] = useState(0); // 0 = off
   const repeatMode = repeatModes[repeatIndex];
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isHandlingTrackEndRef = useRef(false);
+  
+  // Handle track end with your exact logic
+  const handleTrackEnd = useCallback(() => {
+    console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
+    
+    if (repeatMode === 'one') {
+      // Repeat current track
+      console.log('TRACK_END: Repeating current track');
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
+      }
+    } else if (repeatMode === 'all') {
+      // Play next track, loop if needed
+      console.log('TRACK_END: Repeat all mode');
+      if (queue.length > 0) {
+        console.log('TRACK_END: Playing next track from queue');
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        loadAndPlay(nextTrack);
+      } else {
+        console.log('TRACK_END: No queue, restarting current track for repeat all');
+        if (audioRef.current && currentTrack) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        }
+      }
+    } else if (repeatMode === 'off') {
+      // Play next or stop
+      console.log('TRACK_END: Repeat off mode');
+      if (queue.length > 0) {
+        console.log('TRACK_END: Playing next track');
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        loadAndPlay(nextTrack);
+      } else {
+        console.log('TRACK_END: No more tracks, stopping');
+        // Stop
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        setIsPlaying(false);
+        setProgress(0);
+      }
+    }
+  }, [repeatMode, queue, currentTrack]);
   
   useEffect(() => {
     audioRef.current = new Audio();
+    
+    const updateProgress = () => {
+      if (audioRef.current) {
+        setProgress(audioRef.current.currentTime);
+      }
+    };
+    
+    const setAudioDuration = () => {
+      if (audioRef.current) {
+        setDuration(audioRef.current.duration);
+      }
+    };
     
     audioRef.current.addEventListener('timeupdate', updateProgress);
     audioRef.current.addEventListener('loadedmetadata', setAudioDuration);
@@ -58,7 +119,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         audioRef.current.pause();
       }
     };
-  }, []);
+  }, [handleTrackEnd]);
   
   useEffect(() => {
     if (currentTrack && audioRef.current) {
@@ -106,7 +167,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setHasRecordedPlay(false);
   }, [currentTrack]);
   
-  // Load and play function equivalent
+  // Load and play function
   const loadAndPlay = (track: Track) => {
     console.log('Loading and playing track:', track.name);
     if (currentTrack) {
@@ -132,75 +193,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setVolume(Math.max(0, Math.min(1, level)));
   };
   
-  const updateProgress = () => {
-    if (audioRef.current) {
-      setProgress(audioRef.current.currentTime);
-    }
-  };
-  
-  const setAudioDuration = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
-    }
-  };
-  
   const seekToPosition = (position: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = position;
       setProgress(position);
     }
   };
-
-  // Check if current track is the last in queue
-  const isLastTrack = () => {
-    return queue.length === 0;
-  };
-  
-  // Your exact repeat logic implemented
-  const handleTrackEnd = useCallback(() => {
-    console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
-    
-    if (repeatMode === 'one') {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(e => console.error('Error restarting track:', e));
-        }
-      }
-    } else if (repeatMode === 'all') {
-      if (queue.length > 0) {
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        setQueue(newQueue);
-        loadAndPlay(nextTrack);
-      } else {
-        // Loop back to current track for repeat all when no queue
-        if (audioRef.current && currentTrack) {
-          audioRef.current.currentTime = 0;
-          const playPromise = audioRef.current.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(e => console.error('Error restarting track:', e));
-          }
-        }
-      }
-    } else if (repeatMode === 'off') {
-      if (!isLastTrack()) {
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        setQueue(newQueue);
-        loadAndPlay(nextTrack);
-      } else {
-        // Stop
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        }
-        setIsPlaying(false);
-        setProgress(0);
-      }
-    }
-  }, [repeatMode, queue, currentTrack]);
   
   const playNextTrack = () => {
     console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
@@ -247,7 +245,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  // Toggle repeat mode - using your exact pattern
+  // Toggle repeat mode: off -> all -> one -> off
   const toggleRepeatMode = () => {
     setRepeatIndex(prev => {
       const newIndex = (prev + 1) % repeatModes.length;
