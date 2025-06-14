@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -142,58 +141,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setProgress(position);
     }
   };
-  
-  const restartCurrentTrack = useCallback(async () => {
-    console.log('RESTART: Starting restart process for repeat one mode');
-    if (!audioRef.current || !currentTrack) {
-      console.log('RESTART: No audio ref or current track');
-      return;
-    }
 
-    try {
-      console.log('RESTART: Pausing and resetting audio');
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setProgress(0);
-      
-      console.log('RESTART: Reloading audio source');
-      audioRef.current.load();
-      
-      await new Promise((resolve) => {
-        const onCanPlay = () => {
-          console.log('RESTART: Audio ready to play');
-          audioRef.current?.removeEventListener('canplay', onCanPlay);
-          resolve(true);
-        };
-        audioRef.current?.addEventListener('canplay', onCanPlay);
-        
-        setTimeout(() => {
-          console.log('RESTART: Timeout waiting for canplay, proceeding anyway');
-          audioRef.current?.removeEventListener('canplay', onCanPlay);
-          resolve(true);
-        }, 1000);
-      });
-      
-      console.log('RESTART: Setting isPlaying to true and playing');
-      setIsPlaying(true);
-      
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-        console.log('RESTART: Successfully restarted track for repeat one');
-      }
-    } catch (error) {
-      console.error('RESTART: Error restarting track:', error);
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        setProgress(0);
-        setIsPlaying(true);
-        setTimeout(() => {
-          audioRef.current?.play().catch(e => console.error('RESTART: Fallback play failed:', e));
-        }, 100);
-      }
-    }
-  }, [currentTrack]);
+  const isLastTrack = () => {
+    return queue.length === 0;
+  };
   
   const handleTrackEnd = useCallback(() => {
     console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
@@ -206,39 +157,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isHandlingTrackEndRef.current = true;
     
     setTimeout(() => {
-      console.log('TRACK_END: Processing track end with repeat mode:', repeatMode);
-      
       if (repeatMode === 'one') {
         console.log('TRACK_END: Repeat ONE - restarting current track');
-        restartCurrentTrack().finally(() => {
-          isHandlingTrackEndRef.current = false;
-        });
-        return;
-      }
-      
-      if (repeatMode === 'all') {
-        if (queue.length > 0) {
-          console.log('TRACK_END: Repeat ALL - playing next track from queue');
-          const nextTrack = queue[0];
-          const newQueue = queue.slice(1);
-          setQueue(newQueue);
-          if (currentTrack) {
-            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          setProgress(0);
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => console.error('Error restarting track:', e));
           }
-          setCurrentTrack(nextTrack);
-          setIsPlaying(true);
-        } else {
-          console.log('TRACK_END: Repeat ALL - no queue, restarting current track');
-          restartCurrentTrack().finally(() => {
-            isHandlingTrackEndRef.current = false;
-          });
-          return;
         }
-      }
-      
-      if (repeatMode === 'off') {
+      } else if (repeatMode === 'all') {
+        console.log('TRACK_END: Repeat ALL mode');
         if (queue.length > 0) {
-          console.log('TRACK_END: Repeat OFF - playing next track from queue');
+          console.log('TRACK_END: Playing next track from queue');
           const nextTrack = queue[0];
           const newQueue = queue.slice(1);
           setQueue(newQueue);
@@ -248,18 +180,41 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setCurrentTrack(nextTrack);
           setIsPlaying(true);
         } else {
-          console.log('TRACK_END: Repeat OFF - no queue, stopping playback');
+          console.log('TRACK_END: No queue, restarting current track for repeat all');
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            setProgress(0);
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(e => console.error('Error restarting track:', e));
+            }
+          }
+        }
+      } else if (repeatMode === 'off') {
+        console.log('TRACK_END: Repeat OFF mode');
+        if (isLastTrack()) {
+          console.log('TRACK_END: Last track, stopping playback');
           setIsPlaying(false);
           setProgress(0);
           if (audioRef.current) {
             audioRef.current.currentTime = 0;
           }
+        } else {
+          console.log('TRACK_END: Playing next track from queue');
+          const nextTrack = queue[0];
+          const newQueue = queue.slice(1);
+          setQueue(newQueue);
+          if (currentTrack) {
+            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+          }
+          setCurrentTrack(nextTrack);
+          setIsPlaying(true);
         }
       }
       
       isHandlingTrackEndRef.current = false;
-    }, 100);
-  }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
+    }, 50);
+  }, [repeatMode, queue, currentTrack]);
   
   const playNextTrack = () => {
     console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
@@ -271,7 +226,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
     } else if (repeatMode === 'all' && currentTrack) {
       console.log('PlayerContext: Repeat all - restarting current track');
-      restartCurrentTrack();
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        setProgress(0);
+        setIsPlaying(true);
+      }
     } else {
       console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
@@ -294,7 +253,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('PlayerContext: Playing previous track:', previousTrack.name);
     } else {
       console.log('PlayerContext: No history, restarting current track');
-      restartCurrentTrack();
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        setProgress(0);
+        setIsPlaying(true);
+      }
     }
   };
   
