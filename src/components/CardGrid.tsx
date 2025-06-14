@@ -53,14 +53,14 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-black">{title}</h2>
+        <h2 className="text-2xl font-bold text-main">{title}</h2>
         {cards.length > 0 && (
           <Link to="#" className="text-sm text-gray-400 hover:text-black">
             See all
           </Link>
         )}
       </div>
-      
+
       {cards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 bg-spotify-elevated rounded-md">
           {getEmptyStateIcon()}
@@ -83,7 +83,7 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
                 />
               </div>
               {/* main-title guarantees text-black via CSS */}
-              <h3 className="main-title font-medium truncate text-black">{card.name}</h3>
+              <h3 className="main-title font-medium truncate">{card.name}</h3>
               {card.description && (
                 <p className="text-sm text-gray-600 mt-1 line-clamp-2">{card.description}</p>
               )}
