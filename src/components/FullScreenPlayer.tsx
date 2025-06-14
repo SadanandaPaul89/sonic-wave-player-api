@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -34,6 +33,94 @@ interface LyricLine {
   text: string;
 }
 
+// Utility function to extract dominant colors from an image
+const extractDominantColors = (imageUrl: string): Promise<{ primary: string; secondary: string; accent: string }> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        resolve({ primary: '240, 15%, 15%', secondary: '260, 20%, 20%', accent: '280, 25%, 25%' });
+        return;
+      }
+      
+      // Resize for faster processing
+      const size = 50;
+      canvas.width = size;
+      canvas.height = size;
+      
+      ctx.drawImage(img, 0, 0, size, size);
+      const imageData = ctx.getImageData(0, 0, size, size);
+      const data = imageData.data;
+      
+      // Simple color extraction - get average RGB
+      let r = 0, g = 0, b = 0;
+      const pixelCount = data.length / 4;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+      }
+      
+      r = Math.floor(r / pixelCount);
+      g = Math.floor(g / pixelCount);
+      b = Math.floor(b / pixelCount);
+      
+      // Convert to HSL for better color manipulation
+      const hsl = rgbToHsl(r, g, b);
+      
+      // Create complementary colors
+      const primary = `${hsl.h}, ${Math.max(40, hsl.s)}%, ${Math.max(15, Math.min(30, hsl.l))}%`;
+      const secondary = `${(hsl.h + 30) % 360}, ${Math.max(35, hsl.s - 10)}%, ${Math.max(10, Math.min(25, hsl.l - 5))}%`;
+      const accent = `${(hsl.h + 60) % 360}, ${Math.max(30, hsl.s - 20)}%, ${Math.max(8, Math.min(20, hsl.l - 10))}%`;
+      
+      resolve({ primary, secondary, accent });
+    };
+    
+    img.onerror = () => {
+      resolve({ primary: '240, 15%, 15%', secondary: '260, 20%, 20%', accent: '280, 25%, 25%' });
+    };
+    
+    img.src = imageUrl;
+  });
+};
+
+// RGB to HSL conversion
+const rgbToHsl = (r: number, g: number, b: number) => {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+      default: h = 0;
+    }
+    h /= 6;
+  }
+  
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
+};
+
 const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) => {
   const {
     currentTrack,
@@ -57,6 +144,20 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const [isLyricsDialogOpen, setIsLyricsDialogOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [dominantColors, setDominantColors] = useState({ 
+    primary: '240, 15%, 15%', 
+    secondary: '260, 20%, 20%', 
+    accent: '280, 25%, 25%' 
+  });
+
+  // Extract colors from album art when track changes
+  useEffect(() => {
+    if (currentTrack?.image) {
+      extractDominantColors(currentTrack.image).then(setDominantColors);
+    } else {
+      setDominantColors({ primary: '240, 15%, 15%', secondary: '260, 20%, 20%', accent: '280, 25%, 25%' });
+    }
+  }, [currentTrack?.image]);
 
   // Check authentication status
   useEffect(() => {
@@ -193,96 +294,37 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     setIsLyricsDialogOpen(false);
   };
 
-  // Memoized background styles for better performance
+  // Optimized background styles with extracted colors
   const backgroundStyle = useMemo(() => {
-    const baseHue = isPlaying ? 270 : 240;
-    const intensity = isPlaying ? 1 : 0.6;
+    const intensity = isPlaying ? 1 : 0.7;
     
     return {
       background: `linear-gradient(135deg, 
-        hsl(${baseHue}, ${60 * intensity}%, ${30 * intensity}%) 0%,
-        hsl(${baseHue + 20}, ${65 * intensity}%, ${25 * intensity}%) 25%,
-        hsl(${baseHue - 20}, ${70 * intensity}%, ${20 * intensity}%) 50%,
-        hsl(${baseHue + 30}, ${55 * intensity}%, ${22 * intensity}%) 75%,
-        hsl(${baseHue - 40}, ${45 * intensity}%, ${15 * intensity}%) 100%)`,
-      transition: 'background 2s cubic-bezier(0.4, 0.0, 0.2, 1)'
+        hsl(${dominantColors.primary}) 0%,
+        hsl(${dominantColors.secondary}) 40%,
+        hsl(${dominantColors.accent}) 100%)`,
+      opacity: intensity,
+      transition: 'background 1.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 1s ease'
     };
-  }, [isPlaying]);
-
-  // Simplified ambient orbs with CSS animations instead of JS calculations
-  const orbStyles = useMemo(() => {
-    const opacity = isPlaying ? 0.15 : 0.08;
-    const scale = isPlaying ? 1.2 : 1;
-    
-    return {
-      orb1: {
-        background: `radial-gradient(circle, 
-          hsl(280, 70%, 50%) 0%,
-          hsl(320, 60%, 40%) 50%,
-          transparent 70%)`,
-        opacity,
-        transform: `scale(${scale})`,
-        transition: 'opacity 2s ease, transform 3s ease',
-      },
-      orb2: {
-        background: `radial-gradient(circle, 
-          hsl(240, 75%, 45%) 0%,
-          hsl(200, 65%, 35%) 50%,
-          transparent 70%)`,
-        opacity: opacity * 0.8,
-        transform: `scale(${scale * 0.9})`,
-        transition: 'opacity 2.5s ease, transform 3.5s ease',
-      }
-    };
-  }, [isPlaying]);
+  }, [dominantColors, isPlaying]);
 
   if (!isOpen || !currentTrack) return null;
 
   return (
     <div className="fixed inset-0 z-50 text-white overflow-hidden">
-      {/* Optimized Background */}
+      {/* Dynamic Background based on album art */}
       <div className="absolute inset-0">
-        {/* Base gradient with smooth transitions */}
         <div 
           className="absolute inset-0"
           style={backgroundStyle}
         />
         
-        {/* Simplified floating orbs */}
-        <div 
-          className="absolute w-96 h-96 rounded-full blur-3xl animate-pulse"
-          style={{
-            ...orbStyles.orb1,
-            left: '10%',
-            top: '20%',
-            animationDuration: '4s'
-          }}
-        />
-        
-        <div 
-          className="absolute w-80 h-80 rounded-full blur-3xl animate-pulse"
-          style={{
-            ...orbStyles.orb2,
-            right: '15%',
-            bottom: '25%',
-            animationDuration: '6s',
-            animationDelay: '2s'
-          }}
-        />
-        
-        {/* Subtle overlay */}
-        <div 
-          className="absolute inset-0 transition-opacity duration-1000"
-          style={{
-            background: `radial-gradient(circle at 50% 50%, 
-              hsla(300, 50%, 30%, ${isPlaying ? 0.1 : 0.05}) 0%, 
-              transparent 60%)`,
-          }}
-        />
+        {/* Subtle overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
-      {/* Content with enhanced backdrop blur */}
-      <div className="relative z-10 h-full backdrop-blur-sm bg-black/5">
+      {/* Content */}
+      <div className="relative z-10 h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <Button
@@ -428,7 +470,6 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 <SkipBack size={28} />
               </Button>
               
-              {/* Main Play/Pause Button */}
               <button 
                 onClick={handlePlayPause}
                 className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl"
