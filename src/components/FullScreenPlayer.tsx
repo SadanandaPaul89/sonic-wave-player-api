@@ -197,67 +197,113 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
 
   return (
     <div className="fixed inset-0 z-50 text-white overflow-hidden">
-      {/* Dynamic Animated Background */}
+      {/* Dynamic Animated Background with Smooth Transitions */}
       <div className="absolute inset-0">
-        {/* Base gradient that changes with play state */}
+        {/* Base gradient with ultra-smooth transitions */}
         <div 
-          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-            isPlaying 
-              ? 'bg-gradient-to-br from-purple-600 via-pink-500 to-indigo-700' 
-              : 'bg-gradient-to-br from-purple-800 via-purple-900 to-black'
-          }`}
+          className="absolute inset-0 transition-all duration-[3000ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+          style={{
+            background: isPlaying 
+              ? `linear-gradient(135deg, 
+                  hsl(${270 + Math.sin(progress / 20) * 30}, 70%, 45%) 0%,
+                  hsl(${320 + Math.cos(progress / 15) * 25}, 75%, 50%) 25%,
+                  hsl(${240 + Math.sin(progress / 10) * 20}, 80%, 40%) 50%,
+                  hsl(${290 + Math.cos(progress / 25) * 35}, 65%, 35%) 75%,
+                  hsl(${200 + Math.sin(progress / 30) * 40}, 60%, 25%) 100%)`
+              : `linear-gradient(135deg, 
+                  hsl(270, 40%, 25%) 0%,
+                  hsl(280, 45%, 20%) 25%,
+                  hsl(260, 50%, 15%) 50%,
+                  hsl(290, 35%, 18%) 75%,
+                  hsl(0, 0%, 8%) 100%)`
+          }}
         />
         
-        {/* Animated gradient orbs */}
+        {/* Floating gradient orbs with smooth movements */}
         <div 
-          className={`absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-30 blur-3xl transition-all duration-2000 ${
-            isPlaying ? 'animate-pulse bg-gradient-to-r from-cyan-400 to-blue-500' : 'bg-purple-500'
-          }`}
+          className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[100px] transition-all duration-[4000ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
-            animation: isPlaying ? 'float 6s ease-in-out infinite' : 'none',
-            transform: `translate(${Math.sin(progress / 10) * 50}px, ${Math.cos(progress / 15) * 30}px)`
+            background: isPlaying 
+              ? `radial-gradient(circle, 
+                  hsl(${180 + Math.sin(progress / 12) * 60}, 80%, 60%) 0%,
+                  hsl(${220 + Math.cos(progress / 18) * 40}, 70%, 50%) 50%,
+                  transparent 70%)`
+              : 'radial-gradient(circle, hsl(270, 40%, 30%) 0%, transparent 70%)',
+            transform: `translate(${20 + Math.sin(progress / 8) * 100}px, ${10 + Math.cos(progress / 12) * 80}px) scale(${isPlaying ? 1 + Math.sin(progress / 15) * 0.2 : 1})`,
+            left: '10%',
+            top: '15%'
           }}
         />
         
         <div 
-          className={`absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-20 blur-3xl transition-all duration-3000 ${
-            isPlaying ? 'bg-gradient-to-r from-pink-400 to-red-500' : 'bg-indigo-500'
-          }`}
+          className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[80px] transition-all duration-[5000ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
-            animation: isPlaying ? 'float 8s ease-in-out infinite reverse' : 'none',
-            transform: `translate(${Math.cos(progress / 12) * 40}px, ${Math.sin(progress / 18) * 35}px)`
+            background: isPlaying 
+              ? `radial-gradient(circle, 
+                  hsl(${300 + Math.cos(progress / 10) * 50}, 85%, 65%) 0%,
+                  hsl(${340 + Math.sin(progress / 14) * 30}, 75%, 55%) 50%,
+                  transparent 70%)`
+              : 'radial-gradient(circle, hsl(290, 35%, 25%) 0%, transparent 70%)',
+            transform: `translate(${-30 + Math.cos(progress / 6) * 120}px, ${20 + Math.sin(progress / 16) * 90}px) scale(${isPlaying ? 1 + Math.cos(progress / 20) * 0.3 : 1})`,
+            right: '15%',
+            bottom: '20%'
           }}
         />
         
         <div 
-          className={`absolute top-3/4 left-1/2 w-64 h-64 rounded-full opacity-25 blur-2xl transition-all duration-4000 ${
-            isPlaying ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 'bg-purple-600'
-          }`}
+          className="absolute w-[350px] h-[350px] rounded-full opacity-12 blur-[70px] transition-all duration-[6000ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
-            animation: isPlaying ? 'float 10s ease-in-out infinite' : 'none',
-            transform: `translate(${Math.sin(progress / 8) * 60}px, ${Math.cos(progress / 20) * 25}px)`
+            background: isPlaying 
+              ? `radial-gradient(circle, 
+                  hsl(${120 + Math.sin(progress / 7) * 80}, 70%, 50%) 0%,
+                  hsl(${160 + Math.cos(progress / 11) * 60}, 65%, 45%) 50%,
+                  transparent 70%)`
+              : 'radial-gradient(circle, hsl(260, 30%, 20%) 0%, transparent 70%)',
+            transform: `translate(${40 + Math.sin(progress / 9) * 70}px, ${-10 + Math.cos(progress / 13) * 60}px) scale(${isPlaying ? 1 + Math.sin(progress / 18) * 0.25 : 1})`,
+            left: '40%',
+            top: '60%'
           }}
         />
         
-        {/* Progress-based overlay */}
+        {/* Ambient light effects */}
         <div 
-          className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
+          className="absolute w-[300px] h-[300px] rounded-full opacity-8 blur-[120px] transition-all duration-[7000ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           style={{
-            opacity: 0.3 + (progress / duration) * 0.2
+            background: isPlaying 
+              ? `radial-gradient(circle, 
+                  hsl(${60 + Math.cos(progress / 5) * 100}, 90%, 70%) 0%,
+                  hsl(${100 + Math.sin(progress / 17) * 70}, 80%, 60%) 40%,
+                  transparent 60%)`
+              : 'radial-gradient(circle, hsl(280, 25%, 15%) 0%, transparent 60%)',
+            transform: `translate(${Math.sin(progress / 4) * 150}px, ${Math.cos(progress / 8) * 100}px)`,
+            right: '5%',
+            top: '10%'
           }}
         />
         
-        {/* Subtle noise texture */}
+        {/* Pulsing overlay that responds to music */}
         <div 
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 transition-opacity duration-[2000ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{
+            background: `radial-gradient(circle at ${50 + Math.sin(progress / 6) * 20}% ${50 + Math.cos(progress / 8) * 15}%, 
+              hsla(${isPlaying ? 320 : 270}, 60%, 40%, 0.1) 0%, 
+              transparent 50%)`,
+            opacity: isPlaying ? 0.6 + Math.sin(progress / 3) * 0.2 : 0.3
+          }}
+        />
+        
+        {/* Subtle grain texture */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] mix-blend-soft-light transition-opacity duration-1000"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            opacity: isPlaying ? 0.05 : 0.02
           }}
         />
       </div>
 
-      {/* Content with backdrop blur for better readability */}
-      <div className="relative z-10 h-full backdrop-blur-sm bg-black/10">
+      {/* Content with enhanced backdrop blur */}
+      <div className="relative z-10 h-full backdrop-blur-[2px] bg-black/[0.08]">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <Button
