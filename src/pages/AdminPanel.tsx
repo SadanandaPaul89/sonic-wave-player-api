@@ -699,7 +699,7 @@ const AdminPanel: React.FC = () => {
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm">Name</label>
+              <label className="text-right text-sm text-foreground">Name</label>
               <Input
                 id="name"
                 value={editedName}
@@ -709,7 +709,7 @@ const AdminPanel: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm">Bio</label>
+              <label className="text-right text-sm text-foreground">Bio</label>
               <Textarea
                 id="bio"
                 value={editedBio}
@@ -719,7 +719,7 @@ const AdminPanel: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right text-sm">Image URL</label>
+              <label className="text-right text-sm text-foreground">Image URL</label>
               <Input
                 id="image"
                 value={editedImage}
