@@ -4,51 +4,49 @@
 
 @layer base {
   :root {
-    /* Light mode - Apple Music/Spotify aesthetic with subtle off-white bg */
-    --background: 0 0% 98%;             /* #FAFAFA (slightly off-white) */
-    --foreground: 0 0% 7%;              /* near black, softer than full black */
+    /* Light mode - Apple Music/Spotify inspired, black borders for card */
+    --background: 0 0% 98%;             /* #FAFAFA */
+    --foreground: 0 0% 0%;              /* black text everywhere for light mode */
 
-    --card: 0 0% 100%;                  /* White - cards/popovers float */
-    --card-foreground: 0 0% 7%;
-
-    --popover: 0 0% 100%;               /* White */
-    --popover-foreground: 0 0% 7%;
+    --card: 0 0% 100%;                  /* white card */
+    --card-foreground: 0 0% 0%;         /* black text */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
 
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;             /* #F5F5F5 */
-    --secondary-foreground: 0 0% 7%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 90%;                 /* #E5E5E5, for subtle backgrounds */
-    --muted-foreground: 0 0% 45%;      /* #737373 */
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
 
     --accent: 0 0% 96%;
     --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 100% 60%;         /* #ff3b30 */
+    --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;                /* Subtle, visible border */
-    --input: 0 0% 100%;                /* Input fields are white */
-    --ring: 0 0% 80%;                  /* Subtle focus ring */
+    --border: 0 0% 0%;                  /* TRUE BLACK for border */
+    --input: 0 0% 100%;                 /* input = white */
+    --ring: 0 0% 80%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 0 0% 7%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-border: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 0%;
     --sidebar-ring: 0 0% 80%;
 
-    /* Spotify/Apple-style isolated neutrals */
     --spotify-base: 0 0% 98%;
-    --spotify-elevated: 0 0% 100%;     /* cards pop over slightly-off-white */
+    --spotify-elevated: 0 0% 100%;
     --spotify-highlight: 0 0% 96%;
-    --spotify-green: 141 73% 42%;      /* #1DB954 */
+    --spotify-green: 141 73% 42%;
     --spotify-white: 0 0% 100%;
     --spotify-lightgray: 0 0% 45%;
     --spotify-darkgray: 0 0% 33%;
@@ -98,9 +96,15 @@
   }
 
   body {
-    /* Apple/Spotify style: slightly off-white, never blue/yellow, text near-black */
-    background-color: hsl(0, 0%, 98%) !important;
-    color: hsl(0, 0%, 7%) !important;
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors duration-300;
+    background-color: hsl(var(--background)) !important;
+    color: #000 !important;
+    @apply bg-[hsl(var(--background))] text-black transition-colors duration-300;
+  }
+}
+
+/* Apple Music/Spotify style strong shadow for card elements */
+@layer components {
+  .music-card {
+    @apply shadow-xl border border-black/10 bg-white;
   }
 }

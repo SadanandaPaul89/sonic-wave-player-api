@@ -8,8 +8,9 @@ const Card = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
+    // Add 'music-card' class for visual Apple Music-style shadow and border in light mode
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "music-card rounded-lg bg-card text-card-foreground",
       className
     )}
     {...props}
