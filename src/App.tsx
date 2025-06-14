@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Index from './pages/Index';
 import Search from './pages/Search';
@@ -18,32 +18,66 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 
 function App() {
   return (
-    <>
+    <BrowserRouter>
       <Routes>
         {/* Share route - no layout needed for better sharing experience */}
         <Route path="/share/:trackId" element={<ShareTrack />} />
         
         {/* Main app routes with layout */}
-        <Route path="/*" element={
+        <Route path="/" element={
           <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/artist/:artistId" element={<ArtistProfile />} />
-              <Route path="/album/:albumId" element={<AlbumView />} />
-              <Route path="/publish" element={<PublishSong />} />
-              <Route path="/artist-registration" element={<ArtistRegistration />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Index />
+          </Layout>
+        } />
+        <Route path="/search" element={
+          <Layout>
+            <Search />
+          </Layout>
+        } />
+        <Route path="/library" element={
+          <Layout>
+            <Library />
+          </Layout>
+        } />
+        <Route path="/artist/:artistId" element={
+          <Layout>
+            <ArtistProfile />
+          </Layout>
+        } />
+        <Route path="/album/:albumId" element={
+          <Layout>
+            <AlbumView />
+          </Layout>
+        } />
+        <Route path="/publish" element={
+          <Layout>
+            <PublishSong />
+          </Layout>
+        } />
+        <Route path="/artist-registration" element={
+          <Layout>
+            <ArtistRegistration />
+          </Layout>
+        } />
+        <Route path="/auth" element={
+          <Layout>
+            <Auth />
+          </Layout>
+        } />
+        <Route path="/admin" element={
+          <Layout>
+            <AdminPanel />
+          </Layout>
+        } />
+        <Route path="*" element={
+          <Layout>
+            <NotFound />
           </Layout>
         } />
       </Routes>
       <Toaster />
       <SonnerToaster />
-    </>
+    </BrowserRouter>
   );
 }
 
