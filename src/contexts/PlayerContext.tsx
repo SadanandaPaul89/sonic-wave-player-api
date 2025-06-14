@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -163,7 +162,14 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (repeatMode === 'all') {
       if (queue.length > 0) {
         console.log('PlayerContext: Playing next track from queue (repeat all)');
-        playNextTrack();
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        if (currentTrack) {
+          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+        }
+        setCurrentTrack(nextTrack);
+        setIsPlaying(true);
       } else {
         console.log('PlayerContext: Repeat all - restarting current track (no queue)');
         restartCurrentTrack();
@@ -175,14 +181,21 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Repeat mode is 'off'
     if (queue.length > 0) {
       console.log('PlayerContext: Playing next track from queue (repeat off)');
-      playNextTrack();
+      const nextTrack = queue[0];
+      const newQueue = queue.slice(1);
+      setQueue(newQueue);
+      if (currentTrack) {
+        setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+      }
+      setCurrentTrack(nextTrack);
+      setIsPlaying(true);
     } else {
       console.log('PlayerContext: Repeat off - stopping playback');
       setIsPlaying(false);
     }
     
     isHandlingTrackEndRef.current = false;
-  }, [repeatMode, queue.length, restartCurrentTrack]);
+  }, [repeatMode, queue.length, restartCurrentTrack, currentTrack]);
   
   const playNextTrack = () => {
     console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
@@ -192,6 +205,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQueue(newQueue);
       playTrack(nextTrack);
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
+    } else if (repeatMode === 'all' && currentTrack) {
+      console.log('PlayerContext: Repeat all - restarting current track');
+      restartCurrentTrack();
     } else {
       console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
