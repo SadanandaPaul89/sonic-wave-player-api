@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -694,7 +693,7 @@ const AdminPanel: React.FC = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Artist</DialogTitle>
+            <DialogTitle className="text-foreground">Edit Artist</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
@@ -730,10 +729,17 @@ const AdminPanel: React.FC = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              className="text-foreground"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSaveArtist}>
+            <Button
+              onClick={handleSaveArtist}
+              className="text-foreground"
+            >
               Save changes
             </Button>
           </DialogFooter>
