@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
 import { 
@@ -52,7 +53,7 @@ const extractDominantColors = (imageUrl: string): Promise<{ primary: string; sec
       }
       
       // Resize for faster processing
-      const size = 50;
+      const size = 30; // Reduced size for better performance
       canvas.width = size;
       canvas.height = size;
       
@@ -155,15 +156,24 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     secondary: '260, 20%, 20%', 
     accent: '280, 25%, 25%' 
   });
+  const [isColorsLoading, setIsColorsLoading] = useState(false);
 
-  // Extract colors from album art when track changes
+  // Extract colors from album art when track changes - debounced
   useEffect(() => {
-    if (currentTrack?.image) {
-      extractDominantColors(currentTrack.image).then(setDominantColors);
-    } else {
+    if (currentTrack?.image && !isColorsLoading) {
+      setIsColorsLoading(true);
+      const timeoutId = setTimeout(() => {
+        extractDominantColors(currentTrack.image).then((colors) => {
+          setDominantColors(colors);
+          setIsColorsLoading(false);
+        });
+      }, 300); // Debounce color extraction
+
+      return () => clearTimeout(timeoutId);
+    } else if (!currentTrack?.image) {
       setDominantColors({ primary: '240, 15%, 15%', secondary: '260, 20%, 20%', accent: '280, 25%, 25%' });
     }
-  }, [currentTrack?.image]);
+  }, [currentTrack?.image, isColorsLoading]);
 
   // Check authentication status
   useEffect(() => {
@@ -174,7 +184,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     checkAuth();
   }, []);
 
-  // Check if artist is verified, load lyrics, and check like status
+  // Check if artist is verified, load lyrics, and check like status - memoized
   useEffect(() => {
     if (currentTrack && currentTrack.artistId) {
       const checkVerificationAndLoadLyrics = async () => {
@@ -206,10 +216,10 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       setLyrics([]);
       setIsLiked(false);
     }
-  }, [currentTrack, isAuthenticated]);
+  }, [currentTrack?.id, currentTrack?.artistId, isAuthenticated]);
 
-  // Handle like toggle
-  const handleLikeToggle = async () => {
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleLikeToggle = useCallback(async () => {
     if (!currentTrack || !isAuthenticated) {
       console.log('User must be logged in to like songs');
       return;
@@ -217,11 +227,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     
     const newLikeStatus = await toggleSongLike(currentTrack.id);
     setIsLiked(newLikeStatus);
-  };
+  }, [currentTrack, isAuthenticated]);
 
-  // Handle mute toggle
-  const toggleMute = () => {
-    console.log('Mute toggle clicked', { isMuted, volume, prevVolume });
+  const toggleMute = useCallback(() => {
     if (isMuted) {
       setVolumeLevel(prevVolume);
     } else {
@@ -229,7 +237,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       setVolumeLevel(0);
     }
     setIsMuted(!isMuted);
-  };
+  }, [isMuted, volume, prevVolume, setVolumeLevel]);
 
   // Update isMuted state when volume changes externally
   useEffect(() => {
@@ -238,10 +246,10 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     } else if (volume > 0 && isMuted) {
       setIsMuted(false);
     }
-  }, [volume]);
+  }, [volume, isMuted]);
 
-  // Find current lyric based on progress
-  const getCurrentLyric = (): LyricLine | null => {
+  // Memoized lyric functions
+  const getCurrentLyric = useCallback((): LyricLine | null => {
     if (!lyrics.length) return null;
     
     for (let i = lyrics.length - 1; i >= 0; i--) {
@@ -250,50 +258,55 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       }
     }
     return lyrics[0];
-  };
+  }, [lyrics, progress]);
 
-  // Get upcoming lyrics
-  const getUpcomingLyrics = (): LyricLine[] => {
+  const getUpcomingLyrics = useCallback((): LyricLine[] => {
     const currentLyric = getCurrentLyric();
     if (!currentLyric) return [];
     
     const currentIndex = lyrics.findIndex(lyric => lyric === currentLyric);
     return lyrics.slice(currentIndex + 1, currentIndex + 4);
-  };
+  }, [lyrics, getCurrentLyric]);
 
-  // Handle progress bar change
-  const handleProgressChange = (values: number[]) => {
-    console.log('Progress change:', values[0]);
+  // Memoized handlers
+  const handleProgressChange = useCallback((values: number[]) => {
     seekToPosition(values[0]);
-  };
+  }, [seekToPosition]);
 
-  // Handle volume change
-  const handleVolumeChange = (values: number[]) => {
-    console.log('Volume change:', values[0]);
+  const handleVolumeChange = useCallback((values: number[]) => {
     setVolumeLevel(values[0] / 100);
-  };
+  }, [setVolumeLevel]);
 
-  // Handle play/pause with explicit logging
-  const handlePlayPause = () => {
-    console.log('FullScreen Play/pause button clicked - Current state:', { isPlaying });
+  const handlePlayPause = useCallback(() => {
     togglePlayPause();
-    console.log('FullScreen Play/pause after toggle');
-  };
+  }, [togglePlayPause]);
 
-  // Handle next track - improved to work with queue
-  const handleNextTrack = () => {
-    console.log('FullScreen Next track clicked - Queue length:', queue.length);
+  const handleNextTrack = useCallback(() => {
     playNextTrack();
-  };
+  }, [playNextTrack]);
 
-  // Handle previous track - improved to work with queue
-  const handlePreviousTrack = () => {
-    console.log('FullScreen Previous track clicked');
+  const handlePreviousTrack = useCallback(() => {
     playPreviousTrack();
-  };
+  }, [playPreviousTrack]);
 
-  // Get repeat icon based on mode
-  const getRepeatIcon = () => {
+  const openLyricsEditor = useCallback(() => {
+    setIsLyricsDialogOpen(true);
+  }, []);
+
+  const closeLyricsEditor = useCallback(() => {
+    setIsLyricsDialogOpen(false);
+  }, []);
+
+  const openShareModal = useCallback(() => {
+    setIsShareModalOpen(true);
+  }, []);
+
+  const closeShareModal = useCallback(() => {
+    setIsShareModalOpen(false);
+  }, []);
+
+  // Get repeat icon based on mode - memoized
+  const getRepeatIcon = useCallback(() => {
     switch (repeatMode) {
       case 'one':
         return <Repeat1 size={20} />;
@@ -302,27 +315,11 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       default:
         return <Repeat size={20} />;
     }
-  };
+  }, [repeatMode]);
 
-  const openLyricsEditor = () => {
-    setIsLyricsDialogOpen(true);
-  };
-
-  const closeLyricsEditor = () => {
-    setIsLyricsDialogOpen(false);
-  };
-
-  const openShareModal = () => {
-    setIsShareModalOpen(true);
-  };
-
-  const closeShareModal = () => {
-    setIsShareModalOpen(false);
-  };
-
-  // Optimized background styles with extracted colors
+  // Optimized background styles with extracted colors - stable memoization
   const backgroundStyle = useMemo(() => {
-    const intensity = isPlaying ? 1 : 0.7;
+    const intensity = isPlaying ? 1 : 0.8; // Reduced intensity change to minimize jarring transitions
     
     return {
       background: `linear-gradient(135deg, 
@@ -330,9 +327,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         hsl(${dominantColors.secondary}) 40%,
         hsl(${dominantColors.accent}) 100%)`,
       opacity: intensity,
-      transition: 'background 1.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 1s ease'
+      transition: 'background 2s ease, opacity 0.8s ease' // Slower, smoother transitions
     };
-  }, [dominantColors, isPlaying]);
+  }, [dominantColors.primary, dominantColors.secondary, dominantColors.accent, isPlaying]);
 
   if (!isOpen || !currentTrack) return null;
 
@@ -357,7 +354,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 transition-colors"
           >
             <ChevronDown size={24} />
           </Button>
@@ -372,7 +369,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost"
                 size="icon"
                 onClick={openLyricsEditor}
-                className="text-white hover:bg-white/10"
+                className="text-white hover:bg-white/10 transition-colors"
               >
                 <Edit size={20} />
               </Button>
@@ -381,14 +378,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost"
               size="icon"
               onClick={openShareModal}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 transition-colors"
             >
               <Share2 size={20} />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 transition-colors"
             >
               <MoreHorizontal size={24} />
             </Button>
@@ -398,11 +395,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         <div className="flex flex-col h-full px-6 pb-6">
           {/* Album Art */}
           <div className="flex-1 flex items-center justify-center mb-4">
-            <div className="w-80 h-80 max-w-[80vw] max-h-[40vh] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10">
+            <div className="w-80 h-80 max-w-[80vw] max-h-[40vh] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02]">
               <img
                 src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
                 alt={currentTrack.albumName}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           </div>
@@ -423,7 +421,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost" 
                 size="icon" 
                 onClick={handleLikeToggle}
-                className={`text-white hover:bg-white/10 backdrop-blur-sm ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!isAuthenticated}
               >
                 <Heart 
@@ -435,7 +433,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost" 
                 size="icon" 
                 onClick={openShareModal}
-                className="text-white hover:bg-white/10 backdrop-blur-sm"
+                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
               >
                 <Share2 size={24} />
               </Button>
@@ -444,12 +442,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost" 
                   size="icon" 
                   onClick={openLyricsEditor}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm"
+                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
                 >
                   <Edit size={24} />
                 </Button>
               )}
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors">
                 <MoreHorizontal size={24} />
               </Button>
             </div>
@@ -468,7 +466,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   {getUpcomingLyrics().slice(0, 2).map((lyric, index) => (
                     <div 
                       key={index} 
-                      className={`text-lg transition-opacity duration-300`}
+                      className="text-lg transition-opacity duration-300"
                       style={{ opacity: Math.max(0.6 - index * 0.2, 0.2) }}
                     >
                       {lyric.text}
@@ -498,7 +496,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
 
           {/* Main Controls */}
           <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors">
               <Shuffle size={20} />
             </Button>
             
@@ -507,7 +505,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost" 
                 size="icon"
                 onClick={handlePreviousTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm"
+                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
               >
                 <SkipBack size={28} />
               </Button>
@@ -524,7 +522,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost" 
                 size="icon"
                 onClick={handleNextTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm"
+                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
               >
                 <SkipForward size={28} />
               </Button>
@@ -534,7 +532,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost" 
               size="icon" 
               onClick={toggleRepeatMode}
-              className="text-white hover:bg-white/10 backdrop-blur-sm"
+              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
               title={`Repeat: ${repeatMode}`}
             >
               {getRepeatIcon()}
@@ -547,7 +545,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost" 
               size="icon"
               onClick={toggleMute}
-              className="text-white hover:bg-white/10 backdrop-blur-sm"
+              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
             >
               {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </Button>
