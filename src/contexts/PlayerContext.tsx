@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -143,7 +144,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const restartCurrentTrack = useCallback(async () => {
-    console.log('RESTART: Starting restart process');
+    console.log('RESTART: Starting restart process for repeat one mode');
     if (!audioRef.current || !currentTrack) {
       console.log('RESTART: No audio ref or current track');
       return;
@@ -173,14 +174,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }, 1000);
       });
       
-      console.log('RESTART: Setting isPlaying to true');
+      console.log('RESTART: Setting isPlaying to true and playing');
       setIsPlaying(true);
       
-      console.log('RESTART: Attempting to play');
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         await playPromise;
-        console.log('RESTART: Successfully restarted track');
+        console.log('RESTART: Successfully restarted track for repeat one');
       }
     } catch (error) {
       console.error('RESTART: Error restarting track:', error);
@@ -210,7 +210,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       if (repeatMode === 'one') {
         console.log('TRACK_END: Repeat ONE - restarting current track');
-        restartCurrentTrack();
+        restartCurrentTrack().finally(() => {
+          isHandlingTrackEndRef.current = false;
+        });
+        return;
       } else if (repeatMode === 'all') {
         if (queue.length > 0) {
           console.log('TRACK_END: Repeat ALL - playing next track from queue');
@@ -224,7 +227,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setIsPlaying(true);
         } else {
           console.log('TRACK_END: Repeat ALL - no queue, restarting current track');
-          restartCurrentTrack();
+          restartCurrentTrack().finally(() => {
+            isHandlingTrackEndRef.current = false;
+          });
+          return;
         }
       } else {
         // Repeat mode is 'off'
