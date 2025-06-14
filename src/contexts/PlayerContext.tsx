@@ -38,6 +38,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isHandlingTrackEndRef = useRef(false);
   
   useEffect(() => {
     audioRef.current = new Audio();
@@ -132,21 +133,30 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  const handleTrackEnd = () => {
+  const restartCurrentTrack = useCallback(() => {
+    console.log('PlayerContext: Restarting current track');
+    if (audioRef.current && currentTrack) {
+      audioRef.current.currentTime = 0;
+      setProgress(0);
+      audioRef.current.play().catch(e => console.error('Error restarting track:', e));
+    }
+  }, [currentTrack]);
+  
+  const handleTrackEnd = useCallback(() => {
     console.log('PlayerContext: Track ended, repeat mode:', repeatMode);
+    
+    // Prevent multiple simultaneous calls
+    if (isHandlingTrackEndRef.current) {
+      console.log('PlayerContext: Already handling track end, ignoring');
+      return;
+    }
+    
+    isHandlingTrackEndRef.current = true;
     
     if (repeatMode === 'one') {
       console.log('PlayerContext: Repeating current track (mode: one)');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        setProgress(0);
-        // Force a small delay to ensure the audio element is ready
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch(e => console.error('Error repeating track:', e));
-          }
-        }, 100);
-      }
+      restartCurrentTrack();
+      isHandlingTrackEndRef.current = false;
       return;
     }
     
@@ -156,17 +166,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         playNextTrack();
       } else {
         console.log('PlayerContext: Repeat all - restarting current track (no queue)');
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          setProgress(0);
-          // Force a small delay to ensure the audio element is ready
-          setTimeout(() => {
-            if (audioRef.current) {
-              audioRef.current.play().catch(e => console.error('Error repeating track:', e));
-            }
-          }, 100);
-        }
+        restartCurrentTrack();
       }
+      isHandlingTrackEndRef.current = false;
       return;
     }
     
@@ -178,7 +180,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('PlayerContext: Repeat off - stopping playback');
       setIsPlaying(false);
     }
-  };
+    
+    isHandlingTrackEndRef.current = false;
+  }, [repeatMode, queue.length, restartCurrentTrack]);
   
   const playNextTrack = () => {
     console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
