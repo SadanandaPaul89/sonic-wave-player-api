@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -17,11 +17,13 @@ const Player: React.FC = () => {
     volume,
     progress,
     duration,
+    repeatMode,
     togglePlayPause,
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
-    playPreviousTrack
+    playPreviousTrack,
+    toggleRepeatMode
   } = usePlayer();
 
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -43,6 +45,20 @@ const Player: React.FC = () => {
 
   const toggleMute = () => {
     setVolumeLevel(volume > 0 ? 0 : 0.7);
+  };
+
+  const getRepeatIcon = () => {
+    if (repeatMode === 'one') {
+      return <Repeat1 size={isMobile ? 16 : 20} />;
+    }
+    return <Repeat size={isMobile ? 16 : 20} />;
+  };
+
+  const getRepeatButtonClass = () => {
+    if (repeatMode === 'off') {
+      return 'text-gray-400 hover:text-white';
+    }
+    return 'text-spotify-green hover:text-spotify-green/80';
   };
 
   return (
@@ -100,6 +116,17 @@ const Player: React.FC = () => {
                 className="text-gray-400 hover:text-white"
               >
                 <SkipForward size={isMobile ? 16 : 20} />
+              </Button>
+
+              {/* Repeat Button */}
+              <Button
+                variant="ghost"
+                size={isMobile ? "sm" : "icon"}
+                onClick={toggleRepeatMode}
+                className={getRepeatButtonClass()}
+                title={`Repeat: ${repeatMode}`}
+              >
+                {getRepeatIcon()}
               </Button>
             </div>
 

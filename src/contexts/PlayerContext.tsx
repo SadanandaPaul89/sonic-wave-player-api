@@ -214,7 +214,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           isHandlingTrackEndRef.current = false;
         });
         return;
-      } else if (repeatMode === 'all') {
+      }
+      
+      if (repeatMode === 'all') {
         if (queue.length > 0) {
           console.log('TRACK_END: Repeat ALL - playing next track from queue');
           const nextTrack = queue[0];
@@ -232,8 +234,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           });
           return;
         }
-      } else {
-        // Repeat mode is 'off'
+      }
+      
+      if (repeatMode === 'off') {
         if (queue.length > 0) {
           console.log('TRACK_END: Repeat OFF - playing next track from queue');
           const nextTrack = queue[0];
@@ -297,7 +300,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const toggleRepeatMode = () => {
     setRepeatMode(prev => {
-      const newMode = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
+      const modes: RepeatMode[] = ['off', 'all', 'one'];
+      const currentIndex = modes.indexOf(prev);
+      const nextIndex = (currentIndex + 1) % modes.length;
+      const newMode = modes[nextIndex];
       console.log('PlayerContext: Repeat mode changed from', prev, 'to', newMode);
       return newMode;
     });
