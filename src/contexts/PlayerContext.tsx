@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -141,20 +142,40 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const restartCurrentTrack = useCallback(() => {
-    console.log('PlayerContext: Restarting current track');
+    console.log('PlayerContext: Restarting current track - repeat mode:', repeatMode);
     if (audioRef.current && currentTrack) {
+      console.log('PlayerContext: Audio element exists, restarting...');
       audioRef.current.currentTime = 0;
       setProgress(0);
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(e => console.error('Error restarting track:', e));
-      }
+      
+      // Ensure we're in playing state
       setIsPlaying(true);
+      
+      // Force play the audio
+      setTimeout(() => {
+        if (audioRef.current) {
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('PlayerContext: Track restarted successfully');
+              })
+              .catch(e => {
+                console.error('Error restarting track:', e);
+                // Try to reload and play again
+                audioRef.current?.load();
+                setTimeout(() => {
+                  audioRef.current?.play().catch(err => console.error('Second restart attempt failed:', err));
+                }, 100);
+              });
+          }
+        }
+      }, 50);
     }
-  }, [currentTrack]);
+  }, [currentTrack, repeatMode]);
   
   const handleTrackEnd = useCallback(() => {
-    console.log('PlayerContext: Track ended, repeat mode:', repeatMode);
+    console.log('PlayerContext: Track ended, repeat mode:', repeatMode, 'isHandling:', isHandlingTrackEndRef.current);
     
     // Prevent multiple simultaneous calls
     if (isHandlingTrackEndRef.current) {
@@ -164,45 +185,46 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     isHandlingTrackEndRef.current = true;
     
-    setTimeout(() => {
-      if (repeatMode === 'one') {
-        console.log('PlayerContext: Repeating current track (mode: one)');
-        restartCurrentTrack();
-      } else if (repeatMode === 'all') {
-        if (queue.length > 0) {
-          console.log('PlayerContext: Playing next track from queue (repeat all)');
-          const nextTrack = queue[0];
-          const newQueue = queue.slice(1);
-          setQueue(newQueue);
-          if (currentTrack) {
-            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-          }
-          setCurrentTrack(nextTrack);
-          setIsPlaying(true);
-        } else {
-          console.log('PlayerContext: Repeat all - restarting current track (no queue)');
-          restartCurrentTrack();
+    if (repeatMode === 'one') {
+      console.log('PlayerContext: Repeating current track (mode: one)');
+      restartCurrentTrack();
+    } else if (repeatMode === 'all') {
+      if (queue.length > 0) {
+        console.log('PlayerContext: Playing next track from queue (repeat all)');
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        if (currentTrack) {
+          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
         }
+        setCurrentTrack(nextTrack);
+        setIsPlaying(true);
       } else {
-        // Repeat mode is 'off'
-        if (queue.length > 0) {
-          console.log('PlayerContext: Playing next track from queue (repeat off)');
-          const nextTrack = queue[0];
-          const newQueue = queue.slice(1);
-          setQueue(newQueue);
-          if (currentTrack) {
-            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-          }
-          setCurrentTrack(nextTrack);
-          setIsPlaying(true);
-        } else {
-          console.log('PlayerContext: Repeat off - stopping playback');
-          setIsPlaying(false);
-        }
+        console.log('PlayerContext: Repeat all - restarting current track (no queue)');
+        restartCurrentTrack();
       }
-      
+    } else {
+      // Repeat mode is 'off'
+      if (queue.length > 0) {
+        console.log('PlayerContext: Playing next track from queue (repeat off)');
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        if (currentTrack) {
+          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+        }
+        setCurrentTrack(nextTrack);
+        setIsPlaying(true);
+      } else {
+        console.log('PlayerContext: Repeat off - stopping playback');
+        setIsPlaying(false);
+      }
+    }
+    
+    // Reset the flag after a small delay
+    setTimeout(() => {
       isHandlingTrackEndRef.current = false;
-    }, 50);
+    }, 200);
   }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
   
   const playNextTrack = () => {
