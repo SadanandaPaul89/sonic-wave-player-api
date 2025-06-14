@@ -82,21 +82,12 @@ const Player: React.FC = () => {
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <Link
-                to={`/artist/${currentTrack.artistId}`}
-                className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-white`}
-                tabIndex={0}
-                aria-label={`Go to artist: ${currentTrack.artistName}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <span className="sr-only">{currentTrack.name}</span>
-                <ArtistNameWithBadge
-                  artistId={currentTrack.artistId}
-                  artistName={currentTrack.name}
-                  plain
-                />
-              </Link>
+              <div className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-white font-medium`}>
+                {/* Track name as plain text (no badge/check) */}
+                {currentTrack.name}
+              </div>
               <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>
+                {/* Artist name with badge */}
                 <ArtistNameWithBadge
                   artistId={currentTrack.artistId}
                   artistName={currentTrack.artistName}
