@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,6 +16,7 @@ import ArtistRegistration from "./pages/ArtistRegistration";
 import AdminPanel from "./pages/AdminPanel";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ShareTrack from "./pages/ShareTrack";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
@@ -95,6 +95,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
+            <Route path="/share/:trackId" element={<ShareTrack />} />
             <Route
               path="/"
               element={

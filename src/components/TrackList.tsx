@@ -1,11 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Track } from '@/services/supabaseService';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause, Music, Heart, Headphones } from 'lucide-react';
+import { Play, Pause, Music, Heart, Headphones, MoreHorizontal, Share } from 'lucide-react';
 import { toggleSongLike, getSongLikeStatus } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
+import ShareModal from './ShareModal';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 interface TrackListProps {
   tracks: Track[];
@@ -21,6 +23,8 @@ const TrackList: React.FC<TrackListProps> = ({
   const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
   const [likedTracks, setLikedTracks] = useState<Set<string>>(new Set());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
 
   // Check authentication status
   useEffect(() => {
@@ -76,6 +80,12 @@ const TrackList: React.FC<TrackListProps> = ({
       }
       return newSet;
     });
+  };
+
+  const handleShareClick = (track: Track, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedTrack(track);
+    setShareModalOpen(true);
   };
 
   // Function to get the correct track image (prioritize album art)
@@ -143,14 +153,12 @@ const TrackList: React.FC<TrackListProps> = ({
                 </div>
               </div>
               <div className="col-span-4 flex items-center gap-3 truncate">
-                {/* Track album art (not artist image) */}
                 <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
                   <img
                     src={trackImageUrl}
                     alt={`${track.name} album art`}
                     className="w-full h-full rounded object-cover"
                     onError={(e) => {
-                      // If image fails to load, use default placeholder
                       const target = e.target as HTMLImageElement;
                       target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
                     }}
@@ -181,6 +189,26 @@ const TrackList: React.FC<TrackListProps> = ({
                   <Headphones size={14} />
                   <span>{track.play_count || 0}</span>
                 </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-1 h-auto text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MoreHorizontal size={14} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-spotify-elevated border-gray-600">
+                    <DropdownMenuItem
+                      onClick={(e) => handleShareClick(track, e)}
+                      className="cursor-pointer hover:bg-spotify-highlight text-white"
+                    >
+                      <Share size={14} className="mr-2" />
+                      Share
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="col-span-2 flex items-center justify-end text-sm text-gray-400">
                 {formatTime(track.duration)}
@@ -189,6 +217,18 @@ const TrackList: React.FC<TrackListProps> = ({
           );
         })}
       </div>
+
+      {/* Share Modal */}
+      {selectedTrack && (
+        <ShareModal
+          isOpen={shareModalOpen}
+          onClose={() => {
+            setShareModalOpen(false);
+            setSelectedTrack(null);
+          }}
+          track={selectedTrack}
+        />
+      )}
     </div>
   );
 };
