@@ -15,7 +15,8 @@ import {
   Repeat,
   Repeat1,
   BadgeCheck,
-  Edit
+  Edit,
+  Share2
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { isArtistVerified, getLyricsBySongId, toggleSongLike, getSongLikeStatus } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 import LyricsEditor from './LyricsEditor';
+import ShareModal from './ShareModal';
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
@@ -145,6 +147,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
   const [isLyricsDialogOpen, setIsLyricsDialogOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [dominantColors, setDominantColors] = useState({ 
@@ -309,6 +312,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     setIsLyricsDialogOpen(false);
   };
 
+  const openShareModal = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const closeShareModal = () => {
+    setIsShareModalOpen(false);
+  };
+
   // Optimized background styles with extracted colors
   const backgroundStyle = useMemo(() => {
     const intensity = isPlaying ? 1 : 0.7;
@@ -369,6 +380,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             <Button
               variant="ghost"
               size="icon"
+              onClick={openShareModal}
+              className="text-white hover:bg-white/10"
+            >
+              <Share2 size={20} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               className="text-white hover:bg-white/10"
             >
               <MoreHorizontal size={24} />
@@ -411,6 +430,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   size={24} 
                   className={isLiked ? 'text-red-500 fill-current' : ''} 
                 />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={openShareModal}
+                className="text-white hover:bg-white/10 backdrop-blur-sm"
+              >
+                <Share2 size={24} />
               </Button>
               {isArtistVerifiedState && (
                 <Button 
@@ -546,6 +573,15 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Share Modal */}
+      {currentTrack && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={closeShareModal}
+          track={currentTrack}
+        />
+      )}
     </div>
   );
 };
