@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Track } from '@/services/api';
+import { Track } from '@/services/supabaseService';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
 import { Play, Pause, Music, Heart, Headphones } from 'lucide-react';
