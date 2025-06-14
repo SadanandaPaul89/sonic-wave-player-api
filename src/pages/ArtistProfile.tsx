@@ -46,6 +46,15 @@ const ArtistProfile: React.FC = () => {
           const status = await getArtistVerificationStatus(id);
           setVerificationStatus(status.status);
           setHasPendingRequest(status.hasPendingRequest);
+
+          // Debugging output
+          console.log('--- DEBUG: ArtistProfile ---');
+          console.log('artist:', artistData);
+          console.log('verificationStatus:', status.status);
+          console.log('hasPendingRequest:', status.hasPendingRequest);
+        } else {
+          // Debug: artist not found
+          console.log('DEBUG: Artist NOT FOUND for id:', id);
         }
       } catch (error) {
         console.error('Error fetching artist profile data:', error);
