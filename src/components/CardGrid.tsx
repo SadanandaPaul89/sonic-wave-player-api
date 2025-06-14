@@ -53,9 +53,9 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-2xl font-bold text-black">{title}</h2>
         {cards.length > 0 && (
-          <Link to="#" className="text-sm text-gray-400 hover:text-white">
+          <Link to="#" className="text-sm text-gray-400 hover:text-black">
             See all
           </Link>
         )}
@@ -73,7 +73,7 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
             <Link
               key={card.id}
               to={getLink(card)}
-              className="bg-spotify-elevated p-4 rounded-md hover:bg-spotify-highlight transition-colors duration-300"
+              className="music-card p-4 rounded-md hover:bg-spotify-highlight transition-colors duration-300"
             >
               <div className={`mb-4 relative ${card.type === 'artist' ? 'rounded-full overflow-hidden' : 'rounded-md'}`}>
                 <img
@@ -82,9 +82,10 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
                   className={`w-full h-auto aspect-square object-cover ${card.type === 'artist' ? 'rounded-full' : ''}`}
                 />
               </div>
-              <h3 className="font-medium truncate">{card.name}</h3>
+              {/* main-title guarantees text-black via CSS */}
+              <h3 className="main-title font-medium truncate text-black">{card.name}</h3>
               {card.description && (
-                <p className="text-sm text-gray-400 mt-1 line-clamp-2">{card.description}</p>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{card.description}</p>
               )}
             </Link>
           ))}
