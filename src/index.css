@@ -1,28 +1,27 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Light mode - HSL, true Apple/Spotify style, NO yellow tint anywhere */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Light mode - Apple Music/Spotify aesthetic with subtle off-white bg */
+    --background: 0 0% 98%;             /* #FAFAFA (slightly off-white) */
+    --foreground: 0 0% 7%;              /* near black, softer than full black */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 100%;                  /* White - cards/popovers float */
+    --card-foreground: 0 0% 7%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;               /* White */
+    --popover-foreground: 0 0% 7%;
 
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;             /* #f5f5f5 */
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 0 0% 96%;             /* #F5F5F5 */
+    --secondary-foreground: 0 0% 7%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 90%;                 /* #E5E5E5, for subtle backgrounds */
+    --muted-foreground: 0 0% 45%;      /* #737373 */
 
     --accent: 0 0% 96%;
     --accent-foreground: 0 0% 0%;
@@ -30,33 +29,32 @@
     --destructive: 0 100% 60%;         /* #ff3b30 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;                /* #e5e5e5 */
-    --input: 0 0% 98%;                 /* #fafafa */
-    --ring: 0 0% 0%;
+    --border: 0 0% 90%;                /* Subtle, visible border */
+    --input: 0 0% 100%;                /* Input fields are white */
+    --ring: 0 0% 80%;                  /* Subtle focus ring */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;   /* pure white */
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 0 0% 7%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 0%;
+    --sidebar-ring: 0 0% 80%;
 
-    /* Pure white - no yellow tint, Spotify-Apple style */
-    --spotify-base: 0 0% 100%;         /* pure white */
-    --spotify-elevated: 0 0% 100%;     /* pure white */
-    --spotify-highlight: 0 0% 96%;     /* #f5f5f5 */
+    /* Spotify/Apple-style isolated neutrals */
+    --spotify-base: 0 0% 98%;
+    --spotify-elevated: 0 0% 100%;     /* cards pop over slightly-off-white */
+    --spotify-highlight: 0 0% 96%;
     --spotify-green: 141 73% 42%;      /* #1DB954 */
-    --spotify-white: 0 0% 100%;        /* pure white */
-    --spotify-lightgray: 0 0% 45%;     /* #737373 */
-    --spotify-darkgray: 0 0% 33%;      /* #555555 */
+    --spotify-white: 0 0% 100%;
+    --spotify-lightgray: 0 0% 45%;
+    --spotify-darkgray: 0 0% 33%;
   }
 
   .dark {
-    /* ... keep existing code (dark mode vars) the same ... */
     --background: 0 0% 7%;
     --foreground: 0 0% 100%;
     --card: 0 0% 9%;
@@ -100,10 +98,9 @@
   }
 
   body {
-    /* In light mode, force pure white bg and black text */
-    background-color: #fff !important;
-    color: #000 !important;
+    /* Apple/Spotify style: slightly off-white, never blue/yellow, text near-black */
+    background-color: hsl(0, 0%, 98%) !important;
+    color: hsl(0, 0%, 7%) !important;
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors duration-300;
   }
 }
-
