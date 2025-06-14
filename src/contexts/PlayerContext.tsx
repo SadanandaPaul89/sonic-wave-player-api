@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -35,6 +36,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [queue, setQueue] = useState<Track[]>([]);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
+  const [trackKey, setTrackKey] = useState(0); // Force re-render when restarting
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isHandlingTrackEndRef = useRef(false);
@@ -58,13 +60,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   useEffect(() => {
     if (currentTrack && audioRef.current) {
+      console.log('Loading track:', currentTrack.name, 'Key:', trackKey);
       audioRef.current.src = currentTrack.previewURL;
       audioRef.current.load();
       if (isPlaying) {
-        audioRef.current.play().catch(e => console.error('Error playing audio:', e));
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => console.error('Error playing audio:', e));
+        }
       }
     }
-  }, [currentTrack]);
+  }, [currentTrack, trackKey]);
   
   useEffect(() => {
     if (audioRef.current) {
@@ -75,7 +81,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
-        audioRef.current.play().catch(e => console.error('Error playing audio:', e));
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => console.error('Error playing audio:', e));
+        }
       } else {
         audioRef.current.pause();
       }
@@ -94,10 +103,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [currentTrack]);
   
   const playTrack = (track: Track) => {
+    console.log('Playing track:', track.name);
     if (currentTrack) {
       setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
     }
     setCurrentTrack(track);
+    setTrackKey(prev => prev + 1); // Force reload
     setIsPlaying(true);
   };
   
@@ -134,10 +145,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const restartCurrentTrack = useCallback(() => {
     console.log('PlayerContext: Restarting current track');
-    if (audioRef.current && currentTrack) {
-      audioRef.current.currentTime = 0;
+    if (currentTrack) {
       setProgress(0);
-      audioRef.current.play().catch(e => console.error('Error restarting track:', e));
+      setTrackKey(prev => prev + 1); // Force reload
+      setIsPlaying(true);
     }
   }, [currentTrack]);
   
@@ -152,50 +163,49 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     isHandlingTrackEndRef.current = true;
     
-    if (repeatMode === 'one') {
-      console.log('PlayerContext: Repeating current track (mode: one)');
-      restartCurrentTrack();
-      isHandlingTrackEndRef.current = false;
-      return;
-    }
-    
-    if (repeatMode === 'all') {
-      if (queue.length > 0) {
-        console.log('PlayerContext: Playing next track from queue (repeat all)');
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        setQueue(newQueue);
-        if (currentTrack) {
-          setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-        }
-        setCurrentTrack(nextTrack);
-        setIsPlaying(true);
-      } else {
-        console.log('PlayerContext: Repeat all - restarting current track (no queue)');
+    // Small delay to prevent race conditions
+    setTimeout(() => {
+      if (repeatMode === 'one') {
+        console.log('PlayerContext: Repeating current track (mode: one)');
         restartCurrentTrack();
+      } else if (repeatMode === 'all') {
+        if (queue.length > 0) {
+          console.log('PlayerContext: Playing next track from queue (repeat all)');
+          const nextTrack = queue[0];
+          const newQueue = queue.slice(1);
+          setQueue(newQueue);
+          if (currentTrack) {
+            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+          }
+          setCurrentTrack(nextTrack);
+          setTrackKey(prev => prev + 1);
+          setIsPlaying(true);
+        } else {
+          console.log('PlayerContext: Repeat all - restarting current track (no queue)');
+          restartCurrentTrack();
+        }
+      } else {
+        // Repeat mode is 'off'
+        if (queue.length > 0) {
+          console.log('PlayerContext: Playing next track from queue (repeat off)');
+          const nextTrack = queue[0];
+          const newQueue = queue.slice(1);
+          setQueue(newQueue);
+          if (currentTrack) {
+            setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
+          }
+          setCurrentTrack(nextTrack);
+          setTrackKey(prev => prev + 1);
+          setIsPlaying(true);
+        } else {
+          console.log('PlayerContext: Repeat off - stopping playback');
+          setIsPlaying(false);
+        }
       }
+      
       isHandlingTrackEndRef.current = false;
-      return;
-    }
-    
-    // Repeat mode is 'off'
-    if (queue.length > 0) {
-      console.log('PlayerContext: Playing next track from queue (repeat off)');
-      const nextTrack = queue[0];
-      const newQueue = queue.slice(1);
-      setQueue(newQueue);
-      if (currentTrack) {
-        setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
-      }
-      setCurrentTrack(nextTrack);
-      setIsPlaying(true);
-    } else {
-      console.log('PlayerContext: Repeat off - stopping playback');
-      setIsPlaying(false);
-    }
-    
-    isHandlingTrackEndRef.current = false;
-  }, [repeatMode, queue.length, restartCurrentTrack, currentTrack]);
+    }, 100);
+  }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
   
   const playNextTrack = () => {
     console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
