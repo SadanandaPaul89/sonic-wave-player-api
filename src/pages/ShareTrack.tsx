@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Track } from '@/services/api';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
-import { getAllTracks } from '@/services/localLibrary';
+import { getAllLocalTracks, getAllPublishedTracks } from '@/services/localLibrary';
 
 const ShareTrack: React.FC = () => {
   const { trackId } = useParams<{ trackId: string }>();
@@ -23,8 +23,12 @@ const ShareTrack: React.FC = () => {
       }
 
       try {
-        const tracks = await getAllTracks();
-        const foundTrack = tracks.find(t => t.id === trackId);
+        // Get tracks from both local and published libraries
+        const localTracks = getAllLocalTracks();
+        const publishedTracks = getAllPublishedTracks();
+        const allTracks = [...localTracks, ...publishedTracks];
+        
+        const foundTrack = allTracks.find(t => t.id === trackId);
         setTrack(foundTrack || null);
       } catch (error) {
         console.error('Error loading track:', error);
