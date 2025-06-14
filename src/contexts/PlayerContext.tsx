@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -36,7 +35,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
   
-  // Repeat logic following the exact pattern provided
+  // Repeat Modes - using your exact pattern
   const repeatModes: RepeatMode[] = ['off', 'all', 'one'];
   const [repeatIndex, setRepeatIndex] = useState(0); // 0 = off
   const repeatMode = repeatModes[repeatIndex];
@@ -157,64 +156,50 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return queue.length === 0;
   };
   
-  // Exact repeat logic from the provided code
+  // Your exact repeat logic implemented
   const handleTrackEnd = useCallback(() => {
     console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
     
-    if (isHandlingTrackEndRef.current) {
-      console.log('TRACK_END: Already handling track end, ignoring');
-      return;
-    }
-    
-    isHandlingTrackEndRef.current = true;
-    
-    setTimeout(() => {
-      if (repeatMode === 'one') {
-        // Repeat current track
-        if (audioRef.current) {
+    if (repeatMode === 'one') {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => console.error('Error restarting track:', e));
+        }
+      }
+    } else if (repeatMode === 'all') {
+      if (queue.length > 0) {
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        loadAndPlay(nextTrack);
+      } else {
+        // Loop back to current track for repeat all when no queue
+        if (audioRef.current && currentTrack) {
           audioRef.current.currentTime = 0;
           const playPromise = audioRef.current.play();
           if (playPromise !== undefined) {
             playPromise.catch(e => console.error('Error restarting track:', e));
           }
         }
-      } else if (repeatMode === 'all') {
-        // Play next track, loop to first if at end
-        if (queue.length > 0) {
-          const nextTrack = queue[0];
-          const newQueue = queue.slice(1);
-          setQueue(newQueue);
-          loadAndPlay(nextTrack);
-        } else {
-          // No more tracks in queue, restart current track for repeat all
-          if (audioRef.current && currentTrack) {
-            audioRef.current.currentTime = 0;
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(e => console.error('Error restarting track:', e));
-            }
-          }
-        }
-      } else if (repeatMode === 'off') {
-        // Play next track if available, otherwise stop
-        if (!isLastTrack()) {
-          const nextTrack = queue[0];
-          const newQueue = queue.slice(1);
-          setQueue(newQueue);
-          loadAndPlay(nextTrack);
-        } else {
-          // Stop playback
-          setIsPlaying(false);
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-          }
-          setProgress(0);
-        }
       }
-      
-      isHandlingTrackEndRef.current = false;
-    }, 50);
+    } else if (repeatMode === 'off') {
+      if (!isLastTrack()) {
+        const nextTrack = queue[0];
+        const newQueue = queue.slice(1);
+        setQueue(newQueue);
+        loadAndPlay(nextTrack);
+      } else {
+        // Stop
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        setIsPlaying(false);
+        setProgress(0);
+      }
+    }
   }, [repeatMode, queue, currentTrack]);
   
   const playNextTrack = () => {
@@ -262,7 +247,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  // Toggle repeat mode following exact pattern: off -> all -> one -> off
+  // Toggle repeat mode - using your exact pattern
   const toggleRepeatMode = () => {
     setRepeatIndex(prev => {
       const newIndex = (prev + 1) % repeatModes.length;
