@@ -149,8 +149,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         audioRef.current.play().catch(e => console.error('Error repeating track:', e));
       }
     } else if (repeatMode === 'all') {
-      // Only call playNextTrack if repeat mode is 'all'
-      playNextTrack();
+      // For repeat all mode, try to play next track from queue
+      if (queue.length > 0) {
+        playNextTrack();
+      } else {
+        // If no queue, restart current track
+        console.log('PlayerContext: Repeat all - restarting current track (no queue)');
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          setProgress(0);
+          audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+        }
+      }
     } else {
       // Repeat mode is 'off' - stop playing
       console.log('PlayerContext: Repeat off - stopping playback');
@@ -166,15 +176,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQueue(newQueue);
       playTrack(nextTrack);
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
-    } else if (repeatMode === 'all' && currentTrack) {
-      // If repeat all is on and no queue, restart current track
-      console.log('PlayerContext: Repeat all - restarting current track');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        setProgress(0);
-        // Force play the track again
-        audioRef.current.play().catch(e => console.error('Error repeating track:', e));
-      }
     } else {
       console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
