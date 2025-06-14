@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,21 +8,18 @@ const AboutUs: React.FC = () => {
   const developers = [
     {
       name: "Sadananda Paul",
-      role: "Lead Developer",
       note: "Passionate about creating seamless user experiences and bringing innovative ideas to life through code.",
       initials: "SP",
       color: "bg-gradient-to-br from-purple-500 to-pink-500"
     },
     {
       name: "Mayank Sen",
-      role: "Full Stack Developer", 
       note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
       initials: "MS",
       color: "bg-gradient-to-br from-blue-500 to-cyan-500"
     },
     {
       name: "Avanthika Prathapan",
-      role: "Frontend Developer",
       note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
       initials: "AP",
       color: "bg-gradient-to-br from-green-500 to-emerald-500"
@@ -125,9 +121,6 @@ const AboutUs: React.FC = () => {
                   <CardTitle className="text-2xl text-white group-hover:text-spotify-green transition-colors">
                     {dev.name}
                   </CardTitle>
-                  <Badge variant="outline" className="border-spotify-green/50 text-spotify-green">
-                    {dev.role}
-                  </Badge>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-spotify-base/50 rounded-lg p-4 border-l-4 border-spotify-green">
