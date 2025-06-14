@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
+import { ThemeProvider } from "./components/ThemeProvider";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -91,39 +93,41 @@ function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
-            <Route path="/share/:trackId" element={<ShareTrack />} />
-            <Route
-              path="/"
-              element={
-                session ? (
-                  <Layout>
-                    <Home />
-                  </Layout>
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              }
-            />
-            <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/about" element={session ? <Layout><AboutUs /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
+              <Route path="/share/:trackId" element={<ShareTrack />} />
+              <Route
+                path="/"
+                element={
+                  session ? (
+                    <Layout>
+                      <Home />
+                    </Layout>
+                  ) : (
+                    <Navigate to="/auth" replace />
+                  )
+                }
+              />
+              <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/about" element={session ? <Layout><AboutUs /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

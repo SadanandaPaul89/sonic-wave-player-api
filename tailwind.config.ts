@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,15 +20,15 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Spotify Colors
+				// CSS Variable-based Spotify Colors that adapt to theme
 				spotify: {
-					base: '#121212',
-					elevated: '#181818',
-					highlight: '#282828',
-					green: '#1DB954',
-					white: '#FFFFFF',
-					lightgray: '#B3B3B3',
-					darkgray: '#535353',
+					base: 'hsl(var(--spotify-base))',
+					elevated: 'hsl(var(--spotify-elevated))',
+					highlight: 'hsl(var(--spotify-highlight))',
+					green: 'hsl(var(--spotify-green))',
+					white: 'hsl(var(--spotify-white))',
+					lightgray: 'hsl(var(--spotify-lightgray))',
+					darkgray: 'hsl(var(--spotify-darkgray))',
 				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

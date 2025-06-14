@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,17 +28,17 @@ const AboutUs: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-spotify-base via-black to-spotify-base text-white">
+    <div className="min-h-screen bg-gradient-to-br from-spotify-base via-spotify-elevated to-spotify-base text-spotify-white">
       {/* Hero Section */}
       <div className="relative px-6 py-20 text-center">
         <div className="absolute inset-0 bg-gradient-to-r from-spotify-green/20 to-transparent"></div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <div className="flex justify-center mb-6">
-            <div className="p-4 bg-spotify-green/20 rounded-full">
+            <div className="p-4 bg-spotify-green/20 rounded-full backdrop-blur-sm">
               <Music className="w-16 h-16 text-spotify-green" />
             </div>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-spotify-green to-white bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-spotify-white via-spotify-green to-spotify-white bg-clip-text text-transparent">
             About Sonic Wave
           </h1>
           <div className="w-24 h-1 bg-spotify-green mx-auto mb-8"></div>
@@ -76,11 +77,11 @@ const AboutUs: React.FC = () => {
           </div>
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-spotify-green/30 to-purple-500/30 rounded-3xl blur-xl"></div>
-            <div className="relative bg-black/50 backdrop-blur-sm rounded-3xl p-8 border border-spotify-green/30">
+            <div className="relative bg-spotify-elevated/50 backdrop-blur-sm rounded-3xl p-8 border border-spotify-green/30">
               <div className="text-center space-y-4">
                 <Music className="w-20 h-20 text-spotify-green mx-auto" />
                 <h3 className="text-2xl font-bold">Pure Music Experience</h3>
-                <p className="text-gray-300">
+                <p className="text-spotify-lightgray">
                   Direct connection between artists and listeners, without any barriers or limitations.
                 </p>
               </div>
@@ -90,7 +91,7 @@ const AboutUs: React.FC = () => {
       </div>
 
       {/* Hall of Fame Section */}
-      <div className="px-6 py-20 bg-gradient-to-r from-black via-spotify-base to-black">
+      <div className="px-6 py-20 bg-gradient-to-r from-spotify-elevated via-spotify-base to-spotify-elevated">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="flex justify-center mb-4">
@@ -99,7 +100,7 @@ const AboutUs: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-500 via-spotify-green to-yellow-500 bg-clip-text text-transparent">
               Hall of Fame
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p className="text-xl text-spotify-lightgray max-w-2xl mx-auto">
               Meet the talented developers who brought Sonic Wave to life
             </p>
             <div className="w-32 h-1 bg-gradient-to-r from-yellow-500 to-spotify-green mx-auto mt-6"></div>
@@ -107,7 +108,7 @@ const AboutUs: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             {developers.map((dev, index) => (
-              <Card key={dev.name} className="bg-black/50 border-spotify-green/30 hover:border-spotify-green/60 transition-all duration-300 hover:scale-105 group">
+              <Card key={dev.name} className="bg-spotify-elevated/50 border-spotify-green/30 hover:border-spotify-green/60 transition-all duration-300 hover:scale-105 group backdrop-blur-sm">
                 <CardHeader className="text-center pb-4">
                   <div className="relative mx-auto mb-4">
                     <div className={`absolute inset-0 ${dev.color} rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity`}></div>
@@ -118,13 +119,13 @@ const AboutUs: React.FC = () => {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <CardTitle className="text-2xl text-white group-hover:text-spotify-green transition-colors">
+                  <CardTitle className="text-2xl text-spotify-white group-hover:text-spotify-green transition-colors">
                     {dev.name}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-spotify-base/50 rounded-lg p-4 border-l-4 border-spotify-green">
-                    <p className="text-gray-300 italic text-center leading-relaxed">
+                    <p className="text-spotify-lightgray italic text-center leading-relaxed">
                       "{dev.note}"
                     </p>
                   </div>
@@ -136,12 +137,12 @@ const AboutUs: React.FC = () => {
       </div>
 
       {/* Footer Section */}
-      <div className="px-6 py-12 text-center bg-black">
+      <div className="px-6 py-12 text-center bg-spotify-elevated">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-2xl font-bold mb-4 text-spotify-green">
             Join the Sonic Wave Community
           </h3>
-          <p className="text-gray-400 mb-6">
+          <p className="text-spotify-lightgray mb-6">
             Where music meets freedom, and artists connect with their true audience.
           </p>
           <div className="w-16 h-1 bg-spotify-green mx-auto"></div>
