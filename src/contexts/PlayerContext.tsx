@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -149,8 +148,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setProgress(0);
         audioRef.current.play().catch(e => console.error('Error repeating track:', e));
       }
-    } else {
+    } else if (repeatMode === 'all') {
+      // Only call playNextTrack if repeat mode is 'all'
       playNextTrack();
+    } else {
+      // Repeat mode is 'off' - stop playing
+      console.log('PlayerContext: Repeat off - stopping playback');
+      setIsPlaying(false);
     }
   };
   
