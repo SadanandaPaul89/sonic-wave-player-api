@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -36,7 +35,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [queue, setQueue] = useState<Track[]>([]);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
-  const [trackKey, setTrackKey] = useState(0); // Force re-render when restarting
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isHandlingTrackEndRef = useRef(false);
@@ -60,7 +58,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   useEffect(() => {
     if (currentTrack && audioRef.current) {
-      console.log('Loading track:', currentTrack.name, 'Key:', trackKey);
+      console.log('Loading track:', currentTrack.name);
       audioRef.current.src = currentTrack.previewURL;
       audioRef.current.load();
       if (isPlaying) {
@@ -70,7 +68,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       }
     }
-  }, [currentTrack, trackKey]);
+  }, [currentTrack]);
   
   useEffect(() => {
     if (audioRef.current) {
@@ -108,7 +106,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
     }
     setCurrentTrack(track);
-    setTrackKey(prev => prev + 1); // Force reload
     setIsPlaying(true);
   };
   
@@ -145,9 +142,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const restartCurrentTrack = useCallback(() => {
     console.log('PlayerContext: Restarting current track');
-    if (currentTrack) {
+    if (audioRef.current && currentTrack) {
+      audioRef.current.currentTime = 0;
       setProgress(0);
-      setTrackKey(prev => prev + 1); // Force reload
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(e => console.error('Error restarting track:', e));
+      }
       setIsPlaying(true);
     }
   }, [currentTrack]);
@@ -163,7 +164,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     isHandlingTrackEndRef.current = true;
     
-    // Small delay to prevent race conditions
     setTimeout(() => {
       if (repeatMode === 'one') {
         console.log('PlayerContext: Repeating current track (mode: one)');
@@ -178,7 +178,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
           }
           setCurrentTrack(nextTrack);
-          setTrackKey(prev => prev + 1);
           setIsPlaying(true);
         } else {
           console.log('PlayerContext: Repeat all - restarting current track (no queue)');
@@ -195,7 +194,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
           }
           setCurrentTrack(nextTrack);
-          setTrackKey(prev => prev + 1);
           setIsPlaying(true);
         } else {
           console.log('PlayerContext: Repeat off - stopping playback');
@@ -204,7 +202,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
       
       isHandlingTrackEndRef.current = false;
-    }, 100);
+    }, 50);
   }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
   
   const playNextTrack = () => {
@@ -240,13 +238,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('PlayerContext: Playing previous track:', previousTrack.name);
     } else {
       console.log('PlayerContext: No history, restarting current track');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        setProgress(0);
-        if (!isPlaying) {
-          setIsPlaying(true);
-        }
-      }
+      restartCurrentTrack();
     }
   };
   
