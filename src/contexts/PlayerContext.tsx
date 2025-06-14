@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -144,7 +143,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const restartCurrentTrack = useCallback(async () => {
-    console.log('RESTART: Starting restart process, repeat mode:', repeatMode);
+    console.log('RESTART: Starting restart process');
     if (!audioRef.current || !currentTrack) {
       console.log('RESTART: No audio ref or current track');
       return;
@@ -156,11 +155,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       audioRef.current.currentTime = 0;
       setProgress(0);
       
-      // Reload the audio source to ensure it's fresh
       console.log('RESTART: Reloading audio source');
       audioRef.current.load();
       
-      // Wait for the audio to be ready
       await new Promise((resolve) => {
         const onCanPlay = () => {
           console.log('RESTART: Audio ready to play');
@@ -169,7 +166,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         };
         audioRef.current?.addEventListener('canplay', onCanPlay);
         
-        // Fallback timeout
         setTimeout(() => {
           console.log('RESTART: Timeout waiting for canplay, proceeding anyway');
           audioRef.current?.removeEventListener('canplay', onCanPlay);
@@ -180,7 +176,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('RESTART: Setting isPlaying to true');
       setIsPlaying(true);
       
-      // Play the audio
       console.log('RESTART: Attempting to play');
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
@@ -189,7 +184,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
     } catch (error) {
       console.error('RESTART: Error restarting track:', error);
-      // Try a simpler approach as fallback
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         setProgress(0);
@@ -199,12 +193,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }, 100);
       }
     }
-  }, [currentTrack, repeatMode]);
+  }, [currentTrack]);
   
   const handleTrackEnd = useCallback(() => {
-    console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'isHandling:', isHandlingTrackEndRef.current);
+    console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
     
-    // Prevent multiple simultaneous calls
     if (isHandlingTrackEndRef.current) {
       console.log('TRACK_END: Already handling track end, ignoring');
       return;
@@ -212,7 +205,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     isHandlingTrackEndRef.current = true;
     
-    // Set a timeout to handle the track end logic
     setTimeout(() => {
       console.log('TRACK_END: Processing track end with repeat mode:', repeatMode);
       
@@ -247,12 +239,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setCurrentTrack(nextTrack);
           setIsPlaying(true);
         } else {
-          console.log('TRACK_END: Repeat OFF - stopping playback');
+          console.log('TRACK_END: Repeat OFF - no queue, stopping playback');
           setIsPlaying(false);
+          setProgress(0);
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+          }
         }
       }
       
-      // Reset the flag
       isHandlingTrackEndRef.current = false;
     }, 100);
   }, [repeatMode, queue, restartCurrentTrack, currentTrack]);
