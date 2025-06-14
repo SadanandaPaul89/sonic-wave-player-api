@@ -17,6 +17,7 @@ import AdminPanel from "./pages/AdminPanel";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ShareTrack from "./pages/ShareTrack";
+import AboutUs from "./pages/AboutUs";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
@@ -110,6 +111,7 @@ function App() {
             />
             <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
+            <Route path="/about" element={session ? <Layout><AboutUs /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
             <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
