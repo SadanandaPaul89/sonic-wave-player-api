@@ -140,10 +140,13 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const handleTrackEnd = () => {
+    console.log('PlayerContext: Track ended, repeat mode:', repeatMode);
     if (repeatMode === 'one') {
       // Repeat current track
+      console.log('PlayerContext: Repeating current track');
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
+        setProgress(0);
         audioRef.current.play().catch(e => console.error('Error repeating track:', e));
       }
     } else {
@@ -152,7 +155,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const playNextTrack = () => {
-    console.log('PlayerContext: playNextTrack called, queue length:', queue.length);
+    console.log('PlayerContext: playNextTrack called, queue length:', queue.length, 'repeat mode:', repeatMode);
     if (queue.length > 0) {
       const nextTrack = queue[0];
       const newQueue = queue.slice(1);
@@ -161,12 +164,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
     } else if (repeatMode === 'all' && currentTrack) {
       // If repeat all is on and no queue, restart current track
+      console.log('PlayerContext: Repeat all - restarting current track');
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
         setProgress(0);
-        if (!isPlaying) {
-          setIsPlaying(true);
-        }
+        // Force play the track again
+        audioRef.current.play().catch(e => console.error('Error repeating track:', e));
       }
     } else {
       console.log('PlayerContext: No tracks in queue, stopping playback');
@@ -204,16 +207,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const toggleRepeatMode = () => {
     setRepeatMode(prev => {
-      switch (prev) {
-        case 'off':
-          return 'all';
-        case 'all':
-          return 'one';
-        case 'one':
-          return 'off';
-        default:
-          return 'off';
-      }
+      const newMode = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
+      console.log('PlayerContext: Repeat mode changed from', prev, 'to', newMode);
+      return newMode;
     });
   };
   
