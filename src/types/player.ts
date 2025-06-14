@@ -26,4 +26,6 @@ export interface Track {
   artistName: string;
   previewURL: string;
   image?: string;
+  artistId?: string;
+  albumName?: string;
 }
