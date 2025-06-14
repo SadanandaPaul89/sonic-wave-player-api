@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
   Shuffle,
   Repeat,
+  Repeat1,
   BadgeCheck,
   Edit
 } from 'lucide-react';
@@ -128,11 +129,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     volume,
     progress,
     duration,
+    repeatMode,
     togglePlayPause,
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
     playPreviousTrack,
+    toggleRepeatMode,
     queue
   } = usePlayer();
 
@@ -284,6 +287,18 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const handlePreviousTrack = () => {
     console.log('FullScreen Previous track clicked');
     playPreviousTrack();
+  };
+
+  // Get repeat icon based on mode
+  const getRepeatIcon = () => {
+    switch (repeatMode) {
+      case 'one':
+        return <Repeat1 size={20} />;
+      case 'all':
+        return <Repeat size={20} className="text-green-500" />;
+      default:
+        return <Repeat size={20} />;
+    }
   };
 
   const openLyricsEditor = () => {
@@ -488,8 +503,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               </Button>
             </div>
             
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm">
-              <Repeat size={20} />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleRepeatMode}
+              className="text-white hover:bg-white/10 backdrop-blur-sm"
+              title={`Repeat: ${repeatMode}`}
+            >
+              {getRepeatIcon()}
             </Button>
           </div>
 

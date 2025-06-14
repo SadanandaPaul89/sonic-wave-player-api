@@ -1,6 +1,9 @@
+
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
+
+type RepeatMode = 'off' | 'one' | 'all';
 
 interface PlayerContextProps {
   currentTrack: Track | null;
@@ -8,12 +11,14 @@ interface PlayerContextProps {
   volume: number;
   progress: number;
   duration: number;
+  repeatMode: RepeatMode;
   playTrack: (track: Track) => void;
   togglePlayPause: () => void;
   setVolumeLevel: (level: number) => void;
   seekToPosition: (position: number) => void;
   playNextTrack: () => void;
   playPreviousTrack: () => void;
+  toggleRepeatMode: () => void;
   queue: Track[];
   addToQueue: (track: Track) => void;
   clearQueue: () => void;
@@ -27,6 +32,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [volume, setVolume] = useState(0.7);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
   const [queue, setQueue] = useState<Track[]>([]);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
@@ -134,7 +140,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
   
   const handleTrackEnd = () => {
-    playNextTrack();
+    if (repeatMode === 'one') {
+      // Repeat current track
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(e => console.error('Error repeating track:', e));
+      }
+    } else {
+      playNextTrack();
+    }
   };
   
   const playNextTrack = () => {
@@ -145,6 +159,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQueue(newQueue);
       playTrack(nextTrack);
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
+    } else if (repeatMode === 'all' && currentTrack) {
+      // If repeat all is on and no queue, restart current track
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        setProgress(0);
+        if (!isPlaying) {
+          setIsPlaying(true);
+        }
+      }
     } else {
       console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
@@ -179,6 +202,21 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
+  const toggleRepeatMode = () => {
+    setRepeatMode(prev => {
+      switch (prev) {
+        case 'off':
+          return 'all';
+        case 'all':
+          return 'one';
+        case 'one':
+          return 'off';
+        default:
+          return 'off';
+      }
+    });
+  };
+  
   const addToQueue = (track: Track) => {
     console.log('PlayerContext: Adding track to queue:', track.name);
     setQueue(prev => [...prev, track]);
@@ -197,12 +235,14 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         volume,
         progress,
         duration,
+        repeatMode,
         playTrack,
         togglePlayPause,
         setVolumeLevel,
         seekToPosition,
         playNextTrack,
         playPreviousTrack,
+        toggleRepeatMode,
         queue,
         addToQueue,
         clearQueue
