@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Search, Library, Plus, Upload, BadgeCheck, LogOut, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isUserAdmin, setUserAsAdmin } from '@/services/supabaseService';
@@ -11,6 +11,7 @@ const SidebarNav: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check authentication and admin status when component mounts
   useEffect(() => {
@@ -113,7 +114,7 @@ const SidebarNav: React.FC = () => {
   };
 
   return (
-    <nav className="space-y-6">
+    <nav className="flex flex-col gap-2">
       <div className="space-y-1">
         <NavLink
           to="/"
@@ -206,6 +207,16 @@ const SidebarNav: React.FC = () => {
           )}
         </div>
       )}
+      
+      <NavLink
+        to="/profile"
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2 rounded-md transition-colors 
+          ${isActive ? "bg-spotify-highlight text-white" : "hover:bg-spotify-highlight/80 text-white/80"}`
+        }
+      >
+        <span>Profile</span>
+      </NavLink>
     </nav>
   );
 };

@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import ShareTrack from "./pages/ShareTrack";
 import AboutUs from "./pages/AboutUs";
 import Artists from "./pages/Artists";
+import ProfilePage from "./pages/ProfilePage";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
@@ -122,6 +123,15 @@ function App() {
               <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
               <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
               <Route path="/artists" element={session ? <Layout><Artists /></Layout> : <Navigate to="/auth" replace />} />
+              <Route path="/profile" element={
+                session ? (
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
