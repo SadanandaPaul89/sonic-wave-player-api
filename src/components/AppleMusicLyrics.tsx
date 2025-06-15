@@ -30,7 +30,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
     setActiveIndex(idx);
   }, [currentTime, lyrics]);
 
-  // Smooth scroll to keep active line in optimal reading position
+  // Improved scroll positioning to keep active line in optimal reading position
   useEffect(() => {
     if (activeLineRef.current && containerRef.current && activeIndex >= 0) {
       const container = containerRef.current;
@@ -38,26 +38,20 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
       
       const containerHeight = container.clientHeight;
       const lyricTop = lyricElement.offsetTop;
-      const lyricHeight = lyricElement.clientHeight;
       
-      // Calculate optimal scroll position - keep highlighted lyric in upper third for better readability
-      const optimalPosition = containerHeight * 0.3; // 30% from top
-      let targetScroll = lyricTop - optimalPosition;
+      // Keep the active lyric at 25% from the top for better readability
+      const optimalPosition = containerHeight * 0.25;
+      const targetScroll = lyricTop - optimalPosition;
       
-      // Ensure we don't scroll too far up or down
+      // Ensure we don't scroll beyond boundaries
       const maxScroll = container.scrollHeight - containerHeight;
-      targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+      const finalScroll = Math.max(0, Math.min(targetScroll, maxScroll));
       
-      // Only scroll if the difference is significant to avoid constant micro-adjustments
-      const currentScroll = container.scrollTop;
-      const scrollDifference = Math.abs(targetScroll - currentScroll);
-      
-      if (scrollDifference > 20) { // 20px threshold to prevent jitter
-        container.scrollTo({
-          top: targetScroll,
-          behavior: "smooth"
-        });
-      }
+      // Always scroll to the calculated position for active lyric
+      container.scrollTo({
+        top: finalScroll,
+        behavior: "smooth"
+      });
     }
   }, [activeIndex]);
 
@@ -87,8 +81,8 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
       }}
     >
       <div className="flex flex-col items-center w-full">
-        {/* Add top spacer to prevent first lyric from being cut */}
-        <div className={`${isMobile ? 'h-8' : 'h-16'}`} />
+        {/* Add larger top spacer to ensure first lyrics don't appear at the very top */}
+        <div className={`${isMobile ? 'h-20' : 'h-32'}`} />
         
         {lyrics.map((line, i) => {
           const distance = Math.abs(activeIndex - i);
@@ -131,7 +125,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
                 transform: `scale(${scale})`,
                 lineHeight: isMobile ? 1.7 : 1.8,
                 fontSize: isMobile ? 16 : 22,
-                marginBottom: isMobile ? 12 : 16,
+                marginBottom: isMobile ? 16 : 20,
                 padding: isMobile ? '0 8px' : '0 16px',
               }}
             >
@@ -140,8 +134,8 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
           );
         })}
         
-        {/* Add bottom spacer to prevent last lyric from being cut */}
-        <div className={`${isMobile ? 'h-8' : 'h-16'}`} />
+        {/* Add larger bottom spacer to allow scrolling past the last lyric */}
+        <div className={`${isMobile ? 'h-20' : 'h-32'}`} />
       </div>
     </div>
   );
