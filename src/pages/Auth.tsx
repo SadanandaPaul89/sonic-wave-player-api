@@ -151,7 +151,7 @@ const Auth = () => {
           <div className="absolute inset-0 bg-white/10"></div>
         </div>
 
-        <Card className="w-full max-w-sm bg-white/80 backdrop-blur-lg shadow-2xl border border-white/20 relative z-10">
+        <Card className="w-full max-w-sm bg-white/95 backdrop-blur-lg shadow-2xl border border-white/20 relative z-10">
           <CardContent className="p-6">
             <div className="text-center mb-8">
               <div className="relative h-16 overflow-hidden">
@@ -169,14 +169,14 @@ const Auth = () => {
               <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+            {/* Tab Navigation - Fixed contrast */}
+            <div className="flex mb-6 bg-white/80 rounded-lg p-1 border border-gray-200">
               <button
                 onClick={() => setActiveTab('login')}
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'login'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-white/50'
                 }`}
               >
                 Login
@@ -185,8 +185,8 @@ const Auth = () => {
                 onClick={() => setActiveTab('register')}
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'register'
-                    ? 'bg-white text-green-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-white/50'
                 }`}
               >
                 Register
@@ -202,9 +202,9 @@ const Auth = () => {
 
             <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                <Label htmlFor="email" className="text-gray-800 font-medium">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="email"
                     type="email"
@@ -213,16 +213,16 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
+                    className="pl-10 h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg text-gray-900"
                   />
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
+                <Label htmlFor="password" className="text-gray-800 font-medium">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -231,12 +231,12 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
+                    className="pl-10 pr-10 h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg text-gray-900"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:scale-110"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-all duration-300 hover:scale-110"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -273,14 +273,14 @@ const Auth = () => {
 
               <div className="flex items-center my-6">
                 <div className="flex-grow border-t border-gray-300" />
-                <span className="mx-4 text-sm text-gray-500">or continue with</span>
+                <span className="mx-4 text-sm text-gray-600">or continue with</span>
                 <div className="flex-grow border-t border-gray-300" />
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400"
+                className="w-full h-12 bg-white border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400 text-gray-700"
                 onClick={handleSignInWithGoogle}
                 disabled={googleLoading || loading}
               >
