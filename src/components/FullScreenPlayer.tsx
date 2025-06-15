@@ -158,6 +158,17 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     accent: '280, 25%, 25%' 
   });
   const [isColorsLoading, setIsColorsLoading] = useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  // Detect mobile (reuse useIsMobile hook if available)
+  // Reuse internally or import if available:
+  // import { useIsMobile } from '@/hooks/use-mobile';
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Extract colors from album art when track changes - debounced
   useEffect(() => {
@@ -336,67 +347,61 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
 
   return (
     <div className="fixed inset-0 z-50 text-white overflow-hidden">
-      {/* Dynamic Background based on album art */}
+      {/* Dynamic Background */}
       <div className="absolute inset-0">
-        <div 
-          className="absolute inset-0"
-          style={backgroundStyle}
-        />
-        
-        {/* Subtle overlay for better text readability */}
+        <div className="absolute inset-0" style={backgroundStyle} />
         <div className="absolute inset-0 bg-black/20" />
       </div>
-
       {/* Content */}
       <div className="relative z-10 h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4">
+        <div className={`flex items-center justify-between p-2 sm:p-4 ${isMobile ? 'px-2 py-2' : ''}`}>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-white hover:bg-white/10 transition-colors"
+            className={`text-white hover:bg-white/10 transition-colors ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
           >
-            <ChevronDown size={24} />
+            <ChevronDown size={isMobile ? 20 : 24} />
           </Button>
-          
-          <div className="text-center">
-            <div className="text-sm opacity-60">Playing from Sonic Wave</div>
+          <div className="text-center flex-1">
+            <div className={`text-xs sm:text-sm opacity-60 ${isMobile ? 'truncate' : ''}`}>Playing from Sonic Wave</div>
           </div>
-          
-          <div className="flex items-center space-x-2">
+          <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
             {isArtistVerifiedState && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={openLyricsEditor}
-                className="text-white hover:bg-white/10 transition-colors"
+                className={`text-white hover:bg-white/10 transition-colors ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
               >
-                <Edit size={24} />
+                <Edit size={isMobile ? 20 : 24} />
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
               onClick={openShareModal}
-              className="text-white hover:bg-white/10 transition-colors"
+              className={`text-white hover:bg-white/10 transition-colors ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
             >
-              <Share2 size={20} />
+              <Share2 size={isMobile ? 18 : 20} />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 transition-colors"
+              className={`text-white hover:bg-white/10 transition-colors ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
             >
-              <MoreHorizontal size={24} />
+              <MoreHorizontal size={isMobile ? 20 : 24} />
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-col h-full px-6 pb-6">
+        <div className={`flex flex-col h-full px-2 sm:px-6 pb-3 sm:pb-6`}>
           {/* Album Art */}
-          <div className="flex-1 flex items-center justify-center mb-4">
-            <div className="w-80 h-80 max-w-[80vw] max-h-[40vh] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02]">
+          <div className={`flex-1 flex items-center justify-center ${isMobile ? 'mb-2' : 'mb-4'}`}>
+            <div className={`rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] 
+              ${isMobile ? 'w-[66vw] h-[66vw] max-w-[95vw] max-h-[32vh]' : 'w-80 h-80 max-w-[80vw] max-h-[40vh]'}
+            `}>
               <img
                 src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
                 alt={currentTrack.albumName}
@@ -407,118 +412,115 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Track Info */}
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold mb-2 truncate drop-shadow-lg">{currentTrack.name}</h1>
-            <div className="flex items-center justify-center text-xl text-gray-200 mb-2">
+          <div className="text-center mb-2 sm:mb-4">
+            <h1 className={`truncate font-bold drop-shadow-lg ${isMobile ? 'text-lg mb-1' : 'text-3xl mb-2'}`}>{currentTrack.name}</h1>
+            <div className={`flex items-center justify-center ${isMobile ? 'text-sm mb-1' : 'text-xl mb-2'} text-gray-200`}>
               <ArtistNameWithBadge
                 artistId={currentTrack.artistId}
                 artistName={currentTrack.artistName}
-                className="truncate hover:underline"
+                className={`truncate hover:underline`}
                 linkToProfile
               />
             </div>
-            
             {/* Action Buttons */}
-            <div className="flex items-center justify-center space-x-8 mb-4">
+            <div className={`flex items-center justify-center ${isMobile ? 'space-x-3 mb-2' : 'space-x-8 mb-4'}`}>
               <Button 
-                variant="ghost" 
+                variant="ghost"
                 size="icon" 
                 onClick={handleLikeToggle}
-                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!isAuthenticated}
               >
-                <Heart 
-                  size={24} 
-                  className={isLiked ? 'text-red-500 fill-current' : ''} 
-                />
+                <Heart size={isMobile ? 20 : 24} className={isLiked ? 'text-red-500 fill-current' : ''} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={openShareModal}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
+                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}
               >
-                <Share2 size={24} />
+                <Share2 size={isMobile ? 20 : 24} />
               </Button>
               {isArtistVerifiedState && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={openLyricsEditor}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
+                  className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}
                 >
-                  <Edit size={24} />
+                  <Edit size={isMobile ? 20 : 24} />
                 </Button>
               )}
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors">
-                <MoreHorizontal size={24} />
+              <Button variant="ghost" size="icon" className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}>
+                <MoreHorizontal size={isMobile ? 20 : 24} />
               </Button>
             </div>
           </div>
 
           {/* Apple Music Lyrics Section */}
-          <div className="mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-4 min-h-[100px]">
+          <div className={`mb-3 sm:mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg 
+            p-2 sm:p-4 min-h-[80px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full`}>
             <AppleMusicLyrics
               lyrics={lyrics}
               currentTime={progress}
               isLoading={isLoadingLyrics}
+              isMobile={isMobile}
             />
           </div>
           
           {/* Progress Bar */}
-          <div className="mb-4">
+          <div className={`mb-2 sm:mb-4`}>
             <Slider
               value={[progress]}
               max={duration || 100}
               step={0.1}
-              className="mb-2"
+              className="mb-1 sm:mb-2"
               onValueChange={handleProgressChange}
             />
-            <div className="flex justify-between text-sm text-gray-300">
+            <div className={`flex justify-between text-xs sm:text-sm text-gray-300`}>
               <span>{formatTime(progress)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>
 
           {/* Main Controls */}
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors">
-              <Shuffle size={20} />
+          <div className={`flex items-center justify-between mb-2 sm:mb-4`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}>
+              <Shuffle size={isMobile ? 18 : 20} />
             </Button>
-            
-            <div className="flex items-center space-x-6">
+            <div className={`flex items-center ${isMobile ? 'space-x-3' : 'space-x-6'}`}>
               <Button 
-                variant="ghost" 
+                variant="ghost"
                 size="icon"
                 onClick={handlePreviousTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
-              >
-                <SkipBack size={28} />
+                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}>
+                <SkipBack size={isMobile ? 22 : 28} />
               </Button>
-              
               <button 
                 onClick={handlePlayPause}
-                className="w-16 h-16 bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl"
+                className={`bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl
+                  ${isMobile ? 'w-12 h-12' : 'w-16 h-16'}
+                `}
                 type="button"
               >
-                {isPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
+                {isPlaying ? <Pause size={isMobile ? 28 : 32} /> : <Play size={isMobile ? 28 : 32} className="ml-1" />}
               </button>
-              
               <Button 
-                variant="ghost" 
+                variant="ghost"
                 size="icon"
                 onClick={handleNextTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
-              >
-                <SkipForward size={28} />
+                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}>
+                <SkipForward size={isMobile ? 22 : 28} />
               </Button>
             </div>
-            
             <Button 
-              variant="ghost" 
-              size="icon" 
+              variant="ghost"
+              size="icon"
               onClick={toggleRepeatMode}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
+              className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}
               title={`Repeat: ${repeatMode}`}
             >
               {getRepeatIcon()}
@@ -526,19 +528,19 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Volume Control */}
-          <div className="flex items-center justify-center space-x-4">
+          <div className={`flex items-center justify-center space-x-2 sm:space-x-4`}>
             <Button 
-              variant="ghost" 
+              variant="ghost"
               size="icon"
               onClick={toggleMute}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
+              className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors ${isMobile ? 'w-8 h-8' : ''}`}
             >
-              {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              {isMuted || volume === 0 ? <VolumeX size={isMobile ? 18 : 20} /> : <Volume2 size={isMobile ? 18 : 20} />}
             </Button>
             <Slider 
               value={[volume * 100]}
               max={100}
-              className="w-32"
+              className={`${isMobile ? 'w-20' : 'w-32'}`}
               onValueChange={handleVolumeChange}
             />
           </div>
