@@ -185,13 +185,6 @@ const Player: React.FC = () => {
                 </span>
               </div>
             )}
-
-            {/* Keyboard shortcuts hint */}
-            {!isMobile && (
-              <div className="text-xs text-gray-500 opacity-70">
-                Space: Play/Pause • Ctrl+←/→: Skip • Ctrl+↑/↓: Volume • Ctrl+M: Mute
-              </div>
-            )}
           </div>
 
           {/* Volume, Lyrics, and Full Screen Controls */}
