@@ -134,6 +134,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          name?: string | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       song_likes: {
         Row: {
           created_at: string
