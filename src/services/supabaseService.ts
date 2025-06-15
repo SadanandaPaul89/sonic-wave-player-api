@@ -1098,3 +1098,17 @@ export const getSongLikeStatus = async (songId: string): Promise<boolean> => {
     return false;
   }
 };
+
+// Get all artists (no limit)
+export const getAllArtists = async (): Promise<Artist[]> => {
+  const { data: artists, error } = await supabase
+    .from('artists')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching all artists:', error);
+    return [];
+  }
+  
+  return artists.map(mapArtistFromSupabase);
+};
