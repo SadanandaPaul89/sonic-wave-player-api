@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Track } from '@/services/supabaseService';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -116,7 +115,8 @@ const TrackList: React.FC<TrackListProps> = ({
   return (
     <div className="w-full">
       {showHeader && (
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 border-b border-spotify-highlight text-gray-400 text-sm">
+        // Desktop/tablet headers
+        <div className="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 border-b border-spotify-highlight text-gray-400 text-sm">
           <div className="col-span-1 text-center">#</div>
           <div className="col-span-4">TITLE</div>
           {showAlbum && <div className="col-span-3">ALBUM</div>}
@@ -132,15 +132,21 @@ const TrackList: React.FC<TrackListProps> = ({
           const isLiked = likedTracks.has(track.id);
 
           return (
+            // Mobile: flex-col, Desktop: grid
             <div 
               key={track.id}
-              className={`grid grid-cols-12 gap-4 px-4 py-2 hover:bg-spotify-highlight rounded-md group ${
+              className={`group ${
                 isCurrentTrack ? 'text-spotify-green' : 'text-gray-300'
-              }`}
+              } sm:grid sm:grid-cols-12 sm:gap-4 
+                px-2 py-[10px] sm:px-4 sm:py-2 
+                hover:bg-spotify-highlight rounded-md 
+                flex flex-col mb-2 sm:mb-0`}
             >
-              <div className="col-span-1 flex items-center justify-center">
-                <div className="relative">
-                  <span className={`group-hover:hidden ${isCurrentTrack ? 'text-spotify-green' : 'text-gray-400'}`}>
+
+              {/* Row 1: Index/Play, Title/Artist */}
+              <div className="flex items-center gap-3 sm:col-span-5">
+                <div className="w-6 flex-shrink-0 flex items-center justify-center relative">
+                  <span className={`group-hover:hidden ${isCurrentTrack ? 'text-spotify-green' : 'text-gray-400'} text-sm sm:text-base`}>
                     {index + 1}
                   </span>
                   <button 
@@ -153,39 +159,73 @@ const TrackList: React.FC<TrackListProps> = ({
                     }
                   </button>
                 </div>
-              </div>
-              <div className="col-span-4 flex items-center gap-3 truncate">
-                <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
-                  <img
-                    src={trackImageUrl}
-                    alt={`${track.name} album art`}
-                    className="w-full h-full rounded object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
-                    }}
-                  />
-                </div>
-                <div className="truncate">
-                  {/* Track name: PLAIN - no badge! */}
-                  <div className="font-medium truncate">{track.name}</div>
-                  {/* Artist name: WITH BADGE */}
-                  <div className="text-sm text-gray-400 truncate">
-                    <ArtistNameWithBadge
-                      artistId={track.artistId}
-                      artistName={track.artistName}
-                      className="hover:underline"
-                      linkToProfile
+                <div className="flex items-center gap-2 truncate sm:w-auto w-full">
+                  <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
+                    <img
+                      src={trackImageUrl}
+                      alt={`${track.name} album art`}
+                      className="w-full h-full rounded object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
+                      }}
                     />
+                  </div>
+                  <div className="truncate flex flex-col">
+                    <span className="font-medium truncate text-base sm:text-lg">{track.name}</span>
+                    {/* Artist name - always below track name on mobile */}
+                    <span className="text-xs sm:text-sm text-gray-400 truncate font-normal">
+                      <ArtistNameWithBadge
+                        artistId={track.artistId}
+                        artistName={track.artistName}
+                        className="hover:underline"
+                        linkToProfile
+                      />
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* Album - desktop only */}
               {showAlbum && (
-                <div className="col-span-3 flex items-center text-sm text-gray-400 truncate">
+                <div className="hidden sm:flex sm:col-span-3 items-center text-sm text-gray-400 truncate">
                   {track.albumName}
                 </div>
               )}
-              <div className="col-span-2 flex items-center justify-center gap-4 text-xs text-gray-400">
+
+              {/* Stats & Album - mobile (show below title/artist, not right of them) */}
+              <div className="flex sm:hidden gap-3 items-center mt-1 ml-9 text-xs text-gray-400">
+                {showAlbum && (
+                  <span className="truncate">{track.albumName}</span>
+                )}
+                {/* divider */}
+                {(showAlbum) && <span className="text-gray-500">·</span>}
+                <div className="flex items-center gap-2">
+                  <Heart 
+                    size={15} 
+                    className={`cursor-pointer transition-colors align-middle ${
+                      isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
+                    } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={(e) => handleLikeClick(track, e)}
+                  />
+                  <span>{track.like_count || 0}</span>
+                  <Headphones size={15} className="ml-2" />
+                  <span>{track.play_count || 0}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-auto text-gray-400 hover:text-white"
+                    onClick={(e) => handleShareClick(track, e)}
+                  >
+                    <MoreHorizontal size={14} />
+                  </Button>
+                </div>
+                {/* Duration right-most for mobile */}
+                <span className="ml-auto text-xs text-gray-400 min-w-[40px] text-right">{formatTime(track.duration)}</span>
+              </div>
+
+              {/* Row 2: Desktop only stats */}
+              <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-4 text-xs text-gray-400">
                 <div className="flex items-center gap-1">
                   <Heart 
                     size={14} 
@@ -221,7 +261,9 @@ const TrackList: React.FC<TrackListProps> = ({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div className="col-span-2 flex items-center justify-end text-sm text-gray-400">
+
+              {/* Row 3: Desktop only duration */}
+              <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-sm text-gray-400">
                 {formatTime(track.duration)}
               </div>
             </div>
@@ -245,4 +287,3 @@ const TrackList: React.FC<TrackListProps> = ({
 };
 
 export default TrackList;
-
