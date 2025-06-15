@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -155,28 +156,28 @@ const Auth = () => {
           <CardContent className="p-6">
             <div className="text-center mb-8">
               <div className="relative h-16 overflow-hidden">
-                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-900 mb-2 transition-all duration-700 transform ${
                   activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
                 }`}>
                   Login
                 </h2>
-                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-900 mb-2 transition-all duration-700 transform ${
                   activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
                 }`}>
                   Register
                 </h2>
               </div>
-              <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
+              <p className="text-gray-700 transition-all duration-500">Welcome to Sonic Wave</p>
             </div>
 
             {/* Tab Navigation - Fixed contrast */}
-            <div className="flex mb-6 bg-white/80 rounded-lg p-1 border border-gray-200">
+            <div className="flex mb-6 bg-white/90 rounded-lg p-1 border border-gray-300">
               <button
                 onClick={() => setActiveTab('login')}
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'login'
                     ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-white/50'
+                    : 'text-gray-800 hover:text-gray-900 hover:bg-white/70'
                 }`}
               >
                 Login
@@ -186,7 +187,7 @@ const Auth = () => {
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'register'
                     ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-white/50'
+                    : 'text-gray-800 hover:text-gray-900 hover:bg-white/70'
                 }`}
               >
                 Register
@@ -202,7 +203,7 @@ const Auth = () => {
 
             <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-800 font-medium">Email</Label>
+                <Label htmlFor="email" className="text-gray-900 font-medium">Email</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
@@ -220,7 +221,7 @@ const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-800 font-medium">Password</Label>
+                <Label htmlFor="password" className="text-gray-900 font-medium">Password</Label>
                 <div className="relative group">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
@@ -272,9 +273,9 @@ const Auth = () => {
               </Button>
 
               <div className="flex items-center my-6">
-                <div className="flex-grow border-t border-gray-300" />
-                <span className="mx-4 text-sm text-gray-600">or continue with</span>
-                <div className="flex-grow border-t border-gray-300" />
+                <div className="flex-grow border-t border-gray-400" />
+                <span className="mx-4 text-sm text-gray-700">or continue with</span>
+                <div className="flex-grow border-t border-gray-400" />
               </div>
 
               <Button
