@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,6 +23,12 @@ const AboutUs: React.FC = () => {
       note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
       initials: "AP",
       color: "bg-gradient-to-br from-green-500 to-emerald-500"
+    },
+    {
+      name: "Hariharan G V",
+      note: "Committed to delivering exceptional performance and creating innovative solutions for music lovers.",
+      initials: "HG",
+      color: "bg-gradient-to-br from-orange-500 to-red-500"
     }
   ];
 
@@ -106,7 +111,7 @@ const AboutUs: React.FC = () => {
             <div className="w-32 h-1 bg-gradient-to-r from-yellow-500 to-spotify-green mx-auto mt-6"></div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {developers.map((dev, index) => (
               <Card key={dev.name} className="bg-spotify-elevated/50 border-spotify-green/30 hover:border-spotify-green/60 transition-all duration-300 hover:scale-105 group backdrop-blur-sm">
                 <CardHeader className="text-center pb-4">
