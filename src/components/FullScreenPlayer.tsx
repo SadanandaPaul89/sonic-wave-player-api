@@ -343,21 +343,23 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     };
   }, [dominantColors.primary, dominantColors.secondary, dominantColors.accent, isPlaying]);
 
-  // UI: Show lyrics toggle button
+  // UI: Show lyrics toggle button with smooth transition
   const showLyricsButton = (
     <Button
       variant="ghost"
       size="sm"
       onClick={() => setIsShowLyrics((x) => !x)}
       className={`
-        text-white hover:bg-white/10 transition-colors px-2 py-1 rounded
-        border ${isShowLyrics ? 'border-white/60 bg-white/20' : 'border-white/30'}
-        text-xs sm:text-sm ml-1 sm:ml-2
+        text-white hover:bg-white/10 transition-all duration-300 ease-in-out px-2 py-1 rounded
+        border ${isShowLyrics ? 'border-white/60 bg-white/20 scale-105' : 'border-white/30 scale-100'}
+        text-xs sm:text-sm ml-1 sm:ml-2 transform
       `}
       aria-pressed={isShowLyrics}
       aria-label={isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
     >
-      {isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
+      <span className="transition-all duration-200">
+        {isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
+      </span>
     </Button>
   );
 
@@ -367,9 +369,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const renderMainContent = () => {
     if (!isMobile && isShowLyrics) {
       return (
-        <div className="flex flex-row gap-6 w-full h-full justify-center items-stretch max-w-[1280px] mx-auto px-0 sm:px-4">
+        <div className="flex flex-row gap-6 w-full h-full justify-center items-stretch max-w-[1280px] mx-auto px-0 sm:px-4 transition-all duration-500 ease-in-out">
           {/* Left: Album Art and details */}
-          <div className="flex flex-col items-center justify-start min-w-[260px] max-w-[460px] flex-1">
+          <div className="flex flex-col items-center justify-start min-w-[260px] max-w-[460px] flex-1 transition-all duration-500 ease-in-out">
             {/* Album Art, Track Info, Buttons, Controls */}
             <div className="rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] w-60 h-60 sm:w-72 sm:h-72 max-w-[92vw] mb-2">
               <img
@@ -501,19 +503,21 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             </div>
           </div>
           {/* Right: Lyrics - Use dedicated focused panel */}
-          <DesktopLyricsPanel
-            key={currentTrack?.id} // crucial: force remount on track change
-            lyrics={lyrics}
-            currentTime={progress}
-            isLoading={isLoadingLyrics}
-          />
+          <div className="transition-all duration-500 ease-in-out opacity-100 transform translate-x-0">
+            <DesktopLyricsPanel
+              key={currentTrack?.id} // crucial: force remount on track change
+              lyrics={lyrics}
+              currentTime={progress}
+              isLoading={isLoadingLyrics}
+            />
+          </div>
         </div>
       );
     }
 
     // Mobile OR desktop w/o lyrics
     return (
-      <div className="flex flex-col h-full px-2 sm:px-6 pb-2 sm:pb-6">
+      <div className="flex flex-col h-full px-2 sm:px-6 pb-2 sm:pb-6 transition-all duration-500 ease-in-out">
         {/* Album Art */}
         <div className="flex-1 flex items-center justify-center mb-1 sm:mb-4">
           <div
@@ -577,8 +581,11 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         </div>
 
         {/* Lyrics (shown only if visible on mobile or on desktop with lyrics off) */}
-        {(isMobile && isShowLyrics) && (
-          <div className="mb-2 sm:mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-2 sm:p-4 min-h-[74px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full">
+        <div className={`
+          transition-all duration-500 ease-in-out overflow-hidden
+          ${(isMobile && isShowLyrics) ? 'max-h-[300px] opacity-100 mb-2 sm:mb-4' : 'max-h-0 opacity-0 mb-0'}
+        `}>
+          <div className="text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-2 sm:p-4 min-h-[74px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full">
             <AppleMusicLyrics
               key={currentTrack?.id} // crucial: force remount on track change
               lyrics={lyrics}
@@ -587,7 +594,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               isMobile={isMobile}
             />
           </div>
-        )}
+        </div>
 
         {/* Progress Bar */}
         <div className="mb-1 sm:mb-4">
@@ -722,10 +729,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         </div>
 
         {/* Main Panel (mobile/desktop layout chosen based on state) */}
-        <div className="flex-1 flex items-center justify-center w-full">
-          {(!isMobile && isShowLyrics)
-            ? renderMainContent()
-            : renderMainContent()}
+        <div className="flex-1 flex items-center justify-center w-full transition-all duration-500 ease-in-out">
+          {renderMainContent()}
         </div>
       </div>
       {/* Lyrics Editor Dialog */}
