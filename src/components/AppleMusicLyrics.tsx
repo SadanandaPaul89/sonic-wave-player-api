@@ -66,7 +66,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
   return (
     <div
       ref={containerRef}
-      className={`overflow-y-auto px-1 py-2 sm:px-3 sm:py-4 ${isMobile ? 'h-32 min-h-[80px]' : 'h-36 md:h-44 lg:h-52'} w-full`}
+      className={`overflow-y-auto px-1 py-2 sm:px-3 sm:py-4 ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'} w-full`}
       style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
     >
       <div className="flex flex-col items-center space-y-1 sm:space-y-2">
@@ -77,12 +77,12 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
 
           if (i === activeIndex) {
             opacity = 1;
-            scale = isMobile ? 1.18 : 1.25; // highlight the current
+            scale = isMobile ? 1.13 : 1.25;
             color = 'text-white font-bold drop-shadow-lg';
             fontWeight = 'font-bold';
           } else if (distance === 1) {
             opacity = 0.75;
-            scale = isMobile ? 1.03 : 1.07;
+            scale = isMobile ? 1.04 : 1.07;
             color = 'text-gray-200';
           } else if (distance === 2) {
             opacity = 0.52;
@@ -98,17 +98,21 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
             <div
               key={i}
               ref={i === activeIndex ? activeLineRef : undefined}
-              className={`transition-all duration-1000 sm:duration-1000 ease-out ${color} ${fontWeight}`}
+              className={`
+                transition-all duration-1200 sm:duration-1200 ease-[cubic-bezier(.91,0,.14,1.01)] 
+                ${color} ${fontWeight}
+                ${isMobile ? 'px-1' : ''}
+              `}
               style={{
                 opacity,
                 transform: `scale(${scale})`,
-                minHeight: isMobile ? 20 : 24,
-                lineHeight: 1.7,
+                minHeight: isMobile ? 16 : 24,
+                lineHeight: isMobile ? 1.6 : 1.7,
                 textAlign: 'center',
                 whiteSpace: 'pre-wrap',
-                maxWidth: "90vw",
+                maxWidth: "95vw",
                 wordBreak: "break-word",
-                fontSize: isMobile ? 16 : 20
+                fontSize: isMobile ? 15 : 20
               }}
             >
               {line.text}

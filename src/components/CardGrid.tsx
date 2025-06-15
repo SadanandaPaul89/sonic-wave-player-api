@@ -82,24 +82,35 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
           <p className="mt-2 text-gray-400">Check back later for new content</p>
         </div>
       ) : (
-        <div className={`grid ${getGridCols()} gap-6`}>
+        <div className={`grid ${getGridCols()} gap-5 sm:gap-6`}>
           {cards.map((card) => (
             <Link
               key={card.id}
               to={getLink(card)}
-              className="music-card p-4 rounded-md hover:bg-spotify-highlight transition-colors duration-300"
+              className="music-card p-2 sm:p-4 rounded-md hover:bg-spotify-highlight transition-colors duration-300"
+              style={{
+                minWidth: undefined
+              }}
             >
-              <div className={`mb-4 relative ${card.type === 'artist' ? 'rounded-full overflow-hidden' : 'rounded-md'}`}>
+              <div className={`mb-3 sm:mb-4 relative ${card.type === 'artist' ? 'rounded-full overflow-hidden' : 'rounded-md'}`}>
                 <img
                   src={card.imageUrl || 'https://api.napster.com/imageserver/images/v2/default/artist/170x170.png'}
                   alt={card.name}
-                  className={`w-full h-auto aspect-square object-cover ${card.type === 'artist' ? 'rounded-full' : ''}`}
+                  className={`
+                    w-[44vw] h-[44vw] max-w-[115px] max-h-[115px] sm:w-full sm:h-auto sm:max-w-full sm:max-h-full
+                    aspect-square object-cover 
+                    ${card.type === 'artist' ? 'rounded-full' : 'rounded-md'}
+                  `}
+                  style={{
+                    margin: '0 auto', // Center in card for mobile
+                    display: 'block',
+                  }}
                 />
               </div>
               {/* main-title guarantees text-black via CSS */}
-              <h3 className="main-title font-medium truncate">{card.name}</h3>
+              <h3 className="main-title font-medium truncate text-base sm:text-lg">{card.name}</h3>
               {card.description && (
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{card.description}</p>
+                <p className="text-[13px] sm:text-sm text-gray-600 mt-1 line-clamp-2">{card.description}</p>
               )}
             </Link>
           ))}
@@ -110,3 +121,4 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
 };
 
 export default CardGrid;
+
