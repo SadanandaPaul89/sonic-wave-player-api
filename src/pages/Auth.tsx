@@ -215,8 +215,6 @@ const Auth = () => {
                   {googleLoading ? (
                     <Loader2 className="animate-spin h-4 w-4 mr-2" />
                   ) : (
-                    // Use a G icon or fallback if lucide-react does not have official G icon
-                    // We'll use a simple SVG as there is no native G logo in lucide-react
                     <svg viewBox="0 0 24 24" className="h-4 w-4 mr-2" aria-hidden="true">
                       <g>
                         <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.21-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
@@ -242,7 +240,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                     className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                 </div>
@@ -255,7 +253,7 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                     className={`${isMobile ? 'h-12 text-base' : ''}`}
                   />
                   <p className="text-xs text-gray-400">Password must be at least 6 characters</p>
@@ -263,7 +261,7 @@ const Auth = () => {
                 <Button 
                   type="submit"
                   className={`w-full ${isMobile ? 'h-12 text-base' : ''}`}
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                 >
                   {loading ? (
                     <>
@@ -273,6 +271,32 @@ const Auth = () => {
                   ) : (
                     'Create account'
                   )}
+                </Button>
+                <div className="flex items-center my-2">
+                  <div className="flex-grow border-t border-muted" />
+                  <span className="mx-2 text-xs text-muted-foreground">or</span>
+                  <div className="flex-grow border-t border-muted" />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'h-12 text-base' : ''}`}
+                  onClick={handleSignInWithGoogle}
+                  disabled={googleLoading || loading}
+                >
+                  {googleLoading ? (
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 mr-2" aria-hidden="true">
+                      <g>
+                        <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.21-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
+                        <path fill="#34A853" d="M12.039 21.653c2.611 0 4.805-.87 6.406-2.352l-3.244-2.383c-.898.607-2.047.963-3.162.963-2.429 0-4.487-1.64-5.227-3.832h-3.291v2.407c1.594 3.148 4.916 5.197 8.518 5.197z"/>
+                        <path fill="#FBBC05" d="M6.812 14.349A5.195 5.195 0 0 1 6.225 12c0-.819.147-1.615.406-2.349V7.244h-3.29A9.414 9.414 0 0 0 2.04 12c0 1.484.357 2.891.989 4.117l3.283-2.407z"/>
+                        <path fill="#EA4335" d="M12.039 6.987c1.427 0 2.704.492 3.71 1.457l2.773-2.774C16.84 3.939 14.65 3 12.039 3c-3.602 0-6.924 2.049-8.518 5.197l3.291 2.407c.74-2.192 2.798-3.834 5.227-3.834z"/>
+                      </g>
+                    </svg>
+                  )}
+                  Sign in with Google
                 </Button>
               </form>
             </TabsContent>
