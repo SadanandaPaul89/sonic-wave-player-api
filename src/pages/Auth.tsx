@@ -155,18 +155,18 @@ const Auth = () => {
           <CardContent className="p-6">
             <div className="text-center mb-8">
               <div className="relative h-16 overflow-hidden">
-                <h2 className={`absolute inset-0 text-3xl font-bold text-white mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
                   activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
                 }`}>
                   Login
                 </h2>
-                <h2 className={`absolute inset-0 text-3xl font-bold text-white mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
                   activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
                 }`}>
                   Register
                 </h2>
               </div>
-              <p className="text-white transition-all duration-500">Welcome to Sonic Wave</p>
+              <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
             </div>
 
             {/* Tab Navigation - Fixed contrast */}
@@ -202,9 +202,9 @@ const Auth = () => {
 
             <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-900 font-medium">Email</Label>
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="email"
                     type="email"
@@ -213,16 +213,16 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg text-gray-900"
+                    className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                   />
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-900 font-medium">Password</Label>
+                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -231,12 +231,12 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 pr-10 h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg text-gray-900"
+                    className="pl-10 pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500 transition-all duration-300 hover:scale-110"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:scale-110"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -273,14 +273,14 @@ const Auth = () => {
 
               <div className="flex items-center my-6">
                 <div className="flex-grow border-t border-gray-400" />
-                <span className="mx-4 text-sm text-white">or continue with</span>
+                <span className="mx-4 text-sm text-gray-500">or continue with</span>
                 <div className="flex-grow border-t border-gray-400" />
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 bg-white border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400 text-gray-700"
+                className="w-full h-12 border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400"
                 onClick={handleSignInWithGoogle}
                 disabled={googleLoading || loading}
               >
