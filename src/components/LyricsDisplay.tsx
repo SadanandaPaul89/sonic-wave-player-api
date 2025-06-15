@@ -37,7 +37,6 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({ songId, currentTime, isVi
   }, [songId]);
 
   useEffect(() => {
-    // Find current lyric line based on time
     let activeIndex = -1;
     for (let i = 0; i < lyrics.length; i++) {
       if (currentTime >= lyrics[i].time) {
@@ -50,15 +49,16 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({ songId, currentTime, isVi
   }, [currentTime, lyrics]);
 
   useEffect(() => {
-    // Auto-scroll to active lyric with improved positioning
     if (activeLyricRef.current && lyricsContainerRef.current && currentLineIndex >= 0) {
       const container = lyricsContainerRef.current;
       const activeLyric = activeLyricRef.current;
       
       const containerHeight = container.clientHeight;
-      const lyricOffsetTop = activeLyric.offsetTop;
       
-      // Keep the active lyric around 35% from the top on mobile, 25% on desktop
+      const lyricRect = activeLyric.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const lyricOffsetTop = lyricRect.top - containerRect.top + container.scrollTop;
+
       const optimalPosition = containerHeight * (isMobile ? 0.35 : 0.25);
       const targetScroll = lyricOffsetTop - optimalPosition;
       
@@ -121,7 +121,7 @@ const LyricsDisplay: React.FC<LyricsDisplayProps> = ({ songId, currentTime, isVi
               key={index}
               ref={index === currentLineIndex ? activeLyricRef : null}
               className={`
-                transition-all duration-700 ease-out
+                transition-[opacity,transform] duration-500 ease-out
                 ${color} ${fontWeight}
                 w-full break-words whitespace-pre-line text-center
               `}
