@@ -37,7 +37,6 @@ export const useAudioControls = ({
         return () => {
             audio.removeEventListener('timeupdate', updateProgress);
             audio.removeEventListener('loadedmetadata', setAudioDuration);
-            audio.pause();
         };
     }, [audio, setDuration, setProgress]);
 
@@ -51,27 +50,32 @@ export const useAudioControls = ({
         }
     }, [onTrackEnd, audio]);
     
-    // Load new track
+    // Combined effect for loading, playing, and pausing
     useEffect(() => {
-        if (currentTrack && audio) {
-            console.log('Loading track:', currentTrack.name);
-            audio.src = currentTrack.previewURL;
-            audio.load();
-        }
-    }, [currentTrack, audio]);
-    
-    // Control play/pause
-    useEffect(() => {
-        if (audio) {
+        if (!audio) return;
+
+        if (currentTrack) {
+            // Set the src only if it's different to avoid reloading
+            if (audio.src !== currentTrack.previewURL) {
+                console.log('Setting new audio source:', currentTrack.name);
+                audio.src = currentTrack.previewURL;
+            }
+
             if (isPlaying) {
-                console.log('Playing audio, current src:', audio.src);
-                audio.play().catch(e => console.error('Error playing audio:', e));
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("Playback error:", error);
+                    });
+                }
             } else {
-                console.log('Pausing audio');
                 audio.pause();
             }
+        } else {
+            audio.pause();
         }
-    }, [isPlaying, audio]);
+    }, [currentTrack, isPlaying, audio]);
+
 
     // Control volume
     useEffect(() => {
