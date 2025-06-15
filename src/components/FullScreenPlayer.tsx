@@ -135,12 +135,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     progress,
     duration,
     repeatMode,
+    isShuffled,
     togglePlayPause,
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
     playPreviousTrack,
     toggleRepeatMode,
+    toggleShuffle,
     queue
   } = usePlayer();
 
@@ -301,6 +303,10 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     playPreviousTrack();
   }, [playPreviousTrack]);
 
+  const handleToggleShuffle = useCallback(() => {
+    toggleShuffle();
+  }, [toggleShuffle]);
+
   const openLyricsEditor = useCallback(() => {
     setIsLyricsDialogOpen(true);
   }, []);
@@ -445,7 +451,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                  onClick={handleToggleShuffle}
+                  className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-green-500' : ''}`}
+                  title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
                 >
                   <Shuffle size={18} />
                 </Button>
@@ -616,7 +624,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+            onClick={handleToggleShuffle}
+            className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-green-500' : ''}`}
+            title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
           >
             <Shuffle size={18} className="sm:size-[20px]" />
           </Button>
