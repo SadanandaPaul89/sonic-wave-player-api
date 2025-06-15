@@ -96,7 +96,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
             <div
               key={i}
               ref={i === activeIndex ? activeLineRef : undefined}
-              className={`transition-all duration-300 ease-out ${color}`}
+              className={`transition-all duration-700 ease-out ${color}`}
               style={{
                 opacity,
                 transform: `scale(${scale})`,
