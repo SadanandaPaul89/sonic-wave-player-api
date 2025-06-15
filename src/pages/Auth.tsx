@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -299,9 +297,9 @@ const Auth = () => {
         <div className="absolute inset-0 bg-white/10"></div>
       </div>
       
-      <div className="w-full max-w-6xl mx-auto relative z-10">
+      <div className="w-full max-w-4xl mx-auto relative z-10">
         <Card className="overflow-hidden bg-white/80 backdrop-blur-lg shadow-2xl border border-white/20">
-          <div className="flex min-h-[700px]">
+          <div className="flex min-h-[600px]">
             {/* Left Panel - Welcome Section with Enhanced Background */}
             <div className={`relative overflow-hidden transition-all duration-1000 ease-in-out ${
               activeTab === 'login' 
@@ -391,8 +389,8 @@ const Auth = () => {
             {/* Right Panel - Form Section */}
             <div className={`transition-all duration-1000 ease-in-out ${
               activeTab === 'login' ? 'w-2/5' : 'w-3/5'
-            } bg-white flex items-center justify-center p-12`}>
-              <div className="w-full max-w-md">
+            } bg-white flex items-center justify-center p-8`}>
+              <div className="w-full max-w-sm">
                 <div className="text-center mb-8">
                   <div className="relative h-16 overflow-hidden">
                     <h2 className={`absolute inset-0 text-4xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
@@ -525,4 +523,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
