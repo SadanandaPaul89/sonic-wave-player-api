@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -314,16 +313,16 @@ const Auth = () => {
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-12 text-white">
                 <div className="relative w-full max-w-md">
                   {/* Login Content */}
-                  <div className={`absolute inset-0 transition-all duration-700 ease-out transform ${
+                  <div className={`absolute inset-0 flex flex-col justify-center items-center transition-all duration-700 ease-out transform ${
                     activeTab === 'login' 
                       ? 'translate-x-0 opacity-100 scale-100' 
                       : 'translate-x-12 opacity-0 scale-95'
                   }`}>
-                    <div className="space-y-6">
-                      <h1 className="text-6xl font-bold mb-6 transition-all duration-700 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                    <div className="space-y-8">
+                      <h1 className="text-6xl font-bold transition-all duration-700 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                         Hello, Welcome!
                       </h1>
-                      <p className="text-xl mb-8 opacity-90 transition-all duration-700 font-light">
+                      <p className="text-xl opacity-90 transition-all duration-700 font-light">
                         Don't have an account?
                       </p>
                       <Button
@@ -337,16 +336,16 @@ const Auth = () => {
                   </div>
                   
                   {/* Register Content */}
-                  <div className={`absolute inset-0 transition-all duration-700 ease-out transform ${
+                  <div className={`absolute inset-0 flex flex-col justify-center items-center transition-all duration-700 ease-out transform ${
                     activeTab === 'register' 
                       ? 'translate-x-0 opacity-100 scale-100' 
                       : '-translate-x-12 opacity-0 scale-95'
                   }`}>
-                    <div className="space-y-6">
-                      <h1 className="text-6xl font-bold mb-6 transition-all duration-700 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
+                    <div className="space-y-8">
+                      <h1 className="text-6xl font-bold transition-all duration-700 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
                         Welcome Back!
                       </h1>
-                      <p className="text-xl mb-8 opacity-90 transition-all duration-700 font-light">
+                      <p className="text-xl opacity-90 transition-all duration-700 font-light">
                         Already have an account?
                       </p>
                       <Button
@@ -486,7 +485,7 @@ const Auth = () => {
                         </g>
                       </svg>
                     )}
-                    Google
+                    {activeTab === 'login' ? 'Login with Google' : 'Register with Google'}
                   </Button>
                 </form>
               </div>
