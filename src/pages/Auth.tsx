@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +10,6 @@ import { supabase } from '@/lib/supabase';
 import { Loader2, AlertCircle, Loader, Github, LucideIcon, LucideProps } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Import the Google icon from lucide-react
-import { CircleG } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -288,4 +284,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
