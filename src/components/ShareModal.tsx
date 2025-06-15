@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -97,7 +96,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
 
           {/* Copy link */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Share link</label>
+            <label className="text-sm font-medium text-muted-foreground">Share link</label>
             <div className="flex space-x-2">
               <Input
                 value={shareUrl}
@@ -117,12 +116,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
 
           {/* Social media buttons */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Share on social media</label>
+            <label className="text-sm font-medium text-muted-foreground">Share on social media</label>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
                 onClick={shareToFacebook}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <Facebook size={16} className="text-blue-600" />
                 <span>Facebook</span>
@@ -131,7 +130,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               <Button
                 variant="outline"
                 onClick={shareToTwitter}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <Twitter size={16} className="text-blue-400" />
                 <span>Twitter</span>
@@ -140,7 +139,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               <Button
                 variant="outline"
                 onClick={shareToLinkedIn}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <Linkedin size={16} className="text-blue-700" />
                 <span>LinkedIn</span>
@@ -149,7 +148,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               <Button
                 variant="outline"
                 onClick={shareToWhatsApp}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <MessageCircle size={16} className="text-green-600" />
                 <span>WhatsApp</span>
@@ -158,7 +157,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               <Button
                 variant="outline"
                 onClick={shareToInstagram}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <Instagram size={16} className="text-pink-600" />
                 <span>Instagram</span>
@@ -167,7 +166,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               <Button
                 variant="outline"
                 onClick={shareViaEmail}
-                className="flex items-center space-x-2 justify-start"
+                className="flex items-center space-x-2 justify-start text-foreground"
               >
                 <Mail size={16} className="text-gray-600" />
                 <span>Email</span>
