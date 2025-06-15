@@ -30,27 +30,34 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
     setActiveIndex(idx);
   }, [currentTime, lyrics]);
 
-  // Scroll to center active line, clamped so the lyric is never cut off
+  // Smooth scroll to keep active line in optimal reading position
   useEffect(() => {
-    if (activeLineRef.current && containerRef.current) {
+    if (activeLineRef.current && containerRef.current && activeIndex >= 0) {
       const container = containerRef.current;
-      const lyric = activeLineRef.current;
-      const cHeight = container.clientHeight;
-      const lOffset = lyric.offsetTop;
-      const lHeight = lyric.clientHeight;
-
-      // Calculate the ideal scrollTop to center the lyric
-      let targetScroll = lOffset - cHeight / 2 + lHeight / 2;
-
-      // Clamp scrollTop so first and last lines are never cut off
-      const maxScroll = container.scrollHeight - cHeight;
-      if (targetScroll < 0) targetScroll = 0;
-      if (targetScroll > maxScroll) targetScroll = maxScroll;
-
-      container.scrollTo({
-        top: targetScroll,
-        behavior: "smooth"
-      });
+      const lyricElement = activeLineRef.current;
+      
+      const containerHeight = container.clientHeight;
+      const lyricTop = lyricElement.offsetTop;
+      const lyricHeight = lyricElement.clientHeight;
+      
+      // Calculate optimal scroll position - keep highlighted lyric in upper third for better readability
+      const optimalPosition = containerHeight * 0.3; // 30% from top
+      let targetScroll = lyricTop - optimalPosition;
+      
+      // Ensure we don't scroll too far up or down
+      const maxScroll = container.scrollHeight - containerHeight;
+      targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+      
+      // Only scroll if the difference is significant to avoid constant micro-adjustments
+      const currentScroll = container.scrollTop;
+      const scrollDifference = Math.abs(targetScroll - currentScroll);
+      
+      if (scrollDifference > 20) { // 20px threshold to prevent jitter
+        container.scrollTo({
+          top: targetScroll,
+          behavior: "smooth"
+        });
+      }
     }
   }, [activeIndex]);
 
@@ -74,41 +81,45 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
     <div
       ref={containerRef}
       className={`
-        overflow-y-auto
-        px-1 py-2 sm:px-3 sm:py-4
+        overflow-y-auto overflow-x-hidden
+        px-1 py-4 sm:px-3 sm:py-6
         w-full max-w-full
         ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'}
         bg-transparent
       `}
       style={{
-        // Only vertical scrolling, never horizontal
-        overflowX: 'hidden',
         scrollBehavior: "smooth",
         WebkitOverflowScrolling: "touch",
       }}
     >
-      <div className="flex flex-col items-center space-y-1 sm:space-y-2 w-full max-w-full">
+      <div className="flex flex-col items-center space-y-3 sm:space-y-4 w-full max-w-full">
+        {/* Add some top padding for better scroll positioning */}
+        <div className="h-8 sm:h-12" />
+        
         {lyrics.map((line, i) => {
-          // How far away from current line? We'll use this for fade and scale.
           const distance = Math.abs(activeIndex - i);
           let opacity = 1, scale = 1, color = 'text-white', fontWeight = 'font-normal';
 
           if (i === activeIndex) {
             opacity = 1;
-            scale = isMobile ? 1.13 : 1.25;
+            scale = isMobile ? 1.15 : 1.3;
             color = 'text-white font-bold drop-shadow-lg';
             fontWeight = 'font-bold';
           } else if (distance === 1) {
-            opacity = 0.75;
-            scale = isMobile ? 1.04 : 1.07;
+            opacity = 0.8;
+            scale = isMobile ? 1.05 : 1.1;
             color = 'text-gray-200';
           } else if (distance === 2) {
-            opacity = 0.52;
-            scale = 1.00;
+            opacity = 0.6;
+            scale = 1.0;
+            color = 'text-gray-300';
+          } else if (distance === 3) {
+            opacity = 0.4;
+            scale = 0.98;
             color = 'text-gray-400';
           } else {
-            opacity = 0.22;
-            scale = 0.96;
+            opacity = 0.25;
+            scale = 0.95;
             color = 'text-gray-500';
           }
 
@@ -117,23 +128,27 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
               key={i}
               ref={i === activeIndex ? activeLineRef : undefined}
               className={`
-                transition-all duration-1200 sm:duration-1200 ease-[cubic-bezier(.91,0,.14,1.01)] 
+                transition-all duration-1000 ease-out
                 ${color} ${fontWeight}
-                ${isMobile ? 'px-1' : ''}
+                ${isMobile ? 'px-2' : 'px-4'}
                 w-full max-w-full break-words whitespace-pre-line text-center
               `}
               style={{
                 opacity,
                 transform: `scale(${scale})`,
-                minHeight: isMobile ? 16 : 24,
-                lineHeight: isMobile ? 1.6 : 1.7,
-                fontSize: isMobile ? 15 : 20,
+                minHeight: isMobile ? 20 : 28,
+                lineHeight: isMobile ? 1.7 : 1.8,
+                fontSize: isMobile ? 16 : 22,
+                marginBottom: isMobile ? 8 : 12,
               }}
             >
               {line.text}
             </div>
           );
         })}
+        
+        {/* Add some bottom padding for better scroll positioning */}
+        <div className="h-16 sm:h-24" />
       </div>
     </div>
   );
