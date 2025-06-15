@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -156,18 +155,18 @@ const Auth = () => {
           <CardContent className="p-6">
             <div className="text-center mb-8">
               <div className="relative h-16 overflow-hidden">
-                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-900 mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-white mb-2 transition-all duration-700 transform ${
                   activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
                 }`}>
                   Login
                 </h2>
-                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-900 mb-2 transition-all duration-700 transform ${
+                <h2 className={`absolute inset-0 text-3xl font-bold text-white mb-2 transition-all duration-700 transform ${
                   activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
                 }`}>
                   Register
                 </h2>
               </div>
-              <p className="text-gray-700 transition-all duration-500">Welcome to Sonic Wave</p>
+              <p className="text-white transition-all duration-500">Welcome to Sonic Wave</p>
             </div>
 
             {/* Tab Navigation - Fixed contrast */}
@@ -274,7 +273,7 @@ const Auth = () => {
 
               <div className="flex items-center my-6">
                 <div className="flex-grow border-t border-gray-400" />
-                <span className="mx-4 text-sm text-gray-700">or continue with</span>
+                <span className="mx-4 text-sm text-white">or continue with</span>
                 <div className="flex-grow border-t border-gray-400" />
               </div>
 
