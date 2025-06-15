@@ -1,5 +1,5 @@
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { Track } from '@/services/api';
 import { usePlayerState } from '@/hooks/usePlayerState';
 import { usePlayerQueue } from '@/hooks/usePlayerQueue';
@@ -28,7 +28,12 @@ export const usePlayerCore = (): PlayerContextProps => {
   } = usePlayerQueue();
 
   const { repeatMode, toggleRepeatMode } = useRepeatMode();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioElement] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new Audio();
+    }
+    return null;
+  });
 
   const loadAndPlay = useCallback((track: Track) => {
     console.log('Loading and playing track:', track.name);
@@ -48,9 +53,9 @@ export const usePlayerCore = (): PlayerContextProps => {
 
     if (repeatMode === 'one') {
       console.log('TRACK_END: Repeating current track');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play();
+      if (audioElement) {
+        audioElement.currentTime = 0;
+        audioElement.play();
       }
     } else if (repeatMode === 'all') {
       console.log('TRACK_END: Repeat all mode');
@@ -61,9 +66,9 @@ export const usePlayerCore = (): PlayerContextProps => {
         loadAndPlay(nextTrack);
       } else {
         console.log('TRACK_END: No queue, restarting current track for repeat all');
-        if (audioRef.current && currentTrack) {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
+        if (audioElement && currentTrack) {
+          audioElement.currentTime = 0;
+          audioElement.play();
         }
       }
     } else if (repeatMode === 'off') {
@@ -75,18 +80,18 @@ export const usePlayerCore = (): PlayerContextProps => {
         loadAndPlay(nextTrack);
       } else {
         console.log('TRACK_END: No more tracks, stopping');
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
+        if (audioElement) {
+          audioElement.pause();
+          audioElement.currentTime = 0;
         }
         setIsPlaying(false);
         setProgress(0);
       }
     }
-  }, [repeatMode, queue, currentTrack, setQueue, loadAndPlay, setIsPlaying, setProgress]);
+  }, [repeatMode, queue, currentTrack, setQueue, loadAndPlay, setIsPlaying, setProgress, audioElement]);
 
   const { seekToPosition } = useAudioControls({
-    audioRef,
+    audio: audioElement,
     currentTrack,
     isPlaying,
     volume,
@@ -132,8 +137,8 @@ export const usePlayerCore = (): PlayerContextProps => {
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
     } else if (repeatMode === 'all' && currentTrack) {
       console.log('PlayerContext: Repeat all - restarting current track');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
+      if (audioElement) {
+        audioElement.currentTime = 0;
         setProgress(0);
         setIsPlaying(true);
       }
@@ -141,7 +146,7 @@ export const usePlayerCore = (): PlayerContextProps => {
       console.log('PlayerContext: No tracks in queue, stopping playback');
       setIsPlaying(false);
     }
-  }, [queue, setQueue, loadAndPlay, repeatMode, currentTrack, isShuffled, setOriginalQueue, setProgress, setIsPlaying]);
+  }, [queue, setQueue, loadAndPlay, repeatMode, currentTrack, isShuffled, setOriginalQueue, setProgress, setIsPlaying, audioElement]);
 
   const playPreviousTrack = useCallback(() => {
     console.log('PlayerContext: playPreviousTrack called, history length:', playHistory.length);
@@ -161,23 +166,23 @@ export const usePlayerCore = (): PlayerContextProps => {
       console.log('PlayerContext: Playing previous track:', previousTrack.name);
     } else {
       console.log('PlayerContext: No history, restarting current track');
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
+      if (audioElement) {
+        audioElement.currentTime = 0;
         setProgress(0);
         setIsPlaying(true);
       }
     }
-  }, [playHistory, setPlayHistory, currentTrack, setQueue, loadAndPlay, isShuffled, setOriginalQueue, setProgress, setIsPlaying]);
+  }, [playHistory, setPlayHistory, currentTrack, setQueue, loadAndPlay, isShuffled, setOriginalQueue, setProgress, setIsPlaying, audioElement]);
 
   const forceStop = useCallback(() => {
     console.log('PlayerContext: Force stopping playback');
     setIsPlaying(false);
     setProgress(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
     }
-  }, [setIsPlaying, setProgress]);
+  }, [setIsPlaying, setProgress, audioElement]);
 
   usePlayerSideEffects({
     currentTrack,

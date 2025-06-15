@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Track } from '@/services/api';
 
 interface AudioControlsProps {
-    audioRef: React.RefObject<HTMLAudioElement | null>;
+    audio: HTMLAudioElement | null;
     currentTrack: Track | null;
     isPlaying: boolean;
     volume: number;
@@ -13,7 +13,7 @@ interface AudioControlsProps {
 }
 
 export const useAudioControls = ({
-    audioRef,
+    audio,
     currentTrack,
     isPlaying,
     volume,
@@ -24,10 +24,9 @@ export const useAudioControls = ({
 
     // Setup and teardown audio element and listeners
     useEffect(() => {
-        if (!audioRef.current) {
-            audioRef.current = new Audio();
+        if (!audio) {
+            return;
         }
-        const audio = audioRef.current;
 
         const updateProgress = () => setProgress(audio.currentTime);
         const setAudioDuration = () => setDuration(audio.duration);
@@ -40,51 +39,50 @@ export const useAudioControls = ({
             audio.removeEventListener('loadedmetadata', setAudioDuration);
             audio.pause();
         };
-    }, [setDuration, setProgress, audioRef]);
+    }, [audio, setDuration, setProgress]);
 
     // Handle 'ended' event listener separately
     useEffect(() => {
-        const audio = audioRef.current;
         if (audio) {
             audio.addEventListener('ended', onTrackEnd);
             return () => {
                 audio.removeEventListener('ended', onTrackEnd);
             };
         }
-    }, [onTrackEnd, audioRef]);
+    }, [onTrackEnd, audio]);
     
     // Load new track
     useEffect(() => {
-        if (currentTrack && audioRef.current) {
+        if (currentTrack && audio) {
             console.log('Loading track:', currentTrack.name);
-            audioRef.current.src = currentTrack.previewURL;
-            audioRef.current.load();
+            audio.src = currentTrack.previewURL;
+            audio.load();
         }
-    }, [currentTrack, audioRef]);
+    }, [currentTrack, audio]);
     
     // Control play/pause
     useEffect(() => {
-        if (audioRef.current) {
+        if (audio) {
             if (isPlaying) {
-                console.log('Playing audio, current src:', audioRef.current.src);
-                audioRef.current.play().catch(e => console.error('Error playing audio:', e));
+                console.log('Playing audio, current src:', audio.src);
+                audio.play().catch(e => console.error('Error playing audio:', e));
             } else {
                 console.log('Pausing audio');
-                audioRef.current.pause();
+                audio.pause();
             }
         }
-    }, [isPlaying, audioRef]);
+    }, [isPlaying, audio]);
 
     // Control volume
     useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.volume = volume;
+        if (audio) {
+            audio.volume = volume;
         }
-    }, [volume, audioRef]);
+    }, [volume, audio]);
     
     const seekToPosition = (position: number) => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = position;
+        if (audio) {
+            audio.currentTime = position;
             setProgress(position);
         }
     };
