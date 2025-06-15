@@ -68,8 +68,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return shuffled;
   };
 
-  // Toggle shuffle
-  const toggleShuffle = () => {
+  // Toggle shuffle - fixed to not interrupt playback
+  const toggleShuffle = useCallback(() => {
     setIsShuffled(prev => {
       const newShuffled = !prev;
       console.log('PlayerContext: Shuffle toggled to:', newShuffled);
@@ -86,7 +86,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       return newShuffled;
     });
-  };
+  }, [queue, originalQueue]);
 
   // Handle page visibility changes
   useEffect(() => {
@@ -343,15 +343,15 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  // Toggle repeat mode: off -> all -> one -> off (without affecting playback)
-  const toggleRepeatMode = () => {
+  // Toggle repeat mode: off -> all -> one -> off (fixed to not interrupt playback)
+  const toggleRepeatMode = useCallback(() => {
     setRepeatIndex(prev => {
       const newIndex = (prev + 1) % repeatModes.length;
       const newMode = repeatModes[newIndex];
       console.log('PlayerContext: Repeat mode changed from', repeatModes[prev], 'to', newMode);
       return newIndex;
     });
-  };
+  }, []);
   
   const addToQueue = (track: Track) => {
     console.log('PlayerContext: Adding track to queue:', track.name);
