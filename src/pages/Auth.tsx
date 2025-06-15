@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { Loader2, AlertCircle, User, Lock } from 'lucide-react';
+import { Loader2, AlertCircle, User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -20,6 +20,7 @@ const Auth = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('login');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setError(null);
@@ -175,8 +176,8 @@ const Auth = () => {
             <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-spotify-white">Email</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray" />
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray transition-colors duration-300 group-focus-within:text-spotify-green" />
                   <Input
                     id="email"
                     type="email"
@@ -185,24 +186,31 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray"
+                    className="pl-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray focus:border-spotify-green focus:ring-spotify-green transition-all duration-300"
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-spotify-white">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray" />
+                <div className="relative group">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray transition-colors duration-300 group-focus-within:text-spotify-green" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray"
+                    className="pl-10 pr-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray focus:border-spotify-green focus:ring-spotify-green transition-all duration-300"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-spotify-lightgray hover:text-spotify-green transition-colors duration-300"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -216,7 +224,7 @@ const Auth = () => {
 
               <Button 
                 type="submit"
-                className="w-full h-12 bg-spotify-green hover:bg-spotify-green/80 text-black font-medium"
+                className="w-full h-12 bg-spotify-green hover:bg-spotify-green/80 text-black font-medium transition-all duration-300 transform hover:scale-[1.02]"
                 disabled={loading || googleLoading}
               >
                 {loading ? (
@@ -231,14 +239,14 @@ const Auth = () => {
 
               <div className="flex items-center my-4">
                 <div className="flex-grow border-t border-spotify-highlight" />
-                <span className="mx-3 text-xs text-spotify-lightgray">or login with</span>
+                <span className="mx-3 text-xs text-spotify-lightgray">or continue with</span>
                 <div className="flex-grow border-t border-spotify-highlight" />
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 bg-transparent border-spotify-highlight text-spotify-white hover:bg-spotify-highlight"
+                className="w-full h-12 bg-transparent border-spotify-highlight text-spotify-white hover:bg-spotify-highlight transition-all duration-300 transform hover:scale-[1.02]"
                 onClick={handleSignInWithGoogle}
                 disabled={googleLoading || loading}
               >
@@ -267,7 +275,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-spotify-base via-black to-spotify-elevated flex items-center justify-center p-6">
       <div className="w-full max-w-6xl mx-auto">
         <Card className="overflow-hidden bg-white/95 backdrop-blur-sm shadow-2xl">
-          <div className="flex min-h-[600px]">
+          <div className="flex min-h-[700px]">
             {/* Left Panel - Welcome Section */}
             <div className={`relative overflow-hidden transition-all duration-700 ease-in-out ${
               activeTab === 'login' 
@@ -276,34 +284,34 @@ const Auth = () => {
             }`}>
               <div className="absolute inset-0 bg-black/10"></div>
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-12 text-white">
-                <div className={`transform transition-all duration-700 ${
-                  activeTab === 'login' ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+                <div className={`transform transition-all duration-700 ease-in-out ${
+                  activeTab === 'login' ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0 absolute'
                 }`}>
                   {activeTab === 'login' && (
                     <>
-                      <h1 className="text-5xl font-bold mb-6">Hello, Welcome!</h1>
-                      <p className="text-xl mb-8 opacity-90">Don't have an account?</p>
+                      <h1 className="text-5xl font-bold mb-6 transition-all duration-700">Hello, Welcome!</h1>
+                      <p className="text-xl mb-8 opacity-90 transition-all duration-700">Don't have an account?</p>
                       <Button
                         onClick={() => setActiveTab('register')}
                         variant="outline"
-                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-medium transition-all duration-300"
+                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-medium transition-all duration-300 transform hover:scale-105"
                       >
                         Register
                       </Button>
                     </>
                   )}
                 </div>
-                <div className={`transform transition-all duration-700 ${
-                  activeTab === 'register' ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
+                <div className={`transform transition-all duration-700 ease-in-out ${
+                  activeTab === 'register' ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0 absolute'
                 }`}>
                   {activeTab === 'register' && (
                     <>
-                      <h1 className="text-5xl font-bold mb-6">Welcome Back!</h1>
-                      <p className="text-xl mb-8 opacity-90">Already have an account?</p>
+                      <h1 className="text-5xl font-bold mb-6 transition-all duration-700">Welcome Back!</h1>
+                      <p className="text-xl mb-8 opacity-90 transition-all duration-700">Already have an account?</p>
                       <Button
                         onClick={() => setActiveTab('login')}
                         variant="outline"
-                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-green-600 px-8 py-3 text-lg font-medium transition-all duration-300"
+                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-green-600 px-8 py-3 text-lg font-medium transition-all duration-300 transform hover:scale-105"
                       >
                         Login
                       </Button>
@@ -319,14 +327,23 @@ const Auth = () => {
             } bg-white flex items-center justify-center p-12`}>
               <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                  <h2 className="text-4xl font-bold text-gray-800 mb-2">
-                    {activeTab === 'login' ? 'Login' : 'Register'}
-                  </h2>
-                  <p className="text-gray-600">Welcome to Sonic Wave</p>
+                  <div className="relative h-16 overflow-hidden">
+                    <h2 className={`absolute inset-0 text-4xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                      activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                    }`}>
+                      Login
+                    </h2>
+                    <h2 className={`absolute inset-0 text-4xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                      activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                    }`}>
+                      Register
+                    </h2>
+                  </div>
+                  <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
                 </div>
 
                 {error && (
-                  <Alert variant="destructive" className="mb-6">
+                  <Alert variant="destructive" className="mb-6 animate-fade-in">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
@@ -335,8 +352,8 @@ const Auth = () => {
                 <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <div className="relative group">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                       <Input
                         id="email"
                         type="email"
@@ -345,31 +362,40 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={loading || googleLoading}
-                        className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                       />
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <div className="relative group">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                       <Input
                         id="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={loading || googleLoading}
-                        className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="pl-10 pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:scale-110"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                     </div>
                   </div>
 
                   {activeTab === 'login' && (
                     <div className="text-right">
-                      <button type="button" className="text-sm text-blue-600 hover:underline font-medium">
+                      <button type="button" className="text-sm text-blue-600 hover:underline font-medium transition-all duration-300 hover:text-blue-700">
                         Forgot password?
                       </button>
                     </div>
@@ -377,10 +403,10 @@ const Auth = () => {
 
                   <Button 
                     type="submit"
-                    className={`w-full h-12 font-medium text-white transition-all duration-300 ${
+                    className={`w-full h-12 font-medium text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg ${
                       activeTab === 'login' 
-                        ? 'bg-blue-600 hover:bg-blue-700' 
-                        : 'bg-green-600 hover:bg-green-700'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' 
+                        : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
                     }`}
                     disabled={loading || googleLoading}
                   >
@@ -396,14 +422,14 @@ const Auth = () => {
 
                   <div className="flex items-center my-6">
                     <div className="flex-grow border-t border-gray-300" />
-                    <span className="mx-4 text-sm text-gray-500">or login with</span>
+                    <span className="mx-4 text-sm text-gray-500">or continue with</span>
                     <div className="flex-grow border-t border-gray-300" />
                   </div>
 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12 border-gray-300 hover:bg-gray-50 transition-all duration-300"
+                    className="w-full h-12 border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400"
                     onClick={handleSignInWithGoogle}
                     disabled={googleLoading || loading}
                   >
