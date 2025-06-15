@@ -276,53 +276,94 @@ const Auth = () => {
       <div className="w-full max-w-6xl mx-auto">
         <Card className="overflow-hidden bg-white/95 backdrop-blur-sm shadow-2xl">
           <div className="flex min-h-[700px]">
-            {/* Left Panel - Welcome Section */}
-            <div className={`relative overflow-hidden transition-all duration-700 ease-in-out ${
+            {/* Left Panel - Welcome Section with Enhanced Background */}
+            <div className={`relative overflow-hidden transition-all duration-1000 ease-in-out ${
               activeTab === 'login' 
-                ? 'w-3/5 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700' 
-                : 'w-2/5 bg-gradient-to-br from-spotify-green via-green-500 to-emerald-600'
+                ? 'w-3/5' 
+                : 'w-2/5'
             }`}>
-              <div className="absolute inset-0 bg-black/10"></div>
+              {/* Animated Background Layers */}
+              <div className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                activeTab === 'login'
+                  ? 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'
+                  : 'bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700'
+              }`}>
+                {/* Floating Orbs */}
+                <div className={`absolute top-1/4 left-1/4 w-32 h-32 rounded-full blur-xl opacity-30 transition-all duration-1000 ${
+                  activeTab === 'login' ? 'bg-blue-300' : 'bg-emerald-300'
+                } animate-pulse`}></div>
+                <div className={`absolute bottom-1/3 right-1/4 w-24 h-24 rounded-full blur-xl opacity-20 transition-all duration-1000 ${
+                  activeTab === 'login' ? 'bg-indigo-300' : 'bg-teal-300'
+                } animate-pulse`} style={{animationDelay: '1s'}}></div>
+                <div className={`absolute top-1/2 right-1/3 w-16 h-16 rounded-full blur-lg opacity-25 transition-all duration-1000 ${
+                  activeTab === 'login' ? 'bg-blue-200' : 'bg-green-200'
+                } animate-pulse`} style={{animationDelay: '2s'}}></div>
+                
+                {/* Grid Pattern Overlay */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+                    backgroundSize: '20px 20px'
+                  }}></div>
+                </div>
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20"></div>
+              </div>
+              
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-12 text-white">
-                <div className={`transform transition-all duration-700 ease-in-out ${
-                  activeTab === 'login' ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0 absolute'
-                }`}>
-                  {activeTab === 'login' && (
-                    <>
-                      <h1 className="text-5xl font-bold mb-6 transition-all duration-700">Hello, Welcome!</h1>
-                      <p className="text-xl mb-8 opacity-90 transition-all duration-700">Don't have an account?</p>
+                <div className="relative w-full max-w-md">
+                  {/* Login Content */}
+                  <div className={`absolute inset-0 transition-all duration-700 ease-out transform ${
+                    activeTab === 'login' 
+                      ? 'translate-x-0 opacity-100 scale-100' 
+                      : 'translate-x-12 opacity-0 scale-95'
+                  }`}>
+                    <div className="space-y-6">
+                      <h1 className="text-6xl font-bold mb-6 transition-all duration-700 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                        Hello, Welcome!
+                      </h1>
+                      <p className="text-xl mb-8 opacity-90 transition-all duration-700 font-light">
+                        Don't have an account?
+                      </p>
                       <Button
                         onClick={() => setActiveTab('register')}
                         variant="outline"
-                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-medium transition-all duration-300 transform hover:scale-105"
+                        className="border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-blue-600 px-8 py-3 text-lg font-medium transition-all duration-500 transform hover:scale-105 hover:shadow-2xl backdrop-blur-sm"
                       >
                         Register
                       </Button>
-                    </>
-                  )}
-                </div>
-                <div className={`transform transition-all duration-700 ease-in-out ${
-                  activeTab === 'register' ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0 absolute'
-                }`}>
-                  {activeTab === 'register' && (
-                    <>
-                      <h1 className="text-5xl font-bold mb-6 transition-all duration-700">Welcome Back!</h1>
-                      <p className="text-xl mb-8 opacity-90 transition-all duration-700">Already have an account?</p>
+                    </div>
+                  </div>
+                  
+                  {/* Register Content */}
+                  <div className={`absolute inset-0 transition-all duration-700 ease-out transform ${
+                    activeTab === 'register' 
+                      ? 'translate-x-0 opacity-100 scale-100' 
+                      : '-translate-x-12 opacity-0 scale-95'
+                  }`}>
+                    <div className="space-y-6">
+                      <h1 className="text-6xl font-bold mb-6 transition-all duration-700 bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
+                        Welcome Back!
+                      </h1>
+                      <p className="text-xl mb-8 opacity-90 transition-all duration-700 font-light">
+                        Already have an account?
+                      </p>
                       <Button
                         onClick={() => setActiveTab('login')}
                         variant="outline"
-                        className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-green-600 px-8 py-3 text-lg font-medium transition-all duration-300 transform hover:scale-105"
+                        className="border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-emerald-600 px-8 py-3 text-lg font-medium transition-all duration-500 transform hover:scale-105 hover:shadow-2xl backdrop-blur-sm"
                       >
                         Login
                       </Button>
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Right Panel - Form Section */}
-            <div className={`transition-all duration-700 ease-in-out ${
+            <div className={`transition-all duration-1000 ease-in-out ${
               activeTab === 'login' ? 'w-2/5' : 'w-3/5'
             } bg-white flex items-center justify-center p-12`}>
               <div className="w-full max-w-md">
