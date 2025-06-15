@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -271,9 +272,34 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-spotify-base via-black to-spotify-elevated flex items-center justify-center p-6">
-      <div className="w-full max-w-6xl mx-auto">
-        <Card className="overflow-hidden bg-white/95 backdrop-blur-sm shadow-2xl">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6">
+      {/* Enhanced Background with Multiple Layers */}
+      <div className="absolute inset-0">
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"></div>
+        
+        {/* Animated mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-60">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-0 right-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+          <div className="absolute bottom-0 right-0 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
+        </div>
+        
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(0,0,0,0.3) 1px, transparent 0)`,
+            backgroundSize: '30px 30px'
+          }}></div>
+        </div>
+        
+        {/* Light overlay for better contrast */}
+        <div className="absolute inset-0 bg-white/20"></div>
+      </div>
+      
+      <div className="w-full max-w-6xl mx-auto relative z-10">
+        <Card className="overflow-hidden bg-white/80 backdrop-blur-lg shadow-2xl border border-white/20">
           <div className="flex min-h-[700px]">
             {/* Left Panel - Welcome Section with Enhanced Background */}
             <div className={`relative overflow-hidden transition-all duration-1000 ease-in-out ${
