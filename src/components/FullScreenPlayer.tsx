@@ -366,9 +366,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   const renderMainContent = () => {
     if (!isMobile && isShowLyrics) {
       return (
-        <div className="flex flex-row gap-4 w-full h-full justify-center items-stretch max-w-[900px] mx-auto">
+        <div className="flex flex-row gap-6 w-full h-full justify-center items-stretch max-w-[1280px] mx-auto px-0 sm:px-4">
           {/* Left: Album Art and details */}
-          <div className="flex flex-col items-center justify-start min-w-[260px] max-w-[340px] flex-1">
+          <div className="flex flex-col items-center justify-start min-w-[260px] max-w-[460px] flex-1">
             {/* Album Art */}
             <div className="rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] w-60 h-60 sm:w-72 sm:h-72 max-w-[92vw] mb-2">
               <img
@@ -423,7 +423,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 </Button>
               </div>
             </div>
-            {/* Seek Bar & Controls (show below on desktop to match lyric height) */}
+            {/* Seek Bar & Controls */}
             <div className="w-full flex flex-col gap-3 mt-2">
               <div>
                 <Slider
@@ -499,14 +499,26 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               </div>
             </div>
           </div>
-          {/* Right: Lyrics */}
-          <div className="flex-1 flex flex-col justify-start items-center rounded-lg bg-black/10 px-3 py-4 min-w-[200px] max-w-[410px] ml-2">
-            <AppleMusicLyrics
-              lyrics={lyrics}
-              currentTime={progress}
-              isLoading={isLoadingLyrics}
-              isMobile={false}
-            />
+          {/* Right: Lyrics - Expanding container */}
+          <div className="
+            flex-1 
+            flex flex-col justify-start items-center 
+            rounded-xl 
+            bg-black/20
+            px-4 py-5 
+            min-w-[340px] max-w-[730px]
+            w-full h-[86%] 
+            shadow-lg
+            transition-all
+          ">
+            <div className="w-full h-full flex flex-col justify-center">
+              <AppleMusicLyrics
+                lyrics={lyrics}
+                currentTime={progress}
+                isLoading={isLoadingLyrics}
+                isMobile={false}
+              />
+            </div>
           </div>
         </div>
       );
