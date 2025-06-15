@@ -1,5 +1,3 @@
-
-
 import React, { useRef, useEffect, useState } from 'react';
 
 interface LyricLine {
@@ -133,7 +131,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
                 lineHeight: isMobile ? 1.7 : 1.8,
                 fontSize: isMobile ? 16 : 22,
                 marginBottom: isMobile ? 16 : 20,
-                padding: isMobile ? '0 16px' : '0 32px', // Increased padding significantly for desktop
+                padding: isMobile ? '0 16px' : '0 12px', // Reduced padding significantly for desktop
               }}
             >
               {line.text}

@@ -21,7 +21,7 @@ const DesktopLyricsPanel: React.FC<DesktopLyricsPanelProps> = ({
   return (
     <div
       className={`
-        flex-1 min-w-[450px] max-w-[1000px] 
+        flex-1 min-w-[500px] max-w-[1200px] 
         h-full min-h-0
         flex flex-col items-center justify-center 
         rounded-xl bg-black/20 
