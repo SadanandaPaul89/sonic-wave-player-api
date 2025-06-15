@@ -70,27 +70,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Toggle shuffle - fixed to not interrupt playback
   const toggleShuffle = useCallback(() => {
-    console.log('PlayerContext: toggleShuffle called, current isPlaying:', isPlaying);
     setIsShuffled(prev => {
       const newShuffled = !prev;
-      console.log('PlayerContext: Shuffle toggled to:', newShuffled);
-      
-      // Use setTimeout to avoid interrupting current playback
-      setTimeout(() => {
-        if (newShuffled) {
-          // Enable shuffle - save original queue and shuffle current queue
-          setOriginalQueue(queue);
-          setQueue(shuffleArray(queue));
-        } else {
-          // Disable shuffle - restore original queue
-          setQueue(originalQueue);
-          setOriginalQueue([]);
-        }
-      }, 0);
-      
+      if (newShuffled) {
+        // Enable shuffle - save original queue and shuffle current queue
+        setOriginalQueue(queue);
+        setQueue(shuffleArray(queue));
+      } else {
+        // Disable shuffle - restore original queue
+        setQueue(originalQueue);
+        setOriginalQueue([]);
+      }
       return newShuffled;
     });
-  }, [queue, originalQueue, isPlaying]);
+  }, [queue, originalQueue]);
 
   // Handle page visibility changes
   useEffect(() => {
@@ -180,6 +173,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [repeatMode, queue, currentTrack]);
   
+  // This useEffect now only creates the audio element and sets up listeners that don't depend on changing state.
+  // It runs only once when the component mounts.
   useEffect(() => {
     audioRef.current = new Audio();
     
@@ -197,16 +192,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     audioRef.current.addEventListener('timeupdate', updateProgress);
     audioRef.current.addEventListener('loadedmetadata', setAudioDuration);
-    audioRef.current.addEventListener('ended', handleTrackEnd);
     
     return () => {
       if (audioRef.current) {
         audioRef.current.removeEventListener('timeupdate', updateProgress);
         audioRef.current.removeEventListener('loadedmetadata', setAudioDuration);
-        audioRef.current.removeEventListener('ended', handleTrackEnd);
         audioRef.current.pause();
+        audioRef.current = null; // Clean up ref on unmount
       }
     };
+  }, []);
+
+  // This useEffect handles the 'ended' event listener.
+  // It re-attaches the listener when `handleTrackEnd` changes, without re-creating the audio element.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.addEventListener('ended', handleTrackEnd);
+      return () => {
+        audio.removeEventListener('ended', handleTrackEnd);
+      };
+    }
   }, [handleTrackEnd]);
   
   useEffect(() => {
@@ -349,14 +355,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   // Toggle repeat mode: off -> all -> one -> off (fixed to not interrupt playback)
   const toggleRepeatMode = useCallback(() => {
-    console.log('PlayerContext: toggleRepeatMode called, current isPlaying:', isPlaying);
     setRepeatIndex(prev => {
       const newIndex = (prev + 1) % repeatModes.length;
-      const newMode = repeatModes[newIndex];
-      console.log('PlayerContext: Repeat mode changed from', repeatModes[prev], 'to', newMode);
       return newIndex;
     });
-  }, [isPlaying]);
+  }, []);
   
   const addToQueue = (track: Track) => {
     console.log('PlayerContext: Adding track to queue:', track.name);
