@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { formatTime } from '@/utils/formatTime';
@@ -160,6 +159,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   });
   const [isColorsLoading, setIsColorsLoading] = useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isShowLyrics, setIsShowLyrics] = useState(true); // Show lyrics toggle
 
   // Detect mobile (reuse useIsMobile hook if available)
   React.useEffect(() => {
@@ -342,7 +342,332 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
     };
   }, [dominantColors.primary, dominantColors.secondary, dominantColors.accent, isPlaying]);
 
+  // UI: Show lyrics toggle button
+  const showLyricsButton = (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setIsShowLyrics((x) => !x)}
+      className={`
+        text-white hover:bg-white/10 transition-colors px-2 py-1 rounded
+        border ${isShowLyrics ? 'border-white/60 bg-white/20' : 'border-white/30'}
+        text-xs sm:text-sm ml-1 sm:ml-2
+      `}
+      aria-pressed={isShowLyrics}
+      aria-label={isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
+    >
+      {isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
+    </Button>
+  );
+
   if (!isOpen || !currentTrack) return null;
+
+  // Desktop/PC two-column layout with lyrics, else default stack/center
+  const renderMainContent = () => {
+    if (!isMobile && isShowLyrics) {
+      return (
+        <div className="flex flex-row gap-4 w-full h-full justify-center items-stretch max-w-[900px] mx-auto">
+          {/* Left: Album Art and details */}
+          <div className="flex flex-col items-center justify-start min-w-[260px] max-w-[340px] flex-1">
+            {/* Album Art */}
+            <div className="rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] w-60 h-60 sm:w-72 sm:h-72 max-w-[92vw] mb-2">
+              <img
+                src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                alt={currentTrack.albumName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            {/* Track Info */}
+            <div className="text-center mb-2 sm:mb-4 px-2 max-w-full">
+              <h1 className="truncate font-bold drop-shadow-lg text-base sm:text-3xl mb-1 sm:mb-2">{currentTrack.name}</h1>
+              <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-gray-200">
+                <ArtistNameWithBadge
+                  artistId={currentTrack.artistId}
+                  artistName={currentTrack.artistName}
+                  className="truncate hover:underline"
+                  linkToProfile
+                />
+              </div>
+              {/* Action Buttons */}
+              <div className="flex items-center justify-center space-x-2 sm:space-x-8 mb-1 sm:mb-4">
+                <Button 
+                  variant="ghost"
+                  size="icon" 
+                  onClick={handleLikeToggle}
+                  className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={!isAuthenticated}
+                >
+                  <Heart size={20} className={isLiked ? 'text-red-500 fill-current' : ''} />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={openShareModal}
+                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+                >
+                  <Share2 size={20} />
+                </Button>
+                {isArtistVerifiedState && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={openLyricsEditor}
+                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+                  >
+                    <Edit size={20} />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
+                  <MoreHorizontal size={20} />
+                </Button>
+              </div>
+            </div>
+            {/* Seek Bar & Controls (show below on desktop to match lyric height) */}
+            <div className="w-full flex flex-col gap-3 mt-2">
+              <div>
+                <Slider
+                  value={[progress]}
+                  max={duration || 100}
+                  step={0.1}
+                  className="mb-1"
+                  onValueChange={handleProgressChange}
+                />
+                <div className="flex justify-between text-[11px] sm:text-sm text-gray-300 px-1">
+                  <span>{formatTime(progress)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mb-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                >
+                  <Shuffle size={18} />
+                </Button>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePreviousTrack}
+                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10"
+                  >
+                    <SkipBack size={22} />
+                  </Button>
+                  <button 
+                    onClick={handlePlayPause}
+                    className="bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12"
+                    type="button"
+                  >
+                    {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
+                  </button>
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNextTrack}
+                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10"
+                  >
+                    <SkipForward size={22} />
+                  </Button>
+                </div>
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleRepeatMode}
+                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                  title={`Repeat: ${repeatMode}`}
+                >
+                  {getRepeatIcon()}
+                </Button>
+              </div>
+              <div className="flex items-center justify-center space-x-2">
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleMute}
+                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                >
+                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </Button>
+                <Slider 
+                  value={[volume * 100]}
+                  max={100}
+                  className="w-20"
+                  onValueChange={handleVolumeChange}
+                />
+              </div>
+            </div>
+          </div>
+          {/* Right: Lyrics */}
+          <div className="flex-1 flex flex-col justify-start items-center rounded-lg bg-black/10 px-3 py-4 min-w-[200px] max-w-[410px] ml-2">
+            <AppleMusicLyrics
+              lyrics={lyrics}
+              currentTime={progress}
+              isLoading={isLoadingLyrics}
+              isMobile={false}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Mobile OR desktop w/o lyrics
+    return (
+      <div className="flex flex-col h-full px-2 sm:px-6 pb-2 sm:pb-6">
+        {/* Album Art */}
+        <div className="flex-1 flex items-center justify-center mb-1 sm:mb-4">
+          <div
+            className={`
+              rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02]
+              w-[52vw] h-[52vw] max-w-[98vw] max-h-[25vh]
+              sm:w-80 sm:h-80 sm:max-w-[80vw] sm:max-h-[40vh]
+            `}
+          >
+            <img
+              src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+              alt={currentTrack.albumName}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+        {/* Track Info, Controls, Seek Bar, Lyrics (if mobile and visible) */}
+        <div className="text-center mb-2 sm:mb-4">
+          <h1 className="truncate font-bold drop-shadow-lg text-base sm:text-3xl mb-1 sm:mb-2">{currentTrack.name}</h1>
+          <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-gray-200">
+            <ArtistNameWithBadge
+              artistId={currentTrack.artistId}
+              artistName={currentTrack.artistName}
+              className="truncate hover:underline"
+              linkToProfile
+            />
+          </div>
+          <div className="flex items-center justify-center space-x-2 sm:space-x-8 mb-1 sm:mb-4">
+            <Button 
+              variant="ghost"
+              size="icon" 
+              onClick={handleLikeToggle}
+              className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!isAuthenticated}
+            >
+              <Heart size={20} className={isLiked ? 'text-red-500 fill-current' : ''} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={openShareModal}
+              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+            >
+              <Share2 size={20} />
+            </Button>
+            {isArtistVerifiedState && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={openLyricsEditor}
+                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+              >
+                <Edit size={20} />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
+              <MoreHorizontal size={20} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Lyrics (shown only if visible on mobile or on desktop with lyrics off) */}
+        {(isMobile && isShowLyrics) && (
+          <div className="mb-2 sm:mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-2 sm:p-4 min-h-[74px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full">
+            <AppleMusicLyrics
+              lyrics={lyrics}
+              currentTime={progress}
+              isLoading={isLoadingLyrics}
+              isMobile={isMobile}
+            />
+          </div>
+        )}
+
+        {/* Progress Bar */}
+        <div className="mb-1 sm:mb-4">
+          <Slider
+            value={[progress]}
+            max={duration || 100}
+            step={0.1}
+            className="mb-1 sm:mb-2"
+            onValueChange={handleProgressChange}
+          />
+          <div className="flex justify-between text-[11px] sm:text-sm text-gray-300">
+            <span>{formatTime(progress)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        {/* Main Controls */}
+        <div className="flex items-center justify-between mb-1 sm:mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+          >
+            <Shuffle size={18} className="sm:size-[20px]" />
+          </Button>
+          <div className="flex items-center space-x-2 sm:space-x-6">
+            <Button 
+              variant="ghost"
+              size="icon"
+              onClick={handlePreviousTrack}
+              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
+            >
+              <SkipBack size={22} className="sm:size-[28px]" />
+            </Button>
+            <button 
+              onClick={handlePlayPause}
+              className="bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12 sm:w-16 sm:h-16"
+              type="button"
+            >
+              {isPlaying ? <Pause size={28} className="sm:size-[32px]" /> : <Play size={28} className="ml-1 sm:size-[32px]" />}
+            </button>
+            <Button 
+              variant="ghost"
+              size="icon"
+              onClick={handleNextTrack}
+              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
+            >
+              <SkipForward size={22} className="sm:size-[28px]" />
+            </Button>
+          </div>
+          <Button 
+            variant="ghost"
+            size="icon"
+            onClick={toggleRepeatMode}
+            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+            title={`Repeat: ${repeatMode}`}
+          >
+            {getRepeatIcon()}
+          </Button>
+        </div>
+        {/* Volume Control */}
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+          <Button 
+            variant="ghost"
+            size="icon"
+            onClick={toggleMute}
+            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+          >
+            {isMuted || volume === 0 ? <VolumeX size={18} className="sm:size-[20px]" /> : <Volume2 size={18} className="sm:size-[20px]" />}
+          </Button>
+          <Slider 
+            value={[volume * 100]}
+            max={100}
+            className="w-20 sm:w-32"
+            onValueChange={handleVolumeChange}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 text-white overflow-hidden">
@@ -352,7 +677,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         <div className="absolute inset-0 bg-black/20" />
       </div>
       {/* Content */}
-      <div className="relative z-10 h-full">
+      <div className="relative z-10 h-full flex flex-col">
         {/* Header */}
         <div className={`flex items-center justify-between p-2 sm:p-4 px-2 py-2 sm:px-4 sm:py-4`}>
           <Button
@@ -363,8 +688,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           >
             <ChevronDown size={20} className="sm:size-[24px]" />
           </Button>
-          <div className="text-center flex-1 min-w-0">
+          <div className="text-center flex-1 min-w-0 flex justify-center items-center">
             <div className={`text-xs sm:text-sm opacity-60 truncate`}>Playing from Sonic Wave</div>
+            {showLyricsButton}
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
             {isArtistVerifiedState && (
@@ -395,161 +721,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
         </div>
 
-        <div className="flex flex-col h-full px-2 sm:px-6 pb-2 sm:pb-6">
-          {/* Album Art */}
-          <div className="flex-1 flex items-center justify-center mb-1 sm:mb-4">
-            <div
-              className={`
-                rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] 
-                w-[52vw] h-[52vw] max-w-[98vw] max-h-[25vh]
-                sm:w-80 sm:h-80 sm:max-w-[80vw] sm:max-h-[40vh]
-              `}
-            >
-              <img
-                src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
-                alt={currentTrack.albumName}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          </div>
-
-          {/* Track Info */}
-          <div className="text-center mb-2 sm:mb-4">
-            <h1 className="truncate font-bold drop-shadow-lg text-base sm:text-3xl mb-1 sm:mb-2">{currentTrack.name}</h1>
-            <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-gray-200">
-              <ArtistNameWithBadge
-                artistId={currentTrack.artistId}
-                artistName={currentTrack.artistName}
-                className="truncate hover:underline"
-                linkToProfile
-              />
-            </div>
-            {/* Action Buttons */}
-            <div className="flex items-center justify-center space-x-2 sm:space-x-8 mb-1 sm:mb-4">
-              <Button 
-                variant="ghost"
-                size="icon" 
-                onClick={handleLikeToggle}
-                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={!isAuthenticated}
-              >
-                <Heart size={20} className={isLiked ? 'text-red-500 fill-current' : ''} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={openShareModal}
-                className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10`}
-              >
-                <Share2 size={20} />
-              </Button>
-              {isArtistVerifiedState && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={openLyricsEditor}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
-                >
-                  <Edit size={20} />
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
-                <MoreHorizontal size={20} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Apple Music Lyrics Section */}
-          <div className="mb-2 sm:mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-2 sm:p-4 min-h-[74px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full">
-            <AppleMusicLyrics
-              lyrics={lyrics}
-              currentTime={progress}
-              isLoading={isLoadingLyrics}
-              isMobile={isMobile}
-            />
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="mb-1 sm:mb-4">
-            <Slider
-              value={[progress]}
-              max={duration || 100}
-              step={0.1}
-              className="mb-1 sm:mb-2"
-              onValueChange={handleProgressChange}
-            />
-            <div className="flex justify-between text-[11px] sm:text-sm text-gray-300">
-              <span>{formatTime(progress)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-
-          {/* Main Controls */}
-          <div className="flex items-center justify-between mb-1 sm:mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
-            >
-              <Shuffle size={18} className="sm:size-[20px]" />
-            </Button>
-            <div className="flex items-center space-x-2 sm:space-x-6">
-              <Button 
-                variant="ghost"
-                size="icon"
-                onClick={handlePreviousTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
-              >
-                <SkipBack size={22} className="sm:size-[28px]" />
-              </Button>
-              <button 
-                onClick={handlePlayPause}
-                className="bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12 sm:w-16 sm:h-16"
-                type="button"
-              >
-                {isPlaying ? <Pause size={28} className="sm:size-[32px]" /> : <Play size={28} className="ml-1 sm:size-[32px]" />}
-              </button>
-              <Button 
-                variant="ghost"
-                size="icon"
-                onClick={handleNextTrack}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
-              >
-                <SkipForward size={22} className="sm:size-[28px]" />
-              </Button>
-            </div>
-            <Button 
-              variant="ghost"
-              size="icon"
-              onClick={toggleRepeatMode}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
-              title={`Repeat: ${repeatMode}`}
-            >
-              {getRepeatIcon()}
-            </Button>
-          </div>
-
-          {/* Volume Control */}
-          <div className="flex items-center justify-center space-x-2 sm:space-x-4">
-            <Button 
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
-            >
-              {isMuted || volume === 0 ? <VolumeX size={18} className="sm:size-[20px]" /> : <Volume2 size={18} className="sm:size-[20px]" />}
-            </Button>
-            <Slider 
-              value={[volume * 100]}
-              max={100}
-              className="w-20 sm:w-32"
-              onValueChange={handleVolumeChange}
-            />
-          </div>
+        {/* Main Panel (mobile/desktop layout chosen based on state) */}
+        <div className="flex-1 flex items-center justify-center w-full">
+          {(!isMobile && isShowLyrics)
+            ? renderMainContent()
+            : renderMainContent()}
         </div>
       </div>
-
       {/* Lyrics Editor Dialog */}
       <Dialog open={isLyricsDialogOpen} onOpenChange={setIsLyricsDialogOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
