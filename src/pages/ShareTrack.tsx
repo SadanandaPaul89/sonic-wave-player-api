@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Track } from '@/services/supabaseService';
-import { getAllLocalTracks, getAllPublishedTracks } from '@/services/localLibrary';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Home, Download } from 'lucide-react';
 import { formatTime } from '@/utils/formatTime';
+import { supabase } from '@/integrations/supabase/client';
 
 const ShareTrack: React.FC = () => {
   const { trackId } = useParams<{ trackId: string }>();
@@ -17,20 +17,46 @@ const ShareTrack: React.FC = () => {
 
   useEffect(() => {
     const loadTrack = async () => {
-      if (!trackId) return;
+      if (!trackId) {
+        setLoading(false);
+        return;
+      }
       
       try {
-        // Try to find the track in local and published tracks
-        const localTracks = getAllLocalTracks();
-        const publishedTracks = await getAllPublishedTracks();
-        const allTracks = [...localTracks, ...publishedTracks];
-        
-        const foundTrack = allTracks.find(t => t.id === trackId);
-        if (foundTrack) {
+        const { data: songData, error } = await supabase
+          .from('songs')
+          .select(`
+            *,
+            artists!inner(name),
+            albums(name)
+          `)
+          .eq('id', trackId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (songData) {
+          const foundTrack: Track = {
+            id: songData.id,
+            name: songData.name,
+            artistId: songData.artist_id,
+            artistName: songData.artists.name,
+            albumId: songData.album_id,
+            albumName: songData.albums ? songData.albums.name : null,
+            duration: songData.duration,
+            audioUrl: songData.audio_url,
+            image: songData.image_url,
+            user_id: songData.user_id,
+          };
           setTrack(foundTrack);
+        } else {
+          setTrack(null);
         }
       } catch (error) {
         console.error('Error loading track:', error);
+        setTrack(null);
       } finally {
         setLoading(false);
       }
