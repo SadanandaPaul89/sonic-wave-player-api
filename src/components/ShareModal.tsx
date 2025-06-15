@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -89,14 +90,14 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{track.name}</div>
-              <div className="text-sm text-gray-500 truncate">{track.artistName}</div>
+              <div className="font-medium truncate text-foreground">{track.name}</div>
+              <div className="text-sm text-muted-foreground truncate">{track.artistName}</div>
             </div>
           </div>
 
           {/* Copy link */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Share link</label>
+            <label className="text-sm font-medium text-foreground">Share link</label>
             <div className="flex space-x-2">
               <Input
                 value={shareUrl}
@@ -116,7 +117,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, track }) => {
 
           {/* Social media buttons */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-muted-foreground">Share on social media</label>
+            <label className="text-sm font-medium text-foreground">Share on social media</label>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
