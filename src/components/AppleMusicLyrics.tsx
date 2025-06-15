@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 
 interface LyricLine {
@@ -74,7 +75,12 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
   return (
     <div
       ref={containerRef}
-      className="overflow-y-auto overflow-x-hidden w-full h-full bg-transparent"
+      className={`
+        overflow-y-auto overflow-x-hidden w-full h-full bg-transparent
+        [&::-webkit-scrollbar]:hidden
+        [-ms-overflow-style:none]
+        [scrollbar-width:none]
+      `}
       style={{
         scrollBehavior: "smooth",
         WebkitOverflowScrolling: "touch",
@@ -126,7 +132,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
                 lineHeight: isMobile ? 1.7 : 1.8,
                 fontSize: isMobile ? 16 : 22,
                 marginBottom: isMobile ? 16 : 20,
-                padding: isMobile ? '0 8px' : '0 16px',
+                padding: isMobile ? '0 16px' : '0 24px', // Increased padding for desktop
               }}
             >
               {line.text}

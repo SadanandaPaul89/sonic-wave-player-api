@@ -21,12 +21,15 @@ const DesktopLyricsPanel: React.FC<DesktopLyricsPanelProps> = ({
   return (
     <div
       className={`
-        flex-1 min-w-[340px] max-w-[800px] 
+        flex-1 min-w-[400px] max-w-[900px] 
         h-full min-h-0
         flex flex-col items-center justify-center 
         rounded-xl bg-black/20 
         shadow-lg transition-all
         overflow-hidden
+        [&::-webkit-scrollbar]:hidden
+        [-ms-overflow-style:none]
+        [scrollbar-width:none]
       `}
       style={{
         // Allow child to use entire height for scrolling
@@ -35,13 +38,15 @@ const DesktopLyricsPanel: React.FC<DesktopLyricsPanelProps> = ({
         maxHeight: '100vh',
       }}
     >
-      {/* AppleMusicLyrics fills its parent; ensure NO extra padding/wrappers */}
-      <AppleMusicLyrics
-        lyrics={lyrics}
-        currentTime={currentTime}
-        isLoading={isLoading}
-        isMobile={false}
-      />
+      {/* AppleMusicLyrics fills its parent with custom scrollbar hidden */}
+      <div className="w-full h-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <AppleMusicLyrics
+          lyrics={lyrics}
+          currentTime={currentTime}
+          isLoading={isLoading}
+          isMobile={false}
+        />
+      </div>
     </div>
   );
 };
