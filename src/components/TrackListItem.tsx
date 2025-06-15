@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Track } from '@/services/supabaseService';
 import { formatTime } from '@/utils/formatTime';
@@ -50,16 +49,16 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
   return (
     <div 
       className={`group ${
-        isCurrentTrack ? 'text-spotify-green' : 'text-gray-300'
+        isCurrentTrack ? 'text-primary' : 'text-foreground/80'
       } sm:grid sm:grid-cols-12 sm:gap-4 
         px-2 py-[10px] sm:px-4 sm:py-2 
-        hover:bg-spotify-highlight rounded-md 
+        hover:bg-muted/50 rounded-md 
         flex flex-col mb-2 sm:mb-0`}
     >
       {/* Row 1: Index/Play, Title/Artist */}
       <div className="flex items-center gap-3 sm:col-span-5">
         <div className="w-6 flex-shrink-0 flex items-center justify-center relative">
-          <span className={`group-hover:hidden ${isCurrentTrack ? 'text-spotify-green' : 'text-gray-400'} text-sm sm:text-base`}>
+          <span className={`group-hover:hidden ${isCurrentTrack ? 'text-primary' : 'text-muted-foreground'} text-sm sm:text-base`}>
             {index + 1}
           </span>
           <button 
@@ -67,13 +66,13 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
             onClick={() => onPlayClick(track)}
           >
             {isCurrentPlaying ? 
-              <Pause size={16} className="text-white" /> : 
-              <Play size={16} className="text-white" />
+              <Pause size={16} className="text-foreground" /> : 
+              <Play size={16} className="text-foreground" />
             }
           </button>
         </div>
         <div className="flex items-center gap-2 truncate sm:w-auto w-full">
-          <div className="w-10 h-10 bg-gray-600 rounded flex-shrink-0">
+          <div className="w-10 h-10 bg-secondary rounded flex-shrink-0">
             <img
               src={trackImageUrl}
               alt={`${track.name} album art`}
@@ -85,9 +84,14 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
             />
           </div>
           <div className="truncate flex flex-col">
-            <span className="font-medium truncate text-base sm:text-lg">{track.name}</span>
+            <span 
+              className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline"
+              onClick={() => onPlayClick(track)}
+            >
+              {track.name}
+            </span>
             {/* Artist name - always below track name on mobile */}
-            <span className="text-xs sm:text-sm text-gray-400 truncate font-normal">
+            <span className="text-xs sm:text-sm text-muted-foreground truncate font-normal">
               <ArtistNameWithBadge
                 artistId={track.artistId}
                 artistName={track.artistName}
@@ -101,18 +105,18 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
 
       {/* Album - desktop only */}
       {showAlbum && (
-        <div className="hidden sm:flex sm:col-span-3 items-center text-sm text-gray-400 truncate">
+        <div className="hidden sm:flex sm:col-span-3 items-center text-sm text-muted-foreground truncate">
           {track.albumName}
         </div>
       )}
 
       {/* Stats & Album - mobile (show below title/artist, not right of them) */}
-      <div className="flex sm:hidden gap-3 items-center mt-1 ml-9 text-xs text-gray-400">
+      <div className="flex sm:hidden gap-3 items-center mt-1 ml-9 text-xs text-muted-foreground">
         {showAlbum && (
           <span className="truncate">{track.albumName}</span>
         )}
         {/* divider */}
-        {(showAlbum) && <span className="text-gray-500">·</span>}
+        {(showAlbum) && <span className="text-muted-foreground/50">·</span>}
         <div className="flex items-center gap-2">
           <Heart 
             size={15} 
@@ -127,18 +131,18 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="p-1 h-auto text-gray-400 hover:text-white"
+            className="p-1 h-auto text-muted-foreground hover:text-foreground"
             onClick={(e) => onShareClick(track, e)}
           >
             <MoreHorizontal size={14} />
           </Button>
         </div>
         {/* Duration right-most for mobile */}
-        <span className="ml-auto text-xs text-gray-400 min-w-[40px] text-right">{formatTime(track.duration)}</span>
+        <span className="ml-auto text-xs text-muted-foreground min-w-[40px] text-right">{formatTime(track.duration)}</span>
       </div>
 
       {/* Row 2: Desktop only stats */}
-      <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-4 text-xs text-gray-400">
+      <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <Heart 
             size={14} 
@@ -158,15 +162,15 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="p-1 h-auto text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+              className="p-1 h-auto text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <MoreHorizontal size={14} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-spotify-elevated border-gray-600">
+          <DropdownMenuContent className="bg-popover border-border">
             <DropdownMenuItem
               onClick={(e) => onShareClick(track, e)}
-              className="cursor-pointer hover:bg-spotify-highlight text-white"
+              className="cursor-pointer hover:bg-muted"
             >
               <Share size={14} className="mr-2" />
               Share
@@ -176,7 +180,7 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
       </div>
 
       {/* Row 3: Desktop only duration */}
-      <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-sm text-gray-400">
+      <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-sm text-muted-foreground">
         {formatTime(track.duration)}
       </div>
     </div>
