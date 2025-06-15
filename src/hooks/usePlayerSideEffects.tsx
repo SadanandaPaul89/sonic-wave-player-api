@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -17,6 +18,8 @@ interface PlayerSideEffectsProps {
     playNextTrack: () => void;
     playPreviousTrack: () => void;
     seekToPosition: (position: number) => void;
+    pausePlayback: () => void;
+    resumePlayback: () => void;
 }
 
 export const usePlayerSideEffects = ({
@@ -32,6 +35,8 @@ export const usePlayerSideEffects = ({
     playNextTrack,
     playPreviousTrack,
     seekToPosition,
+    pausePlayback,
+    resumePlayback,
 }: PlayerSideEffectsProps) => {
 
     // Record song play after 5 seconds
@@ -68,8 +73,8 @@ export const usePlayerSideEffects = ({
         isPlaying,
         progress,
         duration,
-        onPlay: togglePlayPause,
-        onPause: togglePlayPause,
+        onPlay: resumePlayback,
+        onPause: pausePlayback,
         onNextTrack: playNextTrack,
         onPreviousTrack: playPreviousTrack,
         onSeek: seekToPosition,
@@ -90,3 +95,4 @@ export const usePlayerSideEffects = ({
         };
     }, [resumeAudioContext]);
 };
+

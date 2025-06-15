@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { usePlayerState } from '@/hooks/usePlayerState';
@@ -16,6 +17,8 @@ interface PlayerContextProps {
   isShuffled: boolean;
   playTrack: (track: Track) => void;
   togglePlayPause: () => void;
+  pausePlayback: () => void;
+  resumePlayback: () => void;
   setVolumeLevel: (level: number) => void;
   seekToPosition: (position: number) => void;
   playNextTrack: () => void;
@@ -115,6 +118,18 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     onTrackEnd: handleTrackEnd,
   });
 
+  const pausePlayback = useCallback(() => {
+    console.log('PlayerContext: Pausing playback due to external event.');
+    setIsPlaying(false);
+  }, [setIsPlaying]);
+
+  const resumePlayback = useCallback(() => {
+    if (currentTrack) {
+      console.log('PlayerContext: Resuming playback.');
+      setIsPlaying(true);
+    }
+  }, [currentTrack, setIsPlaying]);
+
   const togglePlayPause = useCallback(() => {
     console.log('PlayerContext: togglePlayPause called, current isPlaying:', isPlaying);
     setIsPlaying(prev => {
@@ -200,6 +215,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     playNextTrack,
     playPreviousTrack,
     seekToPosition,
+    pausePlayback,
+    resumePlayback,
   });
   
   const contextValue: PlayerContextProps = {
@@ -212,6 +229,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isShuffled,
     playTrack,
     togglePlayPause,
+    pausePlayback,
+    resumePlayback,
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
@@ -240,3 +259,4 @@ export const usePlayer = (): PlayerContextProps => {
 };
 
 export default PlayerProvider;
+
