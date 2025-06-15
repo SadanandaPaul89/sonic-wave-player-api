@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Search, Library, Plus, Upload, BadgeCheck, LogOut, Info } from 'lucide-react';
@@ -5,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { isUserAdmin, setUserAsAdmin } from '@/services/supabaseService';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const SidebarNav: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -115,6 +117,25 @@ const SidebarNav: React.FC = () => {
 
   return (
     <nav className="flex flex-col gap-2">
+      {/* Profile link at the very top, with avatar */}
+      <NavLink
+        to="/profile"
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full mb-1
+          ${isActive ? "bg-spotify-highlight text-white" : "hover:bg-spotify-highlight/80 text-white/80"}`
+        }
+        style={{ order: 0 }}
+      >
+        <Avatar className="h-7 w-7">
+          <AvatarImage
+            src="https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=facearea&w=64&h=64&facepad=2"
+            alt="Profile"
+          />
+          <AvatarFallback>P</AvatarFallback>
+        </Avatar>
+        <span className="text-base font-medium">Profile</span>
+      </NavLink>
+
       <div className="space-y-1">
         <NavLink
           to="/"
@@ -207,18 +228,11 @@ const SidebarNav: React.FC = () => {
           )}
         </div>
       )}
-      
-      <NavLink
-        to="/profile"
-        className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-2 rounded-md transition-colors 
-          ${isActive ? "bg-spotify-highlight text-white" : "hover:bg-spotify-highlight/80 text-white/80"}`
-        }
-      >
-        <span>Profile</span>
-      </NavLink>
+
+      {/* Removed Profile link from bottom */}
     </nav>
   );
 };
 
 export default SidebarNav;
+
