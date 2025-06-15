@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Track } from '@/services/supabaseService';
@@ -46,9 +45,8 @@ const ShareTrack: React.FC = () => {
             albumId: songData.album_id,
             albumName: songData.albums ? songData.albums.name : null,
             duration: songData.duration,
-            audioUrl: songData.audio_url,
+            previewURL: songData.audio_url,
             image: songData.image_url,
-            user_id: songData.user_id,
           };
           setTrack(foundTrack);
         } else {
