@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -24,7 +25,9 @@ const Player: React.FC = () => {
     seekToPosition,
     playNextTrack,
     playPreviousTrack,
-    toggleRepeatMode
+    toggleRepeatMode,
+    isPausedByVisibility,
+    forceStop
   } = usePlayer();
 
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -65,6 +68,19 @@ const Player: React.FC = () => {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-spotify-elevated border-t border-gray-700 px-2 sm:px-4 py-2 z-40">
+        {/* Audio Conflict Warning */}
+        {isPausedByVisibility && (
+          <div className="bg-yellow-600 text-white text-xs px-3 py-1 text-center">
+            Music paused to prevent conflicts with other apps
+            <button 
+              onClick={togglePlayPause}
+              className="ml-2 underline hover:no-underline"
+            >
+              Resume
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
@@ -118,6 +134,17 @@ const Player: React.FC = () => {
               >
                 {isPlaying ? <Pause size={isMobile ? 16 : 20} /> : <Play size={isMobile ? 16 : 20} />}
               </Button>
+
+              {/* Stop Button */}
+              <Button
+                variant="ghost"
+                size={isMobile ? "sm" : "icon"}
+                onClick={forceStop}
+                className="text-gray-400 hover:text-red-400"
+                title="Stop playback completely"
+              >
+                <Square size={isMobile ? 14 : 18} />
+              </Button>
               
               <Button
                 variant="ghost"
@@ -156,6 +183,13 @@ const Player: React.FC = () => {
                 <span className="text-xs text-gray-400 w-10">
                   {formatTime(duration)}
                 </span>
+              </div>
+            )}
+
+            {/* Keyboard shortcuts hint */}
+            {!isMobile && (
+              <div className="text-xs text-gray-500 opacity-70">
+                Space: Play/Pause • Ctrl+←/→: Skip • Ctrl+↑/↓: Volume • Ctrl+M: Mute
               </div>
             )}
           </div>

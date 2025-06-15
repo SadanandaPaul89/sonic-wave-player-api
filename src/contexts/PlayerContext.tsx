@@ -2,6 +2,10 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
+import { useMediaSession } from '@/hooks/useMediaSession';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useToast } from '@/hooks/use-toast';
 
 type RepeatMode = 'off' | 'all' | 'one';
 
@@ -22,6 +26,8 @@ interface PlayerContextProps {
   queue: Track[];
   addToQueue: (track: Track) => void;
   clearQueue: () => void;
+  isPausedByVisibility: boolean;
+  forceStop: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextProps | undefined>(undefined);
@@ -35,6 +41,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [queue, setQueue] = useState<Track[]>([]);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
+  const [isPausedByVisibility, setIsPausedByVisibility] = useState(false);
+  const [wasPlayingBeforeHidden, setWasPlayingBeforeHidden] = useState(false);
   
   // Repeat Modes
   const repeatModes: RepeatMode[] = ['off', 'all', 'one'];
@@ -42,7 +50,50 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const repeatMode = repeatModes[repeatIndex];
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
   
+  // Page visibility hook
+  const isPageVisible = usePageVisibility();
+
+  // Handle page visibility changes
+  useEffect(() => {
+    if (!currentTrack) return;
+
+    if (!isPageVisible && isPlaying) {
+      // Page became hidden while playing
+      console.log('Page hidden, pausing audio to prevent conflicts');
+      setWasPlayingBeforeHidden(true);
+      setIsPlaying(false);
+      setIsPausedByVisibility(true);
+      toast({
+        title: "Audio Paused",
+        description: "Music paused to prevent conflicts with other apps",
+        duration: 3000,
+      });
+    } else if (isPageVisible && isPausedByVisibility && wasPlayingBeforeHidden) {
+      // Page became visible again and was paused due to visibility
+      console.log('Page visible again, offering to resume audio');
+      toast({
+        title: "Resume Playback?",
+        description: "Click to resume your music",
+        duration: 5000,
+        action: (
+          <button
+            onClick={() => {
+              setIsPlaying(true);
+              setIsPausedByVisibility(false);
+              setWasPlayingBeforeHidden(false);
+            }}
+            className="bg-white text-black px-3 py-1 rounded text-sm hover:bg-gray-200"
+          >
+            Resume
+          </button>
+        ),
+      });
+      setIsPausedByVisibility(false);
+    }
+  }, [isPageVisible, isPlaying, isPausedByVisibility, wasPlayingBeforeHidden, currentTrack, toast]);
+
   // Handle track end with your exact logic
   const handleTrackEnd = useCallback(() => {
     console.log('TRACK_END: Track ended, repeat mode:', repeatMode, 'queue length:', queue.length);
@@ -175,6 +226,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     setCurrentTrack(track);
     setIsPlaying(true);
+    setIsPausedByVisibility(false);
+    setWasPlayingBeforeHidden(false);
   };
   
   const playTrack = (track: Track) => {
@@ -185,6 +238,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('PlayerContext: togglePlayPause called, current isPlaying:', isPlaying);
     setIsPlaying(prev => {
       console.log('PlayerContext: setting isPlaying to:', !prev);
+      if (!prev) {
+        setIsPausedByVisibility(false);
+        setWasPlayingBeforeHidden(false);
+      }
       return !prev;
     });
   };
@@ -264,6 +321,69 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('PlayerContext: Clearing queue');
     setQueue([]);
   };
+
+  const forceStop = () => {
+    console.log('PlayerContext: Force stopping playback');
+    setIsPlaying(false);
+    setProgress(0);
+    setIsPausedByVisibility(false);
+    setWasPlayingBeforeHidden(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  };
+
+  // Volume control functions for keyboard shortcuts
+  const handleVolumeUp = () => {
+    setVolumeLevel(Math.min(1, volume + 0.1));
+  };
+
+  const handleVolumeDown = () => {
+    setVolumeLevel(Math.max(0, volume - 0.1));
+  };
+
+  const handleMute = () => {
+    setVolumeLevel(volume > 0 ? 0 : 0.7);
+  };
+
+  // Media Session API integration
+  const { resumeAudioContext } = useMediaSession({
+    currentTrack,
+    isPlaying,
+    progress,
+    duration,
+    onPlay: togglePlayPause,
+    onPause: togglePlayPause,
+    onNextTrack: playNextTrack,
+    onPreviousTrack: playPreviousTrack,
+    onSeek: seekToPosition,
+  });
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onTogglePlayPause: togglePlayPause,
+    onNextTrack: playNextTrack,
+    onPreviousTrack: playPreviousTrack,
+    onVolumeUp: handleVolumeUp,
+    onVolumeDown: handleVolumeDown,
+    onMute: handleMute,
+  });
+
+  // Resume audio context on user interaction
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      resumeAudioContext();
+    };
+
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('keydown', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, [resumeAudioContext]);
   
   return (
     <PlayerContext.Provider
@@ -283,7 +403,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toggleRepeatMode,
         queue,
         addToQueue,
-        clearQueue
+        clearQueue,
+        isPausedByVisibility,
+        forceStop
       }}
     >
       {children}
