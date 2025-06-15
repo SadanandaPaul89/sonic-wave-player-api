@@ -82,7 +82,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
       ref={containerRef}
       className={`
         overflow-y-auto overflow-x-hidden
-        px-1 py-4 sm:px-3 sm:py-6
+        px-1 sm:px-3
         w-full max-w-full
         ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'}
         bg-transparent
@@ -93,9 +93,6 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
       }}
     >
       <div className="flex flex-col items-center space-y-3 sm:space-y-4 w-full max-w-full">
-        {/* Add some top padding for better scroll positioning */}
-        <div className="h-8 sm:h-12" />
-        
         {lyrics.map((line, i) => {
           const distance = Math.abs(activeIndex - i);
           let opacity = 1, scale = 1, color = 'text-white', fontWeight = 'font-normal';
@@ -146,9 +143,6 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
             </div>
           );
         })}
-        
-        {/* Add some bottom padding for better scroll positioning */}
-        <div className="h-16 sm:h-24" />
       </div>
     </div>
   );
