@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase';
 import LyricsEditor from './LyricsEditor';
 import ShareModal from './ShareModal';
 import ArtistNameWithBadge from "./ArtistNameWithBadge";
+import AppleMusicLyrics from "./AppleMusicLyrics";
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
@@ -455,30 +456,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             </div>
           </div>
 
-          {/* Lyrics Section */}
-          <div className="mb-4 text-center min-h-[80px] flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-4">
-            {isLoadingLyrics ? (
-              <div className="text-xl text-gray-300">Loading lyrics...</div>
-            ) : lyrics.length > 0 ? (
-              <>
-                <div className="text-2xl font-semibold mb-2 drop-shadow-lg">
-                  {getCurrentLyric()?.text || "♪ Instrumental ♪"}
-                </div>
-                <div className="space-y-1">
-                  {getUpcomingLyrics().slice(0, 2).map((lyric, index) => (
-                    <div 
-                      key={index} 
-                      className="text-lg transition-opacity duration-300"
-                      style={{ opacity: Math.max(0.6 - index * 0.2, 0.2) }}
-                    >
-                      {lyric.text}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-xl text-gray-300">♪ No lyrics available ♪</div>
-            )}
+          {/* Lyrics Section - replaced old lyrics UI with AppleMusicLyrics */}
+          <div className="mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-4 min-h-[18rem]">
+            <AppleMusicLyrics
+              songId={currentTrack.id}
+              currentTime={progress}
+            />
           </div>
 
           {/* Progress Bar */}
