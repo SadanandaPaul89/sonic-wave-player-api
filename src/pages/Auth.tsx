@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -273,17 +274,17 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6">
-      {/* Enhanced Background with Multiple Layers */}
+      {/* Enhanced Background with Bright Gradient */}
       <div className="absolute inset-0">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"></div>
+        {/* Bright gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300"></div>
         
         {/* Animated mesh gradient overlay */}
-        <div className="absolute inset-0 opacity-60">
-          <div className="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-0 right-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
-          <div className="absolute bottom-0 right-0 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
+        <div className="absolute inset-0 opacity-70">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-0 right-0 w-72 h-72 bg-rose-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+          <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
         </div>
         
         {/* Subtle pattern overlay */}
@@ -295,7 +296,7 @@ const Auth = () => {
         </div>
         
         {/* Light overlay for better contrast */}
-        <div className="absolute inset-0 bg-white/20"></div>
+        <div className="absolute inset-0 bg-white/10"></div>
       </div>
       
       <div className="w-full max-w-6xl mx-auto relative z-10">
@@ -504,7 +505,7 @@ const Auth = () => {
                     ) : (
                       <svg viewBox="0 0 24 24" className="h-5 w-5 mr-3" aria-hidden="true">
                         <g>
-                          <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.21-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
+                          <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.10-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
                           <path fill="#34A853" d="M12.039 21.653c2.611 0 4.805-.87 6.406-2.352l-3.244-2.383c-.898.607-2.047.963-3.162.963-2.429 0-4.487-1.64-5.227-3.832h-3.291v2.407c1.594 3.148 4.916 5.197 8.518 5.197z"/>
                           <path fill="#FBBC05" d="M6.812 14.349A5.195 5.195 0 0 1 6.225 12c0-.819.147-1.615.406-2.349V7.244h-3.29A9.414 9.414 0 0 0 2.04 12c0 1.484.357 2.891.989 4.117l3.283-2.407z"/>
                           <path fill="#EA4335" d="M12.039 6.987c1.427 0 2.704.492 3.71 1.457l2.773-2.774C16.84 3.939 14.65 3 12.039 3c-3.602 0-6.924 2.049-8.518 5.197l3.291 2.407c.74-2.192 2.798-3.834 5.227-3.834z"/>
@@ -524,3 +525,4 @@ const Auth = () => {
 };
 
 export default Auth;
+
