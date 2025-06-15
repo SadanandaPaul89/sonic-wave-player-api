@@ -208,6 +208,7 @@ const Player: React.FC = () => {
               <DialogContent className="max-w-md max-h-[80vh]">
                 <div className="h-96">
                   <LyricsDisplay
+                    key={currentTrack?.id} // ensure remount on track change!
                     songId={currentTrack.id}
                     currentTime={progress}
                     isVisible={true}

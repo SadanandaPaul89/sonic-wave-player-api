@@ -502,6 +502,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
           </div>
           {/* Right: Lyrics - Use dedicated focused panel */}
           <DesktopLyricsPanel
+            key={currentTrack?.id} // crucial: force remount on track change
             lyrics={lyrics}
             currentTime={progress}
             isLoading={isLoadingLyrics}
@@ -579,6 +580,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         {(isMobile && isShowLyrics) && (
           <div className="mb-2 sm:mb-4 text-center flex flex-col justify-center backdrop-blur-sm bg-black/20 rounded-lg p-2 sm:p-4 min-h-[74px] sm:min-h-[100px] max-w-[98vw] mx-auto w-full">
             <AppleMusicLyrics
+              key={currentTrack?.id} // crucial: force remount on track change
               lyrics={lyrics}
               currentTime={progress}
               isLoading={isLoadingLyrics}
