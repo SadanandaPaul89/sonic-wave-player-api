@@ -61,27 +61,27 @@ const Player: React.FC = () => {
 
   const getRepeatButtonClass = () => {
     if (repeatMode === 'off') {
-      return 'text-gray-400 hover:text-white';
+      return 'text-muted-foreground hover:text-foreground';
     }
-    return 'text-spotify-green hover:text-spotify-green/80';
+    return 'text-primary hover:text-primary/80';
   };
 
   const getShuffleButtonClass = () => {
     if (isShuffled) {
-      return 'text-spotify-green hover:text-spotify-green/80';
+      return 'text-primary hover:text-primary/80';
     }
-    return 'text-gray-400 hover:text-white';
+    return 'text-muted-foreground hover:text-foreground';
   };
 
   return (
     <>
-      <div className="bg-spotify-elevated border-t border-gray-700 px-2 sm:px-4 py-2">
+      <div className="bg-card border-t border-border px-2 sm:px-4 py-2">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
             <Link
               to={`/artist/${currentTrack.artistId}`}
-              className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gray-600 rounded flex-shrink-0 cursor-pointer hover:scale-105 transition-transform`}
+              className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-secondary rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
               tabIndex={0}
               aria-label={`Go to artist: ${currentTrack.artistName}`}
               onClick={(e) => e.stopPropagation()}
@@ -93,16 +93,16 @@ const Player: React.FC = () => {
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <div className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-white font-medium`}>
+              <div className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-foreground font-medium`}>
                 {/* Track name as plain text (no badge/check) */}
                 {currentTrack.name}
               </div>
-              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400 truncate`}>
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground truncate`}>
                 {/* Artist name with badge */}
                 <ArtistNameWithBadge
                   artistId={currentTrack.artistId}
                   artistName={currentTrack.artistName}
-                  className="hover:underline text-gray-400"
+                  className="hover:underline text-muted-foreground"
                   linkToProfile
                 />
               </div>
@@ -127,16 +127,16 @@ const Player: React.FC = () => {
                 variant="ghost"
                 size={isMobile ? "sm" : "icon"}
                 onClick={playPreviousTrack}
-                className="text-gray-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <SkipBack size={isMobile ? 16 : 20} />
               </Button>
               
               <Button
-                variant="ghost"
+                variant="default"
                 size={isMobile ? "sm" : "icon"}
                 onClick={togglePlayPause}
-                className={`bg-white text-black hover:bg-gray-200 ${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full`}
+                className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full`}
               >
                 {isPlaying ? <Pause size={isMobile ? 16 : 20} /> : <Play size={isMobile ? 16 : 20} />}
               </Button>
@@ -146,7 +146,7 @@ const Player: React.FC = () => {
                 variant="ghost"
                 size={isMobile ? "sm" : "icon"}
                 onClick={forceStop}
-                className="text-gray-400 hover:text-red-400"
+                className="text-muted-foreground hover:text-destructive"
                 title="Stop playback completely"
               >
                 <Square size={isMobile ? 14 : 18} />
@@ -156,7 +156,7 @@ const Player: React.FC = () => {
                 variant="ghost"
                 size={isMobile ? "sm" : "icon"}
                 onClick={playNextTrack}
-                className="text-gray-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <SkipForward size={isMobile ? 16 : 20} />
               </Button>
@@ -176,7 +176,7 @@ const Player: React.FC = () => {
             {/* Progress Bar - Desktop only in header */}
             {!isMobile && (
               <div className="flex items-center space-x-2 w-full">
-                <span className="text-xs text-gray-400 w-10 text-right">
+                <span className="text-xs text-muted-foreground w-10 text-right">
                   {formatTime(progress)}
                 </span>
                 <Slider
@@ -186,7 +186,7 @@ const Player: React.FC = () => {
                   onValueChange={handleSeek}
                   className="flex-1"
                 />
-                <span className="text-xs text-gray-400 w-10">
+                <span className="text-xs text-muted-foreground w-10">
                   {formatTime(duration)}
                 </span>
               </div>
@@ -203,14 +203,14 @@ const Player: React.FC = () => {
                   onClick={toggleMute}
                   onMouseEnter={() => setShowVolumeSlider(true)}
                   onMouseLeave={() => setShowVolumeSlider(false)}
-                  className="text-gray-400 hover:text-white relative"
+                  className="text-muted-foreground hover:text-foreground relative"
                 >
                   {volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
                 </Button>
                 
                 {showVolumeSlider && (
                   <div 
-                    className="absolute bottom-full mb-2 right-20 bg-spotify-elevated border border-gray-600 rounded p-3 w-32"
+                    className="absolute bottom-full mb-2 right-20 bg-popover border border-border rounded p-3 w-32 shadow-lg"
                     onMouseEnter={() => setShowVolumeSlider(true)}
                     onMouseLeave={() => setShowVolumeSlider(false)}
                   >
@@ -232,7 +232,7 @@ const Player: React.FC = () => {
                 <Button
                   variant="ghost"
                   size={isMobile ? "sm" : "icon"}
-                  className="text-gray-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                   title="Show Lyrics"
                 >
                   <Mic2 size={isMobile ? 16 : 20} />
@@ -255,7 +255,7 @@ const Player: React.FC = () => {
               variant="ghost"
               size={isMobile ? "sm" : "icon"}
               onClick={() => setIsFullScreenOpen(true)}
-              className="text-gray-400 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
               title="Full Screen Player"
             >
               <Maximize2 size={isMobile ? 16 : 20} />
@@ -273,7 +273,7 @@ const Player: React.FC = () => {
               onValueChange={handleSeek}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
               <span>{formatTime(progress)}</span>
               <span>{formatTime(duration)}</span>
             </div>

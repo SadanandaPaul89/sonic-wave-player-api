@@ -12,13 +12,13 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="h-9 w-9 hover:bg-spotify-highlight"
+      className="h-9 w-9 hover:bg-accent"
       title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? (
-        <Sun className="h-4 w-4 text-spotify-green" />
+        <Sun className="h-4 w-4 text-primary" />
       ) : (
-        <Moon className="h-4 w-4 text-spotify-green" />
+        <Moon className="h-4 w-4 text-primary" />
       )}
     </Button>
   );

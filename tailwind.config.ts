@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -20,16 +19,6 @@ export default {
 		},
 		extend: {
 			colors: {
-				// CSS Variable-based colors that adapt to theme
-				spotify: {
-					base: 'hsl(var(--spotify-base))',
-					elevated: 'hsl(var(--spotify-elevated))',
-					highlight: 'hsl(var(--spotify-highlight))',
-					green: 'hsl(var(--spotify-green))',
-					white: 'hsl(var(--spotify-white))',
-					lightgray: 'hsl(var(--spotify-lightgray))',
-					darkgray: 'hsl(var(--spotify-darkgray))',
-				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -63,16 +52,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

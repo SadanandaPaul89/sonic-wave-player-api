@@ -329,7 +329,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       case 'one':
         return <Repeat1 size={20} />;
       case 'all':
-        return <Repeat size={20} className="text-green-500" />;
+        return <Repeat size={20} className="text-primary" />;
       default:
         return <Repeat size={20} />;
     }
@@ -352,20 +352,17 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
   // UI: Show lyrics toggle button with smooth transition
   const showLyricsButton = (
     <Button
-      variant="ghost"
+      variant={isShowLyrics ? 'secondary' : 'ghost'}
       size="sm"
       onClick={() => setIsShowLyrics((x) => !x)}
       className={`
-        text-white hover:bg-white/10 transition-all duration-300 ease-in-out px-2 py-1 rounded
-        border ${isShowLyrics ? 'border-white/60 bg-white/20 scale-105' : 'border-white/30 scale-100'}
-        text-xs sm:text-sm ml-1 sm:ml-2 transform
+        text-white hover:bg-white/20 transition-all duration-300 ease-in-out px-2 py-1 rounded
+        text-xs sm:text-sm ml-1 sm:ml-2
       `}
       aria-pressed={isShowLyrics}
       aria-label={isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
     >
-      <span className="transition-all duration-200">
         {isShowLyrics ? 'Hide Lyrics' : 'Show Lyrics'}
-      </span>
     </Button>
   );
 
@@ -390,7 +387,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             {/* Track Info */}
             <div className="text-center mb-2 sm:mb-4 px-2 max-w-full">
               <h1 className="truncate font-bold drop-shadow-lg text-base sm:text-3xl mb-1 sm:mb-2">{currentTrack.name}</h1>
-              <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-gray-200">
+              <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-white/80">
                 <ArtistNameWithBadge
                   artistId={currentTrack.artistId}
                   artistName={currentTrack.artistName}
@@ -404,7 +401,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost"
                   size="icon" 
                   onClick={handleLikeToggle}
-                  className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={!isAuthenticated}
                 >
                   <Heart size={20} className={isLiked ? 'text-red-500 fill-current' : ''} />
@@ -413,7 +410,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost" 
                   size="icon" 
                   onClick={openShareModal}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+                  className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
                 >
                   <Share2 size={20} />
                 </Button>
@@ -422,12 +419,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                     variant="ghost"
                     size="icon"
                     onClick={openLyricsEditor}
-                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+                    className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
                   >
                     <Edit size={20} />
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
                   <MoreHorizontal size={20} />
                 </Button>
               </div>
@@ -442,7 +439,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   className="mb-1"
                   onValueChange={handleProgressChange}
                 />
-                <div className="flex justify-between text-[11px] sm:text-sm text-gray-300 px-1">
+                <div className="flex justify-between text-[11px] sm:text-sm text-white/70 px-1">
                   <span>{formatTime(progress)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
@@ -452,7 +449,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost"
                   size="icon"
                   onClick={handleToggleShuffle}
-                  className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-green-500' : ''}`}
+                  className={`text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-primary' : ''}`}
                   title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
                 >
                   <Shuffle size={18} />
@@ -462,13 +459,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                     variant="ghost"
                     size="icon"
                     onClick={handlePreviousTrack}
-                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10"
+                    className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-10 h-10"
                   >
                     <SkipBack size={22} />
                   </Button>
                   <button 
                     onClick={handlePlayPause}
-                    className="bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12"
+                    className="bg-primary text-primary-foreground rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12"
                     type="button"
                   >
                     {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
@@ -477,7 +474,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                     variant="ghost"
                     size="icon"
                     onClick={handleNextTrack}
-                    className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10"
+                    className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-10 h-10"
                   >
                     <SkipForward size={22} />
                   </Button>
@@ -486,7 +483,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost"
                   size="icon"
                   onClick={toggleRepeatMode}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                  className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8"
                   title={`Repeat: ${repeatMode}`}
                 >
                   {getRepeatIcon()}
@@ -497,7 +494,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                   variant="ghost"
                   size="icon"
                   onClick={toggleMute}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8"
+                  className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8"
                 >
                   {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </Button>
@@ -546,7 +543,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
         {/* Track Info, Controls, Seek Bar, Lyrics (if mobile and visible) */}
         <div className="text-center mb-2 sm:mb-4">
           <h1 className="truncate font-bold drop-shadow-lg text-base sm:text-3xl mb-1 sm:mb-2">{currentTrack.name}</h1>
-          <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-gray-200">
+          <div className="flex items-center justify-center text-xs sm:text-xl mb-1 sm:mb-2 text-white/80">
             <ArtistNameWithBadge
               artistId={currentTrack.artistId}
               artistName={currentTrack.artistName}
@@ -559,7 +556,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost"
               size="icon" 
               onClick={handleLikeToggle}
-              className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!isAuthenticated}
             >
               <Heart size={20} className={isLiked ? 'text-red-500 fill-current' : ''} />
@@ -568,7 +565,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost" 
               size="icon" 
               onClick={openShareModal}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+              className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
             >
               <Share2 size={20} />
             </Button>
@@ -577,12 +574,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost"
                 size="icon"
                 onClick={openLyricsEditor}
-                className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+                className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
               >
                 <Edit size={20} />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10">
               <MoreHorizontal size={20} />
             </Button>
           </div>
@@ -613,7 +610,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             className="mb-1 sm:mb-2"
             onValueChange={handleProgressChange}
           />
-          <div className="flex justify-between text-[11px] sm:text-sm text-gray-300">
+          <div className="flex justify-between text-[11px] sm:text-sm text-white/70">
             <span>{formatTime(progress)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -625,7 +622,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             variant="ghost"
             size="icon"
             onClick={handleToggleShuffle}
-            className={`text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-green-500' : ''}`}
+            className={`text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 ${isShuffled ? 'text-primary' : ''}`}
             title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
           >
             <Shuffle size={18} className="sm:size-[20px]" />
@@ -635,13 +632,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost"
               size="icon"
               onClick={handlePreviousTrack}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
+              className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
             >
               <SkipBack size={22} className="sm:size-[28px]" />
             </Button>
             <button 
               onClick={handlePlayPause}
-              className="bg-white text-black rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12 sm:w-16 sm:h-16"
+              className="bg-primary text-primary-foreground rounded-full hover:scale-105 transition-transform flex items-center justify-center backdrop-blur-sm shadow-2xl w-12 h-12 sm:w-16 sm:h-16"
               type="button"
             >
               {isPlaying ? <Pause size={28} className="sm:size-[32px]" /> : <Play size={28} className="ml-1 sm:size-[32px]" />}
@@ -650,7 +647,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost"
               size="icon"
               onClick={handleNextTrack}
-              className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
+              className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-10 h-10 sm:w-12 sm:h-12"
             >
               <SkipForward size={22} className="sm:size-[28px]" />
             </Button>
@@ -659,7 +656,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             variant="ghost"
             size="icon"
             onClick={toggleRepeatMode}
-            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+            className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
             title={`Repeat: ${repeatMode}`}
           >
             {getRepeatIcon()}
@@ -671,7 +668,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             variant="ghost"
             size="icon"
             onClick={toggleMute}
-            className="text-white hover:bg-white/10 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
+            className="text-white hover:bg-white/20 backdrop-blur-sm transition-colors w-8 h-8 sm:w-10 sm:h-10"
           >
             {isMuted || volume === 0 ? <VolumeX size={18} className="sm:size-[20px]" /> : <Volume2 size={18} className="sm:size-[20px]" />}
           </Button>
@@ -691,7 +688,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
       {/* Dynamic Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0" style={backgroundStyle} />
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col">
@@ -701,12 +698,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className={`text-white hover:bg-white/10 transition-colors flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10`}
+            className={`text-white hover:bg-white/20 transition-colors flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10`}
           >
             <ChevronDown size={20} className="sm:size-[24px]" />
           </Button>
           <div className="text-center flex-1 min-w-0 flex justify-center items-center">
-            <div className={`text-xs sm:text-sm opacity-60 truncate`}>Playing from Sonic Wave</div>
+            <div className={`text-xs sm:text-sm opacity-80 truncate`}>Playing from Sonic Wave</div>
             {showLyricsButton}
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
@@ -715,7 +712,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
                 variant="ghost"
                 size="icon"
                 onClick={openLyricsEditor}
-                className={`text-white hover:bg-white/10 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
+                className={`text-white hover:bg-white/20 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
               >
                 <Edit size={20} className="sm:size-[24px]" />
               </Button>
@@ -724,14 +721,14 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               variant="ghost"
               size="icon"
               onClick={openShareModal}
-              className={`text-white hover:bg-white/10 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
+              className={`text-white hover:bg-white/20 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
             >
               <Share2 size={18} className="sm:size-[20px]" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className={`text-white hover:bg-white/10 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
+              className={`text-white hover:bg-white/20 transition-colors w-8 h-8 sm:w-10 sm:h-10`}
             >
               <MoreHorizontal size={20} className="sm:size-[24px]" />
             </Button>

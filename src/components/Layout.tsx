@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <PlayerProvider>
-      <div className="flex flex-col h-screen bg-spotify-base text-white">
+      <div className="flex flex-col h-screen bg-background text-foreground">
         <div className="flex flex-1 overflow-hidden">
           {isMobile ? (
             // Mobile drawer navigation
@@ -27,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <Menu size={isMobile ? 20 : 24} />
                 </button>
               </DrawerTrigger>
-              <DrawerContent className="h-[85vh] bg-black border-t border-spotify-highlight">
+              <DrawerContent className="h-[85vh] bg-background border-t border-border">
                 <div className="h-full overflow-y-auto">
                   <Sidebar />
                 </div>

@@ -1,92 +1,54 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Light mode - Apple Music/Spotify inspired, black borders for card */
-    --background: 0 0% 98%;             /* #FAFAFA */
-    --foreground: 0 0% 0%;              /* black text everywhere for light mode */
-
-    --card: 0 0% 100%;                  /* white card */
-    --card-foreground: 0 0% 0%;         /* black text */
+    /* New Light Theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-
-    --primary: 0 0% 0%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 100% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 0%;                  /* TRUE BLACK for border */
-    --input: 0 0% 100%;                 
-    --ring: 0 0% 80%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 0%;
-    --sidebar-ring: 0 0% 80%;
-
-    --spotify-base: 0 0% 98%;
-    --spotify-elevated: 0 0% 100%;
-    --spotify-highlight: 0 0% 96%;
-    --spotify-green: 141 73% 42%;
-    --spotify-white: 0 0% 100%;
-    --spotify-lightgray: 0 0% 45%;
-    --spotify-darkgray: 0 0% 33%;
   }
 
   .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 142 72% 29%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 142 72% 29%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 142 72% 29%;
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 142 72% 29%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 16%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 142 72% 29%;
-    --spotify-base: 222.2 84% 4.9%;
-    --spotify-elevated: 0 0% 9%;
-    --spotify-highlight: 0 0% 16%;
-    --spotify-green: 142 72% 29%;
-    --spotify-white: 0 0% 100%;
-    --spotify-lightgray: 0 0% 70%;
-    --spotify-darkgray: 0 0% 33%;
+    /* New Dark Theme */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -100,35 +62,8 @@
   }
 }
 
-/* Apple Music/Spotify style strong shadow for card elements in LIGHT MODE ONLY */
 @layer components {
-  :root .music-card {
-    /* Light mode: deep shadow, pure black border, very visible card */
-    @apply border border-black shadow-[0_4px_24px_4px_rgba(0,0,0,0.12)] bg-white;
+  .music-card {
+    @apply bg-card text-card-foreground border rounded-lg shadow-sm transition-shadow hover:shadow-md;
   }
-  :root .music-card .main-title,
-  :root .music-card .text-main {
-    @apply text-black;
-  }
-
-  /* In dark mode: subtle shadow, softer border, text inherits default colors */
-  .dark .music-card {
-    @apply border border-[#222] shadow-lg bg-card;
-  }
-  .dark .music-card .main-title,
-  .dark .music-card .text-main {
-    @apply text-white;
-  }
-}
-
-/* Force pure black for important headings/titles in cards in light; softer in dark */
-.card-title,
-.artist-title,
-.album-title {
-  color: #000 !important;
-}
-.dark .card-title,
-.dark .artist-title,
-.dark .album-title {
-  color: #FFF !important;
 }
