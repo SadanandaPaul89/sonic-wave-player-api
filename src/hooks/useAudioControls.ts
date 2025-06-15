@@ -1,8 +1,9 @@
 
-import { useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Track } from '@/services/api';
 
 interface AudioControlsProps {
+    audioRef: React.RefObject<HTMLAudioElement | null>;
     currentTrack: Track | null;
     isPlaying: boolean;
     volume: number;
@@ -12,6 +13,7 @@ interface AudioControlsProps {
 }
 
 export const useAudioControls = ({
+    audioRef,
     currentTrack,
     isPlaying,
     volume,
@@ -19,11 +21,12 @@ export const useAudioControls = ({
     setDuration,
     onTrackEnd
 }: AudioControlsProps) => {
-    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Setup and teardown audio element and listeners
     useEffect(() => {
-        audioRef.current = new Audio();
+        if (!audioRef.current) {
+            audioRef.current = new Audio();
+        }
         const audio = audioRef.current;
 
         const updateProgress = () => setProgress(audio.currentTime);
@@ -36,9 +39,8 @@ export const useAudioControls = ({
             audio.removeEventListener('timeupdate', updateProgress);
             audio.removeEventListener('loadedmetadata', setAudioDuration);
             audio.pause();
-            audioRef.current = null;
         };
-    }, [setDuration, setProgress]);
+    }, [setDuration, setProgress, audioRef]);
 
     // Handle 'ended' event listener separately
     useEffect(() => {
@@ -49,7 +51,7 @@ export const useAudioControls = ({
                 audio.removeEventListener('ended', onTrackEnd);
             };
         }
-    }, [onTrackEnd]);
+    }, [onTrackEnd, audioRef]);
     
     // Load new track
     useEffect(() => {
@@ -58,7 +60,7 @@ export const useAudioControls = ({
             audioRef.current.src = currentTrack.previewURL;
             audioRef.current.load();
         }
-    }, [currentTrack]);
+    }, [currentTrack, audioRef]);
     
     // Control play/pause
     useEffect(() => {
@@ -71,14 +73,14 @@ export const useAudioControls = ({
                 audioRef.current.pause();
             }
         }
-    }, [isPlaying]);
+    }, [isPlaying, audioRef]);
 
     // Control volume
     useEffect(() => {
         if (audioRef.current) {
             audioRef.current.volume = volume;
         }
-    }, [volume]);
+    }, [volume, audioRef]);
     
     const seekToPosition = (position: number) => {
         if (audioRef.current) {
@@ -87,5 +89,5 @@ export const useAudioControls = ({
         }
     };
     
-    return { audioRef, seekToPosition };
+    return { seekToPosition };
 };
