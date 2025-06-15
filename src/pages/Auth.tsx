@@ -133,22 +133,50 @@ const Auth = () => {
 
   if (isMobile) {
     return (
-      <div className="container flex items-center justify-center min-h-screen px-4 py-8">
-        <Card className="w-full max-w-sm bg-spotify-elevated">
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+        {/* Enhanced Background with Bright Gradient - Mobile */}
+        <div className="absolute inset-0">
+          {/* Bright gradient base */}
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300"></div>
+          
+          {/* Animated mesh gradient overlay */}
+          <div className="absolute inset-0 opacity-70">
+            <div className="absolute top-0 left-0 w-48 h-48 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+            <div className="absolute top-0 right-0 w-48 h-48 bg-rose-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
+          </div>
+          
+          {/* Light overlay for better contrast */}
+          <div className="absolute inset-0 bg-white/10"></div>
+        </div>
+
+        <Card className="w-full max-w-sm bg-white/80 backdrop-blur-lg shadow-2xl border border-white/20 relative z-10">
           <CardContent className="p-6">
-            <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-spotify-white">
-                {activeTab === 'login' ? 'Login' : 'Register'}
-              </h1>
+            <div className="text-center mb-8">
+              <div className="relative h-16 overflow-hidden">
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                  activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                }`}>
+                  Login
+                </h2>
+                <h2 className={`absolute inset-0 text-3xl font-bold text-gray-800 mb-2 transition-all duration-700 transform ${
+                  activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                }`}>
+                  Register
+                </h2>
+              </div>
+              <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
             </div>
 
-            <div className="flex mb-6 bg-spotify-base rounded-lg p-1">
+            {/* Tab Navigation */}
+            <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setActiveTab('login')}
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'login'
-                    ? 'bg-spotify-green text-black'
-                    : 'text-spotify-lightgray hover:text-spotify-white'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Login
@@ -157,8 +185,8 @@ const Auth = () => {
                 onClick={() => setActiveTab('register')}
                 className={`flex-1 py-2 px-4 rounded-md transition-all duration-300 text-sm font-medium ${
                   activeTab === 'register'
-                    ? 'bg-spotify-green text-black'
-                    : 'text-spotify-lightgray hover:text-spotify-white'
+                    ? 'bg-white text-green-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Register
@@ -166,17 +194,17 @@ const Auth = () => {
             </div>
 
             {error && (
-              <Alert variant="destructive" className="mb-4">
+              <Alert variant="destructive" className="mb-6 animate-fade-in">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-4">
+            <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-spotify-white">Email</Label>
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray transition-colors duration-300 group-focus-within:text-spotify-green" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="email"
                     type="email"
@@ -185,14 +213,16 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray focus:border-spotify-green focus:ring-spotify-green transition-all duration-300"
+                    className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                   />
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                 </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-spotify-white">Password</Label>
+                <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-spotify-lightgray transition-colors duration-300 group-focus-within:text-spotify-green" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -201,21 +231,22 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading || googleLoading}
-                    className="pl-10 pr-10 h-12 bg-spotify-base border-spotify-highlight text-spotify-white placeholder:text-spotify-lightgray focus:border-spotify-green focus:ring-spotify-green transition-all duration-300"
+                    className="pl-10 pr-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-all duration-300 hover:border-gray-400 focus:shadow-lg"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-spotify-lightgray hover:text-spotify-green transition-colors duration-300"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:scale-110"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 transition-transform duration-300 group-focus-within:scale-x-100"></div>
                 </div>
               </div>
 
               {activeTab === 'login' && (
                 <div className="text-right">
-                  <button type="button" className="text-sm text-spotify-green hover:underline">
+                  <button type="button" className="text-sm text-blue-600 hover:underline font-medium transition-all duration-300 hover:text-blue-700">
                     Forgot password?
                   </button>
                 </div>
@@ -223,7 +254,11 @@ const Auth = () => {
 
               <Button 
                 type="submit"
-                className="w-full h-12 bg-spotify-green hover:bg-spotify-green/80 text-black font-medium transition-all duration-300 transform hover:scale-[1.02]"
+                className={`w-full h-12 font-medium text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg ${
+                  activeTab === 'login' 
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' 
+                    : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                }`}
                 disabled={loading || googleLoading}
               >
                 {loading ? (
@@ -236,32 +271,32 @@ const Auth = () => {
                 )}
               </Button>
 
-              <div className="flex items-center my-4">
-                <div className="flex-grow border-t border-spotify-highlight" />
-                <span className="mx-3 text-xs text-spotify-lightgray">or continue with</span>
-                <div className="flex-grow border-t border-spotify-highlight" />
+              <div className="flex items-center my-6">
+                <div className="flex-grow border-t border-gray-300" />
+                <span className="mx-4 text-sm text-gray-500">or continue with</span>
+                <div className="flex-grow border-t border-gray-300" />
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 bg-transparent border-spotify-highlight text-spotify-white hover:bg-spotify-highlight transition-all duration-300 transform hover:scale-[1.02]"
+                className="w-full h-12 border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-md hover:border-gray-400"
                 onClick={handleSignInWithGoogle}
                 disabled={googleLoading || loading}
               >
                 {googleLoading ? (
-                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                  <Loader2 className="animate-spin h-5 w-5 mr-3" />
                 ) : (
-                  <svg viewBox="0 0 24 24" className="h-5 w-5 mr-2" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 mr-3" aria-hidden="true">
                     <g>
-                      <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.21-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
+                      <path fill="#4285F4" d="M21.805 10.023h-9.766v3.953h5.672c-.246 1.196-.997 2.10-2.01 2.885v2.383h3.244c1.902-1.752 2.861-4.338 2.861-7.074 0-.481-.04-.956-.122-1.423z"/>
                       <path fill="#34A853" d="M12.039 21.653c2.611 0 4.805-.87 6.406-2.352l-3.244-2.383c-.898.607-2.047.963-3.162.963-2.429 0-4.487-1.64-5.227-3.832h-3.291v2.407c1.594 3.148 4.916 5.197 8.518 5.197z"/>
                       <path fill="#FBBC05" d="M6.812 14.349A5.195 5.195 0 0 1 6.225 12c0-.819.147-1.615.406-2.349V7.244h-3.29A9.414 9.414 0 0 0 2.04 12c0 1.484.357 2.891.989 4.117l3.283-2.407z"/>
                       <path fill="#EA4335" d="M12.039 6.987c1.427 0 2.704.492 3.71 1.457l2.773-2.774C16.84 3.939 14.65 3 12.039 3c-3.602 0-6.924 2.049-8.518 5.197l3.291 2.407c.74-2.192 2.798-3.834 5.227-3.834z"/>
                     </g>
                   </svg>
                 )}
-                Google
+                {activeTab === 'login' ? 'Login with Google' : 'Register with Google'}
               </Button>
             </form>
           </CardContent>
