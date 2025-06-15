@@ -66,10 +66,21 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
   return (
     <div
       ref={containerRef}
-      className={`overflow-y-auto px-1 py-2 sm:px-3 sm:py-4 ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'} w-full`}
-      style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
+      className={`
+        overflow-y-auto
+        px-1 py-2 sm:px-3 sm:py-4
+        w-full max-w-full
+        ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'}
+        bg-transparent
+      `}
+      style={{
+        // Only vertical scrolling, never horizontal
+        overflowX: 'hidden',
+        scrollBehavior: "smooth",
+        WebkitOverflowScrolling: "touch",
+      }}
     >
-      <div className="flex flex-col items-center space-y-1 sm:space-y-2">
+      <div className="flex flex-col items-center space-y-1 sm:space-y-2 w-full max-w-full">
         {lyrics.map((line, i) => {
           // How far away from current line? We'll use this for fade and scale.
           const distance = Math.abs(activeIndex - i);
@@ -102,17 +113,14 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
                 transition-all duration-1200 sm:duration-1200 ease-[cubic-bezier(.91,0,.14,1.01)] 
                 ${color} ${fontWeight}
                 ${isMobile ? 'px-1' : ''}
+                w-full max-w-full break-words whitespace-pre-line text-center
               `}
               style={{
                 opacity,
                 transform: `scale(${scale})`,
                 minHeight: isMobile ? 16 : 24,
                 lineHeight: isMobile ? 1.6 : 1.7,
-                textAlign: 'center',
-                whiteSpace: 'pre-wrap',
-                maxWidth: "95vw",
-                wordBreak: "break-word",
-                fontSize: isMobile ? 15 : 20
+                fontSize: isMobile ? 15 : 20,
               }}
             >
               {line.text}
@@ -125,3 +133,4 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
 };
 
 export default AppleMusicLyrics;
+
