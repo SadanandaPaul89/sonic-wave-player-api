@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Track } from '@/services/supabaseService';
+import { getAllLocalTracks, getAllPublishedTracks } from '@/services/localLibrary';
 import { usePlayer } from '@/contexts/PlayerContext';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Home, Download } from 'lucide-react';
 import { formatTime } from '@/utils/formatTime';
-import { supabase } from '@/lib/supabase';
 
 const ShareTrack: React.FC = () => {
   const { trackId } = useParams<{ trackId: string }>();
@@ -17,46 +17,20 @@ const ShareTrack: React.FC = () => {
 
   useEffect(() => {
     const loadTrack = async () => {
-      if (!trackId) {
-        setLoading(false);
-        return;
-      }
+      if (!trackId) return;
       
-      setLoading(true);
       try {
-        // Fetch the specific track from Supabase
-        const { data, error } = await supabase
-          .from('songs')
-          .select(`
-            *,
-            artists (id, name),
-            albums (id, name)
-          `)
-          .eq('id', trackId)
-          .single();
-
-        if (error) {
-          console.error('Error loading track:', error.message);
-          setTrack(null);
-        } else if (data) {
-          // The Track type from supabaseService seems to be a mix of the song row and related data
-          // We'll construct an object that matches what the components expect.
-          const fetchedTrack = {
-            ...data,
-            artistId: data.artists!.id,
-            artistName: data.artists!.name,
-            albumId: data.albums?.id,
-            albumName: data.albums?.name,
-            image: data.image_url,
-            audioUrl: data.audio_url,
-          } as Track;
-          setTrack(fetchedTrack);
-        } else {
-          setTrack(null);
+        // Try to find the track in local and published tracks
+        const localTracks = getAllLocalTracks();
+        const publishedTracks = await getAllPublishedTracks();
+        const allTracks = [...localTracks, ...publishedTracks];
+        
+        const foundTrack = allTracks.find(t => t.id === trackId);
+        if (foundTrack) {
+          setTrack(foundTrack);
         }
-      } catch (err) {
-        console.error('Unexpected error loading track:', err);
-        setTrack(null);
+      } catch (error) {
+        console.error('Error loading track:', error);
       } finally {
         setLoading(false);
       }
