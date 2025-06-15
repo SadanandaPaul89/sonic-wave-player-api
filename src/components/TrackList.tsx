@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Track } from '@/services/supabaseService';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -97,7 +96,7 @@ const TrackList: React.FC<TrackListProps> = ({
       {showHeader && <TrackListHeader showAlbum={showAlbum} />}
       
       {/* Add bottom padding to prevent mini player from covering last track */}
-      <div className="mt-2 pb-24 sm:pb-28">
+      <div className="mt-2 pb-24 sm:pb-28 px-4 sm:px-0">
         {tracks.map((track, index) => {
           const isCurrentTrack = currentTrack && currentTrack.id === track.id;
           const isCurrentPlaying = isCurrentTrack && isPlaying;

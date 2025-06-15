@@ -54,9 +54,9 @@ const Player: React.FC = () => {
 
   const getRepeatIcon = () => {
     if (repeatMode === 'one') {
-      return <Repeat1 size={isMobile ? 16 : 20} />;
+      return <Repeat1 size={20} />;
     }
-    return <Repeat size={isMobile ? 16 : 20} />;
+    return <Repeat size={20} />;
   };
 
   const getRepeatButtonClass = () => {
@@ -75,13 +75,13 @@ const Player: React.FC = () => {
 
   return (
     <>
-      <div className="bg-card border-t border-border px-2 sm:px-4 py-2">
+      <div className="bg-card border-t border-border px-3 sm:px-4 py-2">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
-          <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
             <Link
               to={`/artist/${currentTrack.artistId}`}
-              className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-secondary rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+              className="w-12 h-12 bg-secondary rounded-md flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
               tabIndex={0}
               aria-label={`Go to artist: ${currentTrack.artistName}`}
               onClick={(e) => e.stopPropagation()}
@@ -89,16 +89,14 @@ const Player: React.FC = () => {
               <img
                 src={currentTrack.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center'}
                 alt={currentTrack.name}
-                className="w-full h-full rounded object-cover"
+                className="w-full h-full rounded-md object-cover"
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <div className={`${isMobile ? 'text-xs' : 'text-sm'} truncate text-foreground font-medium`}>
-                {/* Track name as plain text (no badge/check) */}
+              <div className="text-sm truncate text-foreground font-medium">
                 {currentTrack.name}
               </div>
-              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground truncate`}>
-                {/* Artist name with badge */}
+              <div className="text-xs text-muted-foreground truncate">
                 <ArtistNameWithBadge
                   artistId={currentTrack.artistId}
                   artistName={currentTrack.artistName}
@@ -109,161 +107,108 @@ const Player: React.FC = () => {
             </div>
           </div>
 
-          {/* Player Controls */}
-          <div className={`flex flex-col items-center ${isMobile ? 'space-y-1' : 'space-y-2'} flex-1 max-w-md`}>
-            <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
-              {/* Shuffle Button */}
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "icon"}
-                onClick={toggleShuffle}
-                className={getShuffleButtonClass()}
-                title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
-              >
-                <Shuffle size={isMobile ? 16 : 20} />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "icon"}
-                onClick={playPreviousTrack}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <SkipBack size={isMobile ? 16 : 20} />
-              </Button>
-              
+          {isMobile ? (
+            <div className="flex items-center space-x-2 ml-4">
               <Button
                 variant="default"
-                size={isMobile ? "sm" : "icon"}
+                size="icon"
                 onClick={togglePlayPause}
-                className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-full`}
+                className="w-11 h-11 rounded-full flex-shrink-0 bg-primary text-primary-foreground"
               >
-                {isPlaying ? <Pause size={isMobile ? 16 : 20} /> : <Play size={isMobile ? 16 : 20} />}
+                {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
               </Button>
-
-              {/* Stop Button */}
               <Button
                 variant="ghost"
-                size={isMobile ? "sm" : "icon"}
-                onClick={forceStop}
-                className="text-muted-foreground hover:text-destructive"
-                title="Stop playback completely"
-              >
-                <Square size={isMobile ? 14 : 18} />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "icon"}
-                onClick={playNextTrack}
+                size="icon"
+                onClick={() => setIsFullScreenOpen(true)}
                 className="text-muted-foreground hover:text-foreground"
+                title="Full Screen Player"
               >
-                <SkipForward size={isMobile ? 16 : 20} />
-              </Button>
-
-              {/* Repeat Button */}
-              <Button
-                variant="ghost"
-                size={isMobile ? "sm" : "icon"}
-                onClick={toggleRepeatMode}
-                className={getRepeatButtonClass()}
-                title={`Repeat: ${repeatMode}`}
-              >
-                {getRepeatIcon()}
+                <Maximize2 size={22} />
               </Button>
             </div>
+          ) : (
+            <>
+              {/* Player Controls */}
+              <div className="flex flex-col items-center space-y-2 flex-1 max-w-md">
+                <div className="flex items-center space-x-4">
+                  <Button variant="ghost" size="icon" onClick={toggleShuffle} className={getShuffleButtonClass()} title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}>
+                    <Shuffle size={20} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={playPreviousTrack} className="text-muted-foreground hover:text-foreground">
+                    <SkipBack size={20} />
+                  </Button>
+                  <Button variant="default" size="icon" onClick={togglePlayPause} className="w-10 h-10 rounded-full">
+                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={forceStop} className="text-muted-foreground hover:text-destructive" title="Stop playback completely">
+                    <Square size={18} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={playNextTrack} className="text-muted-foreground hover:text-foreground">
+                    <SkipForward size={20} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={toggleRepeatMode} className={getRepeatButtonClass()} title={`Repeat: ${repeatMode}`}>
+                    {getRepeatIcon()}
+                  </Button>
+                </div>
 
-            {/* Progress Bar - Desktop only in header */}
-            {!isMobile && (
-              <div className="flex items-center space-x-2 w-full">
-                <span className="text-xs text-muted-foreground w-10 text-right">
-                  {formatTime(progress)}
-                </span>
-                <Slider
-                  value={[progress]}
-                  max={duration}
-                  step={1}
-                  onValueChange={handleSeek}
-                  className="flex-1"
-                />
-                <span className="text-xs text-muted-foreground w-10">
-                  {formatTime(duration)}
-                </span>
+                <div className="flex items-center space-x-2 w-full">
+                  <span className="text-xs text-muted-foreground w-10 text-right">
+                    {formatTime(progress)}
+                  </span>
+                  <Slider value={[progress]} max={duration} step={1} onValueChange={handleSeek} className="flex-1" />
+                  <span className="text-xs text-muted-foreground w-10">
+                    {formatTime(duration)}
+                  </span>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Volume, Lyrics, and Full Screen Controls */}
-          <div className={`flex items-center ${isMobile ? 'space-x-1' : 'space-x-2'} flex-1 justify-end ${isMobile ? 'max-w-[80px]' : ''}`}>
-            {!isMobile && (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleMute}
-                  onMouseEnter={() => setShowVolumeSlider(true)}
-                  onMouseLeave={() => setShowVolumeSlider(false)}
-                  className="text-muted-foreground hover:text-foreground relative"
-                >
-                  {volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </Button>
-                
-                {showVolumeSlider && (
-                  <div 
-                    className="absolute bottom-full mb-2 right-20 bg-popover border border-border rounded p-3 w-32 shadow-lg"
+              {/* Volume, Lyrics, and Full Screen Controls */}
+              <div className="flex items-center space-x-2 flex-1 justify-end">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleMute}
                     onMouseEnter={() => setShowVolumeSlider(true)}
                     onMouseLeave={() => setShowVolumeSlider(false)}
+                    className="text-muted-foreground hover:text-foreground relative"
                   >
-                    <Slider
-                      value={[volume * 100]}
-                      max={100}
-                      step={1}
-                      onValueChange={handleVolumeChange}
-                      orientation="horizontal"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Lyrics Button */}
-            <Dialog open={isLyricsOpen} onOpenChange={setIsLyricsOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size={isMobile ? "sm" : "icon"}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Show Lyrics"
-                >
-                  <Mic2 size={isMobile ? 16 : 20} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[80vh]">
-                <div className="h-96">
-                  <LyricsDisplay
-                    key={currentTrack?.id} // ensure remount on track change!
-                    songId={currentTrack.id}
-                    currentTime={progress}
-                    isVisible={true}
-                  />
+                    {volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </Button>
+                  
+                  {showVolumeSlider && (
+                    <div 
+                      className="absolute bottom-full mb-2 right-20 bg-popover border border-border rounded p-3 w-32 shadow-lg"
+                      onMouseEnter={() => setShowVolumeSlider(true)}
+                      onMouseLeave={() => setShowVolumeSlider(false)}
+                    >
+                      <Slider value={[volume * 100]} max={100} step={1} onValueChange={handleVolumeChange} orientation="horizontal" />
+                    </div>
+                  )}
                 </div>
-              </DialogContent>
-            </Dialog>
 
-            {/* Full Screen Button */}
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "icon"}
-              onClick={() => setIsFullScreenOpen(true)}
-              className="text-muted-foreground hover:text-foreground"
-              title="Full Screen Player"
-            >
-              <Maximize2 size={isMobile ? 16 : 20} />
-            </Button>
-          </div>
+                <Dialog open={isLyricsOpen} onOpenChange={setIsLyricsOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" title="Show Lyrics">
+                      <Mic2 size={20} />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[80vh]">
+                    <div className="h-96">
+                      <LyricsDisplay key={currentTrack?.id} songId={currentTrack.id} currentTime={progress} isVisible={true} />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Button variant="ghost" size="icon" onClick={() => setIsFullScreenOpen(true)} className="text-muted-foreground hover:text-foreground" title="Full Screen Player">
+                  <Maximize2 size={20} />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Mobile Progress Bar */}
         {isMobile && (
           <div className="mt-2">
             <Slider
@@ -281,7 +226,6 @@ const Player: React.FC = () => {
         )}
       </div>
 
-      {/* Full Screen Player */}
       <FullScreenPlayer
         isOpen={isFullScreenOpen}
         onClose={() => setIsFullScreenOpen(false)}
