@@ -27,6 +27,7 @@ import LyricsEditor from './LyricsEditor';
 import ShareModal from './ShareModal';
 import ArtistNameWithBadge from "./ArtistNameWithBadge";
 import AppleMusicLyrics from "./AppleMusicLyrics";
+import DesktopLyricsPanel from "./DesktopLyricsPanel";
 
 interface FullScreenPlayerProps {
   isOpen: boolean;
@@ -499,31 +500,12 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
               </div>
             </div>
           </div>
-          {/* Right: Lyrics - Expanded for full height/width, minimal vertical padding */}
-          <div
-            className="
-              flex-1 flex flex-col justify-center items-center
-              rounded-xl bg-black/20
-              px-2 py-1
-              min-w-[340px] max-w-[800px]
-              w-full h-full
-              shadow-lg transition-all
-              overflow-hidden
-            "
-            style={{
-              minHeight: 0, // allow flex to handle height
-              maxHeight: '100vh', // safe max in desktop modal
-            }}
-          >
-            <div className="w-full h-full flex flex-col justify-center items-center">
-              <AppleMusicLyrics
-                lyrics={lyrics}
-                currentTime={progress}
-                isLoading={isLoadingLyrics}
-                isMobile={false}
-              />
-            </div>
-          </div>
+          {/* Right: Lyrics - Use dedicated focused panel */}
+          <DesktopLyricsPanel
+            lyrics={lyrics}
+            currentTime={progress}
+            isLoading={isLoadingLyrics}
+          />
         </div>
       );
     }
