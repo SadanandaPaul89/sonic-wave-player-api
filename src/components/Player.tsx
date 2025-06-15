@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1, Square } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1, Square, Shuffle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { usePlayer } from '@/contexts/PlayerContext';
@@ -20,12 +20,14 @@ const Player: React.FC = () => {
     progress,
     duration,
     repeatMode,
+    isShuffled,
     togglePlayPause,
     setVolumeLevel,
     seekToPosition,
     playNextTrack,
     playPreviousTrack,
     toggleRepeatMode,
+    toggleShuffle,
     isPausedByVisibility,
     forceStop
   } = usePlayer();
@@ -63,6 +65,13 @@ const Player: React.FC = () => {
       return 'text-gray-400 hover:text-white';
     }
     return 'text-spotify-green hover:text-spotify-green/80';
+  };
+
+  const getShuffleButtonClass = () => {
+    if (isShuffled) {
+      return 'text-spotify-green hover:text-spotify-green/80';
+    }
+    return 'text-gray-400 hover:text-white';
   };
 
   return (
@@ -117,6 +126,17 @@ const Player: React.FC = () => {
           {/* Player Controls */}
           <div className={`flex flex-col items-center ${isMobile ? 'space-y-1' : 'space-y-2'} flex-1 max-w-md`}>
             <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+              {/* Shuffle Button */}
+              <Button
+                variant="ghost"
+                size={isMobile ? "sm" : "icon"}
+                onClick={toggleShuffle}
+                className={getShuffleButtonClass()}
+                title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}
+              >
+                <Shuffle size={isMobile ? 16 : 20} />
+              </Button>
+              
               <Button
                 variant="ghost"
                 size={isMobile ? "sm" : "icon"}

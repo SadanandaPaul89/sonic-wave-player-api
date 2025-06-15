@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { recordSongPlay } from '@/services/supabaseService';
@@ -16,6 +15,7 @@ interface PlayerContextProps {
   progress: number;
   duration: number;
   repeatMode: RepeatMode;
+  isShuffled: boolean;
   playTrack: (track: Track) => void;
   togglePlayPause: () => void;
   setVolumeLevel: (level: number) => void;
@@ -23,6 +23,7 @@ interface PlayerContextProps {
   playNextTrack: () => void;
   playPreviousTrack: () => void;
   toggleRepeatMode: () => void;
+  toggleShuffle: () => void;
   queue: Track[];
   addToQueue: (track: Track) => void;
   clearQueue: () => void;
@@ -39,6 +40,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [originalQueue, setOriginalQueue] = useState<Track[]>([]);
+  const [isShuffled, setIsShuffled] = useState(false);
   const [playHistory, setPlayHistory] = useState<Track[]>([]);
   const [hasRecordedPlay, setHasRecordedPlay] = useState(false);
   const [isPausedByVisibility, setIsPausedByVisibility] = useState(false);
@@ -54,6 +57,36 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   // Page visibility hook
   const isPageVisible = usePageVisibility();
+
+  // Shuffle function
+  const shuffleArray = (array: Track[]): Track[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Toggle shuffle
+  const toggleShuffle = () => {
+    setIsShuffled(prev => {
+      const newShuffled = !prev;
+      console.log('PlayerContext: Shuffle toggled to:', newShuffled);
+      
+      if (newShuffled) {
+        // Enable shuffle - save original queue and shuffle current queue
+        setOriginalQueue(queue);
+        setQueue(shuffleArray(queue));
+      } else {
+        // Disable shuffle - restore original queue
+        setQueue(originalQueue);
+        setOriginalQueue([]);
+      }
+      
+      return newShuffled;
+    });
+  };
 
   // Handle page visibility changes
   useEffect(() => {
@@ -263,6 +296,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const nextTrack = queue[0];
       const newQueue = queue.slice(1);
       setQueue(newQueue);
+      // Update original queue if shuffled
+      if (isShuffled) {
+        setOriginalQueue(prev => prev.filter(track => track.id !== nextTrack.id));
+      }
       loadAndPlay(nextTrack);
       console.log('PlayerContext: Playing next track from queue:', nextTrack.name);
     } else if (repeatMode === 'all' && currentTrack) {
@@ -287,6 +324,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       if (currentTrack) {
         setQueue(prev => [currentTrack, ...prev]);
+        // Update original queue if shuffled
+        if (isShuffled) {
+          setOriginalQueue(prev => [currentTrack, ...prev]);
+        }
       }
       
       setCurrentTrack(previousTrack);
@@ -302,7 +343,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
   
-  // Toggle repeat mode: off -> all -> one -> off
+  // Toggle repeat mode: off -> all -> one -> off (without affecting playback)
   const toggleRepeatMode = () => {
     setRepeatIndex(prev => {
       const newIndex = (prev + 1) % repeatModes.length;
@@ -314,12 +355,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const addToQueue = (track: Track) => {
     console.log('PlayerContext: Adding track to queue:', track.name);
-    setQueue(prev => [...prev, track]);
+    setQueue(prev => {
+      const newQueue = [...prev, track];
+      // Update original queue if shuffled
+      if (isShuffled) {
+        setOriginalQueue(prevOriginal => [...prevOriginal, track]);
+      }
+      return newQueue;
+    });
   };
   
   const clearQueue = () => {
     console.log('PlayerContext: Clearing queue');
     setQueue([]);
+    setOriginalQueue([]);
   };
 
   const forceStop = () => {
@@ -394,6 +443,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         progress,
         duration,
         repeatMode,
+        isShuffled,
         playTrack,
         togglePlayPause,
         setVolumeLevel,
@@ -401,6 +451,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         playNextTrack,
         playPreviousTrack,
         toggleRepeatMode,
+        toggleShuffle,
         queue,
         addToQueue,
         clearQueue,
