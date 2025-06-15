@@ -64,14 +64,14 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
   // Render
   if (isLoading) {
     return (
-      <div className={`flex items-center justify-center h-24 sm:h-28 text-gray-200 ${isMobile ? 'text-base' : 'text-lg'}`}>
+      <div className={`flex items-center justify-center h-full text-gray-200 ${isMobile ? 'text-base' : 'text-lg'}`}>
         Loading lyrics...
       </div>
     );
   }
   if (!lyrics.length) {
     return (
-      <div className={`flex items-center justify-center h-24 sm:h-28 text-gray-400 ${isMobile ? 'text-base' : 'text-lg'}`}>
+      <div className={`flex items-center justify-center h-full text-gray-400 ${isMobile ? 'text-base' : 'text-lg'}`}>
         ♪ No lyrics available ♪
       </div>
     );
@@ -80,19 +80,16 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
   return (
     <div
       ref={containerRef}
-      className={`
-        overflow-y-auto overflow-x-hidden
-        px-1 sm:px-3
-        w-full max-w-full
-        ${isMobile ? 'h-28 min-h-[60px]' : 'h-36 md:h-44 lg:h-52'}
-        bg-transparent
-      `}
+      className="overflow-y-auto overflow-x-hidden w-full h-full bg-transparent"
       style={{
         scrollBehavior: "smooth",
         WebkitOverflowScrolling: "touch",
       }}
     >
-      <div className="flex flex-col items-center w-full max-w-full">
+      <div className="flex flex-col items-center w-full">
+        {/* Add top spacer to prevent first lyric from being cut */}
+        <div className={`${isMobile ? 'h-8' : 'h-16'}`} />
+        
         {lyrics.map((line, i) => {
           const distance = Math.abs(activeIndex - i);
           let opacity = 1, scale = 1, color = 'text-white', fontWeight = 'font-normal';
@@ -127,22 +124,24 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
               className={`
                 transition-all duration-1000 ease-out
                 ${color} ${fontWeight}
-                ${isMobile ? 'px-2' : 'px-4'}
-                w-full max-w-full break-words whitespace-pre-line text-center
+                w-full break-words whitespace-pre-line text-center
               `}
               style={{
                 opacity,
                 transform: `scale(${scale})`,
-                minHeight: isMobile ? 20 : 28,
                 lineHeight: isMobile ? 1.7 : 1.8,
                 fontSize: isMobile ? 16 : 22,
-                marginBottom: isMobile ? 8 : 12,
+                marginBottom: isMobile ? 12 : 16,
+                padding: isMobile ? '0 8px' : '0 16px',
               }}
             >
               {line.text}
             </div>
           );
         })}
+        
+        {/* Add bottom spacer to prevent last lyric from being cut */}
+        <div className={`${isMobile ? 'h-8' : 'h-16'}`} />
       </div>
     </div>
   );
