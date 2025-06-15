@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Search, Library, Plus, Upload, BadgeCheck, LogOut, Info } from 'lucide-react';
@@ -12,8 +11,33 @@ const SidebarNav: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [profileName, setProfileName] = useState<string | null>(null); // New state
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Fetch user name/profile after authentication
+  useEffect(() => {
+    const fetchProfileName = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setProfileName(null);
+        return;
+      }
+      // Get user profile from "profiles" table
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (data && data.name) {
+        setProfileName(data.name);
+      } else {
+        setProfileName(null);
+      }
+    };
+
+    fetchProfileName();
+  }, [isAuthenticated]);
 
   // Check authentication and admin status when component mounts
   useEffect(() => {
@@ -135,6 +159,11 @@ const SidebarNav: React.FC = () => {
         </Avatar>
         <span className="text-base font-medium">Profile</span>
       </NavLink>
+      <div className="px-3 pb-1">
+        <span className="block text-xs text-muted-foreground truncate" title={profileName || "No name set"}>
+          {profileName || "No name set"}
+        </span>
+      </div>
 
       <div className="space-y-1">
         <NavLink
@@ -235,4 +264,3 @@ const SidebarNav: React.FC = () => {
 };
 
 export default SidebarNav;
-
