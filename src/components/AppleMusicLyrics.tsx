@@ -92,7 +92,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
         WebkitOverflowScrolling: "touch",
       }}
     >
-      <div className="flex flex-col items-center space-y-3 sm:space-y-4 w-full max-w-full">
+      <div className="flex flex-col items-center w-full max-w-full">
         {lyrics.map((line, i) => {
           const distance = Math.abs(activeIndex - i);
           let opacity = 1, scale = 1, color = 'text-white', fontWeight = 'font-normal';
