@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 
 interface LyricLine {
@@ -31,7 +30,7 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
     setActiveIndex(idx);
   }, [currentTime, lyrics]);
 
-  // Scroll to center active line
+  // Scroll to center active line, clamped so the lyric is never cut off
   useEffect(() => {
     if (activeLineRef.current && containerRef.current) {
       const container = containerRef.current;
@@ -40,8 +39,16 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
       const lOffset = lyric.offsetTop;
       const lHeight = lyric.clientHeight;
 
+      // Calculate the ideal scrollTop to center the lyric
+      let targetScroll = lOffset - cHeight / 2 + lHeight / 2;
+
+      // Clamp scrollTop so first and last lines are never cut off
+      const maxScroll = container.scrollHeight - cHeight;
+      if (targetScroll < 0) targetScroll = 0;
+      if (targetScroll > maxScroll) targetScroll = maxScroll;
+
       container.scrollTo({
-        top: lOffset - cHeight / 2 + lHeight / 2,
+        top: targetScroll,
         behavior: "smooth"
       });
     }
@@ -133,4 +140,3 @@ const AppleMusicLyrics: React.FC<AppleMusicLyricsProps> = ({ lyrics, currentTime
 };
 
 export default AppleMusicLyrics;
-
