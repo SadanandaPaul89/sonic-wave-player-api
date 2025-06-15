@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useCallback } from 'react';
 import { Track } from '@/services/api';
 import { usePlayerState } from '@/hooks/usePlayerState';
@@ -26,7 +25,6 @@ interface PlayerContextProps {
   queue: Track[];
   addToQueue: (track: Track) => void;
   clearQueue: () => void;
-  isPausedByVisibility: boolean;
   forceStop: () => void;
 }
 
@@ -39,8 +37,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     volume, setVolume,
     progress, setProgress,
     duration, setDuration,
-    isPausedByVisibility, setIsPausedByVisibility,
-    wasPlayingBeforeHidden, setWasPlayingBeforeHidden,
     hasRecordedPlay, setHasRecordedPlay,
   } = usePlayerState();
   
@@ -62,9 +58,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     setCurrentTrack(track);
     setIsPlaying(true);
-    setIsPausedByVisibility(false);
-    setWasPlayingBeforeHidden(false);
-  }, [currentTrack, setCurrentTrack, setIsPlaying, setPlayHistory, setIsPausedByVisibility, setWasPlayingBeforeHidden]);
+  }, [currentTrack, setCurrentTrack, setIsPlaying, setPlayHistory]);
   
   const playTrack = (track: Track) => {
     loadAndPlay(track);
@@ -125,13 +119,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('PlayerContext: togglePlayPause called, current isPlaying:', isPlaying);
     setIsPlaying(prev => {
       console.log('PlayerContext: setting isPlaying to:', !prev);
-      if (!prev) {
-        setIsPausedByVisibility(false);
-        setWasPlayingBeforeHidden(false);
-      }
       return !prev;
     });
-  }, [isPlaying, setIsPlaying, setIsPausedByVisibility, setWasPlayingBeforeHidden]);
+  }, [isPlaying, setIsPlaying]);
   
   const setVolumeLevel = (level: number) => {
     setVolume(Math.max(0, Math.min(1, level)));
@@ -191,26 +181,19 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('PlayerContext: Force stopping playback');
     setIsPlaying(false);
     setProgress(0);
-    setIsPausedByVisibility(false);
-    setWasPlayingBeforeHidden(false);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-  }, [setIsPlaying, setProgress, setIsPausedByVisibility, setWasPlayingBeforeHidden, audioRef]);
+  }, [setIsPlaying, setProgress, audioRef]);
 
   usePlayerSideEffects({
     currentTrack,
     isPlaying,
-    isPausedByVisibility,
-    wasPlayingBeforeHidden,
     progress,
     duration,
     volume,
     hasRecordedPlay,
-    setIsPlaying,
-    setIsPausedByVisibility,
-    setWasPlayingBeforeHidden,
     setHasRecordedPlay,
     setVolumeLevel,
     togglePlayPause,
@@ -238,7 +221,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     queue,
     addToQueue,
     clearQueue,
-    isPausedByVisibility,
     forceStop,
   };
 

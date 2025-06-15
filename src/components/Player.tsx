@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic2, Maximize2, Repeat, Repeat1, Square, Shuffle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,6 @@ const Player: React.FC = () => {
     playPreviousTrack,
     toggleRepeatMode,
     toggleShuffle,
-    isPausedByVisibility,
     forceStop
   } = usePlayer();
 
@@ -77,19 +75,6 @@ const Player: React.FC = () => {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-spotify-elevated border-t border-gray-700 px-2 sm:px-4 py-2 z-40">
-        {/* Audio Conflict Warning */}
-        {isPausedByVisibility && (
-          <div className="bg-yellow-600 text-white text-xs px-3 py-1 text-center">
-            Music paused to prevent conflicts with other apps
-            <button 
-              onClick={togglePlayPause}
-              className="ml-2 underline hover:no-underline"
-            >
-              Resume
-            </button>
-          </div>
-        )}
-
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className={`flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 ${isMobile ? 'max-w-[120px]' : ''}`}>
