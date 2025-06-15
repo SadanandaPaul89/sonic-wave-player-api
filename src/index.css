@@ -96,9 +96,7 @@
   }
 
   body {
-    background-color: hsl(var(--background)) !important;
-    color: #000 !important;
-    @apply bg-[hsl(var(--background))] text-black transition-colors duration-300;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 }
 
