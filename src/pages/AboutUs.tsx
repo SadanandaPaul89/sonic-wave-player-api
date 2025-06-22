@@ -155,12 +155,12 @@ const AboutUs: React.FC = () => {
             Sonic Wave has started the recruitment for its beta users/early users.<br />
             <span className="text-spotify-green font-semibold">Apply now</span> and get access to Sonic Wave today!!
           </p>
-          <button><a
+         <a
             href="https://forms.gle/9nSUrHbkj9Ts5pNu9"
             className="inline-block bg-spotify-green hover:bg-spotify-green/80 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-colors text-lg"
           >
             Apply Now
-          </a> </button>
+          </a>
         </div>
       </div>
       {/* Footer Section */}
