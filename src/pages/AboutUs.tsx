@@ -140,7 +140,29 @@ const AboutUs: React.FC = () => {
           </div>
         </div>
       </div>
-
+            {/* Beta Program Section */}
+      <div className="px-6 py-20 bg-gradient-to-r from-spotify-green/10 via-spotify-base to-spotify-green/10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <Badge variant="secondary" className="bg-spotify-green/20 text-spotify-green border-spotify-green/50 text-lg px-6 py-3 rounded-full">
+              APPLY FOR BETA PROGRAM
+            </Badge>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-white bg-clip-text text-transparent">
+            Join Our Early Users
+          </h2>
+          <p className="text-lg text-spotify-lightgray mb-8">
+            Sonic Wave has started the recruitment for its beta users/early users.<br />
+            <span className="text-spotify-green font-semibold">Apply now</span> and get access to Sonic Wave today!!
+          </p>
+          <a
+            href="#"
+            className="inline-block bg-spotify-green hover:bg-spotify-green/80 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-colors text-lg"
+          >
+            Apply Now
+          </a>
+        </div>
+      </div>
       {/* Footer Section */}
       <div className="px-6 py-12 text-center bg-spotify-elevated">
         <div className="max-w-4xl mx-auto">
