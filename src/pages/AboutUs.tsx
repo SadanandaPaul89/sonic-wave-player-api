@@ -144,9 +144,12 @@ const AboutUs: React.FC = () => {
       <div className="px-6 py-20 bg-gradient-to-r from-spotify-green/10 via-spotify-base to-spotify-green/10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-6">
-            <Badge variant="secondary" className="bg-spotify-green/20 text-spotify-green border-spotify-green/50 text-lg px-6 py-3 rounded-full">
-              APPLY FOR BETA PROGRAM
-            </Badge>
+            <a href="https://forms.gle/9nSUrHbkj9Ts5pNu9" target="_blank" rel="noopener noreferrer">
+  <Badge variant="secondary" className="bg-spotify-green/20 text-spotify-green border-spotify-green/50 text-lg px-6 py-3 rounded-full">
+    APPLY FOR BETA PROGRAM
+  </Badge>
+</a>
+
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-white bg-clip-text text-transparent">
             Join Our Early Users
