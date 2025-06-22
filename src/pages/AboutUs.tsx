@@ -94,6 +94,33 @@ const AboutUs: React.FC = () => {
           </div>
         </div>
       </div>
+   {/* Beta Program Section */}
+<div className="px-6 py-20 bg-gradient-to-r from-spotify-green/10 via-spotify-base to-spotify-green/10">
+  <div className="max-w-4xl mx-auto text-center">
+    <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-white bg-clip-text text-transparent">
+      Join Our Early Users
+    </h2>
+
+    <p className="text-lg text-spotify-lightgray mb-8">
+      Sonic Wave has started the recruitment for its beta users/early users.<br />
+      <span className="text-spotify-green font-semibold">Apply now</span> and get access to Sonic Wave today!
+    </p>
+
+    <a
+      href="https://forms.gle/9nSUrHbkj9Ts5pNu9"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-block"
+    >
+      <Badge
+        variant="secondary"
+        className="bg-spotify-green/20 hover:bg-spotify-green/30 transition-all text-spotify-green border-spotify-green/50 text-lg px-6 py-3 rounded-full font-medium shadow-md"
+      >
+        APPLY FOR BETA PROGRAM
+      </Badge>
+    </a>
+  </div>
+</div>
 
       {/* Hall of Fame Section */}
       <div className="px-6 py-20 bg-gradient-to-r from-spotify-elevated via-spotify-base to-spotify-elevated">
@@ -140,33 +167,6 @@ const AboutUs: React.FC = () => {
           </div>
         </div>
       </div>
-   {/* Beta Program Section */}
-<div className="px-6 py-20 bg-gradient-to-r from-spotify-green/10 via-spotify-base to-spotify-green/10">
-  <div className="max-w-4xl mx-auto text-center">
-    <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-white bg-clip-text text-transparent">
-      Join Our Early Users
-    </h2>
-
-    <p className="text-lg text-spotify-lightgray mb-8">
-      Sonic Wave has started the recruitment for its beta users/early users.<br />
-      <span className="text-spotify-green font-semibold">Apply now</span> and get access to Sonic Wave today!
-    </p>
-
-    <a
-      href="https://forms.gle/9nSUrHbkj9Ts5pNu9"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block"
-    >
-      <Badge
-        variant="secondary"
-        className="bg-spotify-green/20 hover:bg-spotify-green/30 transition-all text-spotify-green border-spotify-green/50 text-lg px-6 py-3 rounded-full font-medium shadow-md"
-      >
-        APPLY FOR BETA PROGRAM
-      </Badge>
-    </a>
-  </div>
-</div>
 
       {/* Footer Section */}
       <div className="px-6 py-12 text-center bg-spotify-elevated">
