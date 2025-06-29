@@ -29,7 +29,13 @@ const AboutUs: React.FC = () => {
       note: "Committed to delivering exceptional performance and creating innovative solutions for music lovers.",
       initials: "HG",
       color: "bg-gradient-to-br from-orange-500 to-red-500"
-    }
+    },
+     {
+    name: "Sanjay Ganesh K Barade",
+    note: "Driven by a love for technology and music, always eager to create meaningful solutions that unite communities.",
+    initials: "SB",
+    color: "bg-gradient-to-br from-fuchsia-500 to-indigo-500"
+  }
   ];
 
   return (
