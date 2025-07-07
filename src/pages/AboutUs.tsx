@@ -35,7 +35,13 @@ const AboutUs: React.FC = () => {
     note: "Driven by a love for technology and music, always eager to create meaningful solutions that unite communities.",
     initials: "SB",
     color: "bg-gradient-to-br from-fuchsia-500 to-indigo-500"
-  }
+  },
+  {
+      name: "Ayusman Nayak",
+      note: "Being part of Sonic Wave has been an incredible journey. The energy, the creativity, and the passion here constantly push me to grow. Proud to be part of this team!",
+      initials: "AN",
+      color: "bg-gradient-to-br from-blue-500 to-violet-500"
+    }
   ];
 
   return (
