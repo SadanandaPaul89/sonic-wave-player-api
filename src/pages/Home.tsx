@@ -4,10 +4,8 @@ import CardGrid from '@/components/CardGrid';
 import TrackList from '@/components/TrackList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
-import { Play, House, Search, Library, Radio, Music, TrendingUp } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { usePlayer } from '@/contexts/PlayerContext';
-import { ExpandedTabs } from '@/components/ui/expanded-tabs';
-import { DefaultDemo } from '@/components/ExpandedTabsDemo';
 
 const Home: React.FC = () => {
   const [topArtists, setTopArtists] = useState<Artist[]>([]);
@@ -15,14 +13,6 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   const { playTrack } = usePlayer();
-
-  const quickNavTabs = [
-    { title: "Discover", icon: Search },
-    { title: "Your Library", icon: Library },
-    { type: "separator" as const },
-    { title: "Recently Played", icon: Music },
-    { title: "Trending", icon: TrendingUp },
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,17 +68,9 @@ const Home: React.FC = () => {
 
   return (
     <div className={`pb-20 ${isMobile ? 'px-3 sm:px-4' : 'px-6'}`}>
-      <div className="flex items-start justify-between mb-6">
-        <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold`}>
-          Welcome to Sonic Wave
-        </h1>
-        {!isMobile && (
-          <div className="flex gap-4">
-            <ExpandedTabs tabs={quickNavTabs} />
-            <DefaultDemo />
-          </div>
-        )}
-      </div>
+      <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold mb-4 sm:mb-6`}>
+        Home
+      </h1>
       
       {/* Recently Played Section */}
       <div className="mb-8">

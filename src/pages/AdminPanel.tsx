@@ -14,9 +14,7 @@ import {
 } from '@/services/supabaseService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, RefreshCw, Pencil, Trash2, Plus, Music, Settings, Shield, Users, BarChart3 } from 'lucide-react';
-import { ExpandedTabs } from '@/components/ui/expanded-tabs';
-import { CustomColorDemo } from '@/components/ExpandedTabsDemo';
+import { Check, X, RefreshCw, Pencil, Trash2, Plus, Music } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -55,14 +53,6 @@ const AdminPanel: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [adminChecked, setAdminChecked] = useState(false);
   const navigate = useNavigate();
-
-  const adminQuickActions = [
-    { title: "User Management", icon: Users },
-    { title: "System Settings", icon: Settings },
-    { type: "separator" as const },
-    { title: "Security Logs", icon: Shield },
-    { title: "Analytics", icon: BarChart3 },
-  ];
 
   // Use a strict admin check on component mount
   useEffect(() => {
@@ -401,38 +391,22 @@ const AdminPanel: React.FC = () => {
   // Render admin panel if user is admin
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <div className="sticky top-4 space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-              <ExpandedTabs tabs={adminQuickActions} />
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium mb-3 text-muted-foreground">Custom Tools</h3>
-              <CustomColorDemo />
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">Admin Panel</h1>
-            <Button 
-              onClick={async () => {
-                await loadVerificationRequests();
-                await loadArtists();
-                await loadTracks();
-                if (selectedArtist) await loadArtistTracks(selectedArtist);
-              }} 
-              variant="outline" 
-              size="icon"
-              disabled={isLoading || isDeleting}
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <Button 
+          onClick={async () => {
+            await loadVerificationRequests();
+            await loadArtists();
+            await loadTracks();
+            if (selectedArtist) await loadArtistTracks(selectedArtist);
+          }} 
+          variant="outline" 
+          size="icon"
+          disabled={isLoading || isDeleting}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
 
       <Tabs defaultValue="pending" onValueChange={setActiveTabId} value={activeTabId}>
         <TabsList className="grid w-full max-w-md grid-cols-5 mb-6">
@@ -715,8 +689,6 @@ const AdminPanel: React.FC = () => {
           </>
         )}
       </Tabs>
-        </div>
-      </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
