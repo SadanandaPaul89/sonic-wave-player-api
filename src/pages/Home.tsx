@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getTopArtists, getTopTracks, Artist, Track } from '@/services/supabaseService';
 import CardGrid from '@/components/CardGrid';
+import HoverExpandGrid from '@/components/HoverExpandGrid';
+import { BrandLoader } from '@/components/Brand';
 import TrackList from '@/components/TrackList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -37,12 +39,48 @@ const Home: React.FC = () => {
   }, []);
 
   const recentlyPlayedItems = [
-    { id: '1', name: 'Indie Pop', color: 'from-orange-300 to-gray-800' },
-    { id: '2', name: 'Chill Vibes', color: 'from-orange-600 to-teal-700' },
-    { id: '3', name: 'Electronic Beats', color: 'from-teal-500 to-orange-500' },
-    { id: '4', name: 'Acoustic Sessions', color: 'from-teal-600 to-yellow-500' },
-    { id: '5', name: 'Late Night Jazz', color: 'from-gray-800 to-yellow-400' },
-    { id: '6', name: 'Morning Coffee', color: 'from-yellow-600 to-teal-700' },
+    { 
+      id: '1', 
+      name: 'Indie Pop Vibes', 
+      description: 'Fresh indie tracks for your daily dose of creativity',
+      imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
+    { 
+      id: '2', 
+      name: 'Chill Beats', 
+      description: 'Relaxing electronic music for focus and calm',
+      imageUrl: 'https://images.unsplash.com/photo-1571974599782-87624638275c?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
+    { 
+      id: '3', 
+      name: 'Electronic Dreams', 
+      description: 'Futuristic sounds and synthesized melodies',
+      imageUrl: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
+    { 
+      id: '4', 
+      name: 'Acoustic Sessions', 
+      description: 'Intimate acoustic performances and raw emotion',
+      imageUrl: 'https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
+    { 
+      id: '5', 
+      name: 'Late Night Jazz', 
+      description: 'Smooth jazz for those midnight moments',
+      imageUrl: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
+    { 
+      id: '6', 
+      name: 'Morning Coffee', 
+      description: 'Perfect tunes to start your day right',
+      imageUrl: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=500&h=500&fit=crop&crop=center',
+      type: 'playlist' as const
+    },
   ];
 
   const playlistButtons = [
@@ -60,45 +98,52 @@ const Home: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-gray-400">Loading...</div>
-      </div>
+      <BrandLoader 
+        message="Loading your music..." 
+        showTagline={true}
+        size="lg"
+      />
     );
   }
 
   return (
-    <div className={`pb-20 ${isMobile ? 'px-3 sm:px-4' : 'px-6'}`}>
-      <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold mb-4 sm:mb-6`}>
+    <div className="pb-20">
+      <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold mb-4 sm:mb-6 text-white`}>
         Home
       </h1>
       
       {/* Recently Played Section */}
       <div className="mb-8">
-        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4`}>Recently Played</h2>
-        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-3 lg:grid-cols-6'} gap-4`}>
-          {recentlyPlayedItems.map((item) => (
-            <div
-              key={item.id}
-              className={`bg-gradient-to-br ${item.color} aspect-square rounded-md p-4 flex items-end cursor-pointer hover:scale-105 transition-transform`}
-            >
-              <h3 className="text-white font-medium text-sm">{item.name}</h3>
-            </div>
-          ))}
-        </div>
+        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-6 text-white`}>New Release</h2>
+        <p className="text-white/70 mb-8 text-center">Fresh beats, straight from the studio.</p>
+        {isMobile ? (
+          <div className="grid grid-cols-2 gap-4">
+            {recentlyPlayedItems.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                className="music-card aspect-square rounded-figma-md p-4 flex items-end cursor-pointer"
+              >
+                <h3 className="text-white font-medium text-sm">{item.name}</h3>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <HoverExpandGrid cards={recentlyPlayedItems} className="mb-8" />
+        )}
       </div>
 
       {/* Featured Track Section */}
       {topTracks.length > 0 && (
         <div className="mb-8">
-          <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4`}>Featured Track</h2>
-          <div className="flex items-center space-x-4 bg-gradient-to-r from-teal-600 to-yellow-500 rounded-lg p-4">
-            <div className="w-32 h-32 bg-gradient-to-br from-teal-600 to-yellow-400 rounded-md flex-shrink-0"></div>
+          <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4 text-white`}>Featured Track</h2>
+          <div className="flex items-center space-x-4 glass-card p-4">
+            <div className="w-32 h-32 glass-card rounded-figma-md flex-shrink-0"></div>
             <div className="flex-1">
               <h3 className="text-white text-2xl font-bold mb-1">{topTracks[0].name}</h3>
-              <p className="text-green-300 mb-4">{topTracks[0].artistName}</p>
+              <p className="text-white/70 mb-4">{topTracks[0].artistName}</p>
               <Button 
                 onClick={handlePlayFeaturedTrack}
-                className="bg-green-500 hover:bg-green-600 text-black font-semibold px-6 py-2 rounded-full"
+                className="btn-purple px-6 py-2 rounded-full"
               >
                 <Play size={16} className="mr-2" />
                 Play
@@ -110,12 +155,12 @@ const Home: React.FC = () => {
 
       {/* Playlists Section */}
       <div className="mb-8">
-        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4`}>Playlists</h2>
+        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4 text-white`}>Playlists</h2>
         <div className="flex flex-wrap gap-3">
           {playlistButtons.map((playlist) => (
             <Button
               key={playlist.id}
-              className={`${playlist.color} hover:bg-green-600 text-black font-semibold px-6 py-3 rounded-full`}
+              className="btn-purple px-6 py-3 rounded-full"
             >
               {playlist.name}
             </Button>
@@ -125,12 +170,12 @@ const Home: React.FC = () => {
 
       {/* Popular Albums Section */}
       <div className="mb-8">
-        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4`}>Popular Albums</h2>
+        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-4 text-white`}>Popular Albums</h2>
         <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'} gap-4`}>
-          <div className="bg-gradient-to-br from-orange-400 to-orange-600 aspect-square rounded-md p-4 flex items-end cursor-pointer hover:scale-105 transition-transform">
+          <div className="music-card aspect-square rounded-figma-md p-4 flex items-end cursor-pointer">
             <h3 className="text-white font-medium">Album Title 1</h3>
           </div>
-          <div className="bg-gradient-to-br from-orange-500 to-orange-700 aspect-square rounded-md p-4 flex items-end cursor-pointer hover:scale-105 transition-transform">
+          <div className="music-card aspect-square rounded-figma-md p-4 flex items-end cursor-pointer">
             <h3 className="text-white font-medium">Album Title 2</h3>
           </div>
         </div>
@@ -152,7 +197,7 @@ const Home: React.FC = () => {
       
       {/* Keep existing Top Tracks section */}
       <div className="mt-6 sm:mt-8">
-        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-3 sm:mb-4`}>Top Tracks</h2>
+        <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold mb-3 sm:mb-4 text-white`}>Top Tracks</h2>
         <TrackList tracks={topTracks} />
       </div>
     </div>

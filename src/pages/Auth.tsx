@@ -166,7 +166,18 @@ const Auth = () => {
                   Register
                 </h2>
               </div>
-              <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
+              <div className="relative h-6 overflow-hidden">
+                <p className={`absolute inset-0 text-gray-600 transition-all duration-500 transform ${
+                  activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-6 opacity-0'
+                }`}>
+                  Welcome to Sonic Wave
+                </p>
+                <p className={`absolute inset-0 text-gray-600 transition-all duration-500 transform ${
+                  activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                }`}>
+                  Welcome to Sonic Wave
+                </p>
+              </div>
             </div>
 
             {/* Tab Navigation - Fixed contrast */}
@@ -199,6 +210,8 @@ const Auth = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
+
 
             <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
               <div className="space-y-2">
@@ -380,7 +393,7 @@ const Auth = () => {
                   }`}>
                     <div className="space-y-8">
                       <h1 className="text-6xl font-bold transition-all duration-700 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                        Hello, Welcome!
+                        Welcome Back!
                       </h1>
                       <p className="text-xl opacity-90 transition-all duration-700 font-light">
                         Don't have an account?
@@ -439,7 +452,18 @@ const Auth = () => {
                       Register
                     </h2>
                   </div>
-                  <p className="text-gray-600 transition-all duration-500">Welcome to Sonic Wave</p>
+                  <div className="relative h-6 overflow-hidden">
+                    <p className={`absolute inset-0 text-gray-600 transition-all duration-500 transform ${
+                      activeTab === 'login' ? 'translate-y-0 opacity-100' : '-translate-y-6 opacity-0'
+                    }`}>
+                      Welcome Back
+                    </p>
+                    <p className={`absolute inset-0 text-gray-600 transition-all duration-500 transform ${
+                      activeTab === 'register' ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                    }`}>
+                      Welcome to Sonic Wave
+                    </p>
+                  </div>
                 </div>
 
                 {error && (
@@ -448,6 +472,8 @@ const Auth = () => {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+
+
 
                 <form onSubmit={activeTab === 'login' ? handleEmailSignIn : handleEmailSignUp} className="space-y-6">
                   <div className="space-y-2">

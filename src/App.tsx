@@ -31,7 +31,7 @@ function App() {
 
   const handleAuthChange = useCallback((event: string, currentSession: any) => {
     console.log("Auth state changed:", event, currentSession ? "Session exists" : "No session");
-    
+
     if (event === 'SIGNED_IN' && currentSession) {
       setSession(currentSession);
       // Use setTimeout to avoid potential re-render cycles

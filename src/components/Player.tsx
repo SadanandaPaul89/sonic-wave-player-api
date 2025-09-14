@@ -61,21 +61,21 @@ const Player: React.FC = () => {
 
   const getRepeatButtonClass = () => {
     if (repeatMode === 'off') {
-      return 'text-muted-foreground hover:text-foreground';
+      return 'text-white/70 hover:text-white';
     }
-    return 'text-primary hover:text-primary/80';
+    return 'text-figma-purple hover:text-figma-purple-light';
   };
 
   const getShuffleButtonClass = () => {
     if (isShuffled) {
-      return 'text-primary hover:text-primary/80';
+      return 'text-figma-purple hover:text-figma-purple-light';
     }
-    return 'text-muted-foreground hover:text-foreground';
+    return 'text-white/70 hover:text-white';
   };
 
   return (
     <>
-      <div className="bg-card border-t border-border px-3 sm:px-4 py-2">
+      <div className="player-glass px-3 sm:px-4 py-2">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Track Info */}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -93,10 +93,10 @@ const Player: React.FC = () => {
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <div className="text-sm truncate text-foreground font-medium">
+              <div className="text-sm truncate text-white font-medium">
                 {currentTrack.name}
               </div>
-              <div className="text-xs text-muted-foreground truncate">
+              <div className="text-xs text-white/70 truncate">
                 <ArtistNameWithBadge
                   artistId={currentTrack.artistId}
                   artistName={currentTrack.artistName}
@@ -113,7 +113,7 @@ const Player: React.FC = () => {
                 variant="default"
                 size="icon"
                 onClick={togglePlayPause}
-                className="w-11 h-11 rounded-full flex-shrink-0 bg-primary text-primary-foreground"
+                className="w-11 h-11 rounded-full flex-shrink-0 btn-purple"
               >
                 {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
               </Button>
@@ -121,7 +121,7 @@ const Player: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsFullScreenOpen(true)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-white/70 hover:text-white"
                 title="Full Screen Player"
               >
                 <Maximize2 size={22} />
@@ -135,16 +135,16 @@ const Player: React.FC = () => {
                   <Button variant="ghost" size="icon" onClick={toggleShuffle} className={getShuffleButtonClass()} title={`Shuffle: ${isShuffled ? 'On' : 'Off'}`}>
                     <Shuffle size={20} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={playPreviousTrack} className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={playPreviousTrack} className="text-white/70 hover:text-white">
                     <SkipBack size={20} />
                   </Button>
-                  <Button variant="default" size="icon" onClick={togglePlayPause} className="w-10 h-10 rounded-full">
+                  <Button variant="default" size="icon" onClick={togglePlayPause} className="w-10 h-10 rounded-full btn-purple">
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={forceStop} className="text-muted-foreground hover:text-destructive" title="Stop playback completely">
+                  <Button variant="ghost" size="icon" onClick={forceStop} className="text-white/70 hover:text-red-400" title="Stop playback completely">
                     <Square size={18} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={playNextTrack} className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={playNextTrack} className="text-white/70 hover:text-white">
                     <SkipForward size={20} />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={toggleRepeatMode} className={getRepeatButtonClass()} title={`Repeat: ${repeatMode}`}>
@@ -153,11 +153,11 @@ const Player: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-2 w-full">
-                  <span className="text-xs text-muted-foreground w-10 text-right">
+                  <span className="text-xs text-white/70 w-10 text-right">
                     {formatTime(progress)}
                   </span>
                   <Slider value={[progress]} max={duration} step={1} onValueChange={handleSeek} className="flex-1" />
-                  <span className="text-xs text-muted-foreground w-10">
+                  <span className="text-xs text-white/70 w-10">
                     {formatTime(duration)}
                   </span>
                 </div>

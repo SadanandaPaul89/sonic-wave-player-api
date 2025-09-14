@@ -64,11 +64,11 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-main">{title}</h2>
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
         {cards.length > 0 && (
           <Link
             to={getSeeAllLink()}
-            className="text-sm text-gray-400 hover:text-main transition-colors"
+            className="text-sm text-white/60 hover:text-white transition-colors"
           >
             See all
           </Link>
@@ -82,35 +82,26 @@ const CardGrid: React.FC<CardGridProps> = ({ title, cards, cols = 5 }) => {
           <p className="mt-2 text-gray-400">Check back later for new content</p>
         </div>
       ) : (
-        <div className={`grid ${getGridCols()} gap-5 sm:gap-6`}>
+        <div className={`card-grid ${getGridCols()}`}>
           {cards.map((card) => (
             <Link
               key={card.id}
               to={getLink(card)}
-              className="music-card p-2 sm:p-4 rounded-md hover:bg-spotify-highlight transition-colors duration-300"
-              style={{
-                minWidth: undefined
-              }}
+              className="card-hover-container music-card p-2 sm:p-4 rounded-figma-md group cursor-pointer"
             >
-              <div className={`mb-3 sm:mb-4 relative ${card.type === 'artist' ? 'rounded-full overflow-hidden' : 'rounded-md'}`}>
+              <div className={`mb-3 sm:mb-4 relative ${card.type === 'artist' ? 'rounded-full overflow-hidden' : 'rounded-figma-md overflow-hidden'}`}>
                 <img
                   src={card.imageUrl || 'https://api.napster.com/imageserver/images/v2/default/artist/170x170.png'}
                   alt={card.name}
                   className={`
-                    w-[44vw] h-[44vw] max-w-[115px] max-h-[115px] sm:w-full sm:h-auto sm:max-w-full sm:max-h-full
-                    aspect-square object-cover 
-                    ${card.type === 'artist' ? 'rounded-full' : 'rounded-md'}
+                    album-art w-full aspect-square object-cover 
+                    ${card.type === 'artist' ? 'rounded-full' : 'rounded-figma-md'}
                   `}
-                  style={{
-                    margin: '0 auto', // Center in card for mobile
-                    display: 'block',
-                  }}
                 />
               </div>
-              {/* main-title guarantees text-black via CSS */}
-              <h3 className="main-title font-medium truncate text-base sm:text-lg">{card.name}</h3>
+              <h3 className="font-medium truncate text-base sm:text-lg text-white group-hover:text-white transition-colors duration-300">{card.name}</h3>
               {card.description && (
-                <p className="text-[13px] sm:text-sm text-gray-600 mt-1 line-clamp-2">{card.description}</p>
+                <p className="text-[13px] sm:text-sm text-white/60 mt-1 line-clamp-2 group-hover:text-white/80 transition-colors duration-300">{card.description}</p>
               )}
             </Link>
           ))}

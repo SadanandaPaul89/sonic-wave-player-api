@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
 import Player from './Player';
+import Header from './Header';
+import HamburgerMenu from './HamburgerMenu';
 import { PlayerProvider } from '@/contexts/PlayerContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
-import { Menu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,31 +17,60 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <PlayerProvider>
-      <div className="flex flex-col h-screen bg-background text-foreground">
-        <div className="flex flex-1 overflow-hidden">
-          {isMobile ? (
-            // Mobile drawer navigation
-            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-              <DrawerTrigger asChild>
-                <button className="p-2 sm:p-3 m-2 text-white absolute top-0 left-0 z-20 bg-black/50 rounded-lg backdrop-blur-sm">
-                  <Menu size={isMobile ? 20 : 24} />
-                </button>
-              </DrawerTrigger>
-              <DrawerContent className="h-[85vh] bg-background border-t border-border">
-                <div className="h-full overflow-y-auto">
-                  <Sidebar />
-                </div>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            // Desktop sidebar
-            <Sidebar />
-          )}
-          <main className={`flex-1 overflow-auto ${isMobile ? 'pt-12 sm:pt-16' : ''}`}>
-            {children}
+      <div className="flex flex-col h-screen text-white relative">
+        {/* Figma Dark Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-figma-bg-start to-figma-bg-end"></div>
+        <div className="flex flex-1 overflow-hidden relative z-10">
+          {/* Animated hamburger menu overlay */}
+          <AnimatePresence>
+            {isDrawerOpen && (
+              <>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+                  onClick={() => setIsDrawerOpen(false)}
+                />
+                
+                {/* Sliding hamburger menu */}
+                <motion.div
+                  initial={{ x: '-100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '-100%' }}
+                  transition={{ 
+                    type: 'spring',
+                    damping: 25,
+                    stiffness: 200,
+                    duration: 0.4
+                  }}
+                  className="fixed left-0 top-0 h-full w-80 sidebar-glass border-r border-figma-glass-border z-50"
+                >
+                  <HamburgerMenu onClose={() => setIsDrawerOpen(false)} />
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* Main content area - full width */}
+          <main className="flex-1 flex flex-col overflow-hidden">
+            {/* Header with hamburger menu and search */}
+            <Header 
+              onMenuClick={() => setIsDrawerOpen(true)} 
+              showSearch={true}
+            />
+            
+            {/* Page content */}
+            <div className="flex-1 overflow-auto px-4 sm:px-6">
+              {children}
+            </div>
           </main>
         </div>
-        <Player />
+        <div className="relative z-10">
+          <Player />
+        </div>
       </div>
     </PlayerProvider>
   );

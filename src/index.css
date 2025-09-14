@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* New Light Theme */
+    /* Light Theme (fallback) */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -26,10 +26,16 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    
+    /* Animation variables */
+    --animation-duration-fast: 200ms;
+    --animation-duration-normal: 300ms;
+    --animation-duration-slow: 500ms;
+    --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* New Dark Theme */
+    /* Figma Dark Theme */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -58,12 +64,259 @@
   }
 
   body {
-    @apply bg-background text-foreground transition-colors duration-300;
+    @apply text-foreground transition-colors duration-300;
+    background: linear-gradient(135deg, #0A0A0A 0%, #1A1A2E 100%);
+    min-height: 100vh;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
+  /* Glass morphism card */
+  .glass-card {
+    @apply backdrop-blur-figma border border-figma-glass-border rounded-figma-md;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Enhanced music card with glass effect */
   .music-card {
-    @apply bg-card text-card-foreground border rounded-lg shadow-sm transition-shadow hover:shadow-md;
+    @apply glass-card text-card-foreground transition-all duration-500 ease-out;
+    background: rgba(255, 255, 255, 0.05);
+    filter: grayscale(100%) brightness(0.7);
+    transform: scale(1);
+  }
+
+  .music-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+    filter: grayscale(0%) brightness(1);
+    transform: scale(1.05) translateY(-8px);
+  }
+
+  /* Album art hover effect */
+  .album-art {
+    @apply transition-all duration-500 ease-out rounded-figma-md overflow-hidden;
+    filter: grayscale(80%) brightness(0.8);
+    transform: scale(1);
+  }
+
+  .album-art:hover {
+    filter: grayscale(0%) brightness(1.1);
+    transform: scale(1.03);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Card container hover effect */
+  .card-hover-container {
+    @apply transition-all duration-500 ease-out;
+    transform: scale(1);
+  }
+
+  .card-hover-container:hover {
+    transform: scale(1.02) translateY(-4px);
+  }
+
+  .card-hover-container:hover .album-art {
+    filter: grayscale(0%) brightness(1.2);
+    transform: scale(1.05);
+  }
+
+  /* Track list item hover effect */
+  .track-item {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .track-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+  }
+
+  .track-item:hover .album-art {
+    filter: grayscale(0%) brightness(1.1);
+    transform: scale(1.1);
+  }
+
+  /* Staggered animation for cards */
+  .card-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .card-grid .music-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .card-grid .music-card:nth-child(1) { animation-delay: 0.1s; }
+  .card-grid .music-card:nth-child(2) { animation-delay: 0.2s; }
+  .card-grid .music-card:nth-child(3) { animation-delay: 0.3s; }
+  .card-grid .music-card:nth-child(4) { animation-delay: 0.4s; }
+  .card-grid .music-card:nth-child(5) { animation-delay: 0.5s; }
+  .card-grid .music-card:nth-child(6) { animation-delay: 0.6s; }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Hover expand animation styles */
+  .hover-expand-container {
+    @apply transition-all duration-400 ease-in-out;
+  }
+
+  .hover-expand-container:hover {
+    @apply transform scale-105;
+  }
+
+  .hover-expand-image {
+    @apply transition-all duration-500 ease-out;
+    filter: grayscale(70%) brightness(0.8);
+  }
+
+  .hover-expand-container:hover .hover-expand-image {
+    filter: grayscale(0%) brightness(1.1);
+  }
+
+  /* Smooth width transitions for expanding cards */
+  .expand-card {
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Header styles */
+  .header-button {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .header-button:hover {
+    @apply transform scale-110;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Hamburger menu animation */
+  .hamburger-menu {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hamburger-menu:hover {
+    @apply transform scale-105;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+  }
+
+  .hamburger-menu:active {
+    @apply transform scale-95;
+  }
+
+  /* Hamburger menu item animations */
+  .menu-item {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .menu-item:hover {
+    transform: translateX(8px);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .menu-item.active {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  }
+
+  .menu-item.active:hover {
+    transform: translateX(4px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Profile section animation */
+  .profile-section {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .profile-section:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Search bar styles */
+  .search-input {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .search-input:focus {
+    @apply ring-2 ring-figma-purple/50;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+  }
+
+  .search-input:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Enhanced search animations */
+  .search-container {
+    @apply transition-all duration-500 ease-out;
+  }
+
+  .search-container.focused {
+    transform: scale(1.05);
+  }
+
+  /* Mobile search overlay */
+  .mobile-search-overlay {
+    backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  /* Sidebar glass effect */
+  .sidebar-glass {
+    @apply backdrop-blur-figma border-r border-figma-glass-border;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Player glass effect */
+  .player-glass {
+    @apply backdrop-blur-figma border-t border-figma-glass-border;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Button with purple accent */
+  .btn-purple {
+    @apply bg-figma-purple hover:bg-figma-purple-light text-white transition-all duration-300;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  }
+
+  .btn-purple:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fade-in var(--animation-duration-normal) var(--animation-easing);
+  }
+
+  .animate-slide-up {
+    animation: slide-up var(--animation-duration-slow) var(--animation-easing);
+  }
+
+  .animate-slide-left {
+    animation: slide-left var(--animation-duration-slow) var(--animation-easing);
+  }
+
+  .animate-scale-in {
+    animation: scale-in var(--animation-duration-normal) var(--animation-easing);
   }
 }

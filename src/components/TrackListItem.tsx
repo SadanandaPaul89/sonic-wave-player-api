@@ -48,17 +48,17 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
 
   return (
     <div 
-      className={`group ${
-        isCurrentTrack ? 'text-primary' : 'text-foreground/80'
+      className={`group card-hover-container ${
+        isCurrentTrack ? 'text-figma-purple' : 'text-white/80'
       } sm:grid sm:grid-cols-12 sm:gap-4 
         px-2 py-[10px] sm:px-4 sm:py-2 
-        hover:bg-muted/50 rounded-md 
-        flex flex-col mb-2 sm:mb-0`}
+        hover:bg-white/10 rounded-figma-md 
+        flex flex-col mb-2 sm:mb-0 cursor-pointer transition-all duration-300`}
     >
       {/* Row 1: Index/Play, Title/Artist */}
       <div className="flex items-center gap-3 sm:col-span-5">
         <div className="w-6 flex-shrink-0 flex items-center justify-center relative">
-          <span className={`group-hover:hidden ${isCurrentTrack ? 'text-primary' : 'text-muted-foreground'} text-sm sm:text-base`}>
+          <span className={`group-hover:hidden ${isCurrentTrack ? 'text-figma-purple' : 'text-white/60'} text-sm sm:text-base`}>
             {index + 1}
           </span>
           <button 
@@ -66,17 +66,17 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
             onClick={() => onPlayClick(track)}
           >
             {isCurrentPlaying ? 
-              <Pause size={16} className="text-foreground" /> : 
-              <Play size={16} className="text-foreground" />
+              <Pause size={16} className="text-white" /> : 
+              <Play size={16} className="text-white" />
             }
           </button>
         </div>
         <div className="flex items-center gap-2 truncate sm:w-auto w-full">
-          <div className="w-10 h-10 bg-secondary rounded flex-shrink-0">
+          <div className="w-10 h-10 bg-white/10 rounded flex-shrink-0 overflow-hidden">
             <img
               src={trackImageUrl}
               alt={`${track.name} album art`}
-              className="w-full h-full rounded object-cover"
+              className="album-art w-full h-full rounded object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
@@ -85,13 +85,13 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
           </div>
           <div className="truncate flex flex-col">
             <span 
-              className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline"
+              className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline text-white group-hover:text-white"
               onClick={() => onPlayClick(track)}
             >
               {track.name}
             </span>
             {/* Artist name - always below track name on mobile */}
-            <span className="text-xs sm:text-sm text-muted-foreground truncate font-normal">
+            <span className="text-xs sm:text-sm text-white/60 truncate font-normal group-hover:text-white/80">
               <ArtistNameWithBadge
                 artistId={track.artistId}
                 artistName={track.artistName}
