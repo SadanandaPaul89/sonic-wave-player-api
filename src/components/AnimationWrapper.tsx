@@ -100,4 +100,5 @@ const AnimationWrapper: React.FC<AnimationWrapperProps> = ({
   );
 };
 
+export { AnimationWrapper };
 export default AnimationWrapper;

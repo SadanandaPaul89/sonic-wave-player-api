@@ -91,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSearch = true }) => {
           </motion.div>
         )}
 
-        {/* Right side - Search & Profile (Mobile) */}
+        {/* Right side - Search (Mobile only) */}
         <div className="flex items-center gap-2">
           {isMobile && (
             <Button
@@ -103,13 +103,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSearch = true }) => {
               <Search size={24} />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="header-button text-white hover:bg-white/10 rounded-full p-3"
-          >
-            <User size={24} />
-          </Button>
         </div>
       </header>
 

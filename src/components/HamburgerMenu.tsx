@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { X, Home, Search, Library, Info, User, LogOut } from 'lucide-react';
+import { X, Home, Search, Library, Info, User, LogOut, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Logo, BRAND_TAGLINES } from '@/components/Brand';
@@ -17,6 +17,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
     { icon: Home, label: 'Home', path: '/' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Library, label: 'Your Library', path: '/library' },
+    { icon: Wallet, label: 'Wallet', path: '/wallet', isWeb3: true },
     { icon: Info, label: 'About Us', path: '/about' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
@@ -115,6 +116,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const isWeb3 = 'isWeb3' in item && item.isWeb3;
             
             return (
               <motion.div key={item.path} variants={itemVariants}>
@@ -124,16 +126,29 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
                   className={`menu-item flex items-center gap-4 p-3 rounded-figma-md group ${
                     isActive 
                       ? 'active text-white' 
+                      : isWeb3
+                      ? 'text-white/80 hover:text-white hover:bg-gradient-to-r hover:from-green-500/20 hover:to-emerald-500/20'
                       : 'text-white/80 hover:text-white'
                   }`}
                 >
                   <Icon 
                     size={20} 
                     className={`transition-transform duration-300 group-hover:scale-110 ${
-                      isActive ? 'text-white' : 'text-white/70'
+                      isActive 
+                        ? 'text-white' 
+                        : isWeb3 
+                        ? 'text-green-400 group-hover:text-green-300' 
+                        : 'text-white/70'
                     }`} 
                   />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium flex items-center gap-2">
+                    {item.label}
+                    {isWeb3 && (
+                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full border border-green-500/30">
+                        Web3
+                      </span>
+                    )}
+                  </span>
                   
                   {/* Active indicator */}
                   {isActive && (
