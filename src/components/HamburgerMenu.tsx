@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { X, Home, Search, Library, Info, User, LogOut, Wallet } from 'lucide-react';
+import { X, Home, Search, Library, Info, User, LogOut, Wallet, Disc, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { getAuthService } from '@/config/auth';
 import { Logo, BRAND_TAGLINES } from '@/components/Brand';
 
 interface HamburgerMenuProps {
@@ -17,14 +17,17 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
     { icon: Home, label: 'Home', path: '/' },
     { icon: Search, label: 'Search', path: '/search' },
     { icon: Library, label: 'Your Library', path: '/library' },
+    { icon: Trophy, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Wallet, label: 'Wallet', path: '/wallet', isWeb3: true },
+    { icon: Disc, label: 'IPFS Demo', path: '/ipfs-demo', isWeb3: true },
     { icon: Info, label: 'About Us', path: '/about' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const authService = await getAuthService();
+      await authService.signOut();
       onClose();
     } catch (error) {
       console.error('Error signing out:', error);
@@ -48,7 +51,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
       x: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         damping: 20,
         stiffness: 300,
       },

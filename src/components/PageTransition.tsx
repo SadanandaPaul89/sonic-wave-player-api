@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
-import { PAGE_TRANSITIONS, getTransition } from '@/lib/animations';
+import { PAGE_TRANSITIONS } from '@/lib/animations';
 import { useReducedMotion } from '@/hooks/useAnimations';
 import { PageTransitionProps } from '@/types/animations';
 
@@ -45,7 +45,10 @@ const PageTransition: React.FC<PageTransitionWrapperProps> = ({
   };
 
   const variants = getVariants();
-  const transition = getTransition(duration, easing);
+  const transition = {
+    duration: duration === 'fast' ? 0.2 : duration === 'slow' ? 0.5 : 0.3,
+    ease: easing === 'easeIn' ? 'easeIn' : easing === 'easeInOut' ? 'easeInOut' : easing === 'bounce' ? 'backOut' : 'easeOut',
+  };
 
   // If reduced motion is preferred, just show content without animation
   if (reducedMotion) {

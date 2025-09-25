@@ -1,9 +1,10 @@
 import React from 'react';
 import { Track } from '@/services/supabaseService';
 import { formatTime } from '@/utils/formatTime';
-import { Play, Pause, Heart, Headphones, MoreHorizontal, Share } from 'lucide-react';
+import { Play, Pause, Heart, Headphones, MoreHorizontal, Share, Globe, Zap } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import ArtistNameWithBadge from "./ArtistNameWithBadge";
 
 interface TrackListItemProps {
@@ -84,12 +85,26 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
             />
           </div>
           <div className="truncate flex flex-col">
-            <span 
-              className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline text-white group-hover:text-white"
-              onClick={() => onPlayClick(track)}
-            >
-              {track.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <span 
+                className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline text-white group-hover:text-white"
+                onClick={() => onPlayClick(track)}
+              >
+                {track.name}
+              </span>
+              {/* IPFS Indicator - Show for ALL tracks */}
+              <Badge variant="secondary" className="bg-figma-purple/20 text-figma-purple text-xs px-1.5 py-0.5">
+                <Globe size={8} className="mr-1" />
+                IPFS
+              </Badge>
+              {/* NFT Indicator */}
+              {(track as any).nft && (
+                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 text-xs px-1.5 py-0.5">
+                  <Zap size={8} className="mr-1" />
+                  NFT
+                </Badge>
+              )}
+            </div>
             {/* Artist name - always below track name on mobile */}
             <span className="text-xs sm:text-sm text-white/60 truncate font-normal group-hover:text-white/80">
               <ArtistNameWithBadge

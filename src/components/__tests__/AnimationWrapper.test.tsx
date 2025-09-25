@@ -6,7 +6,7 @@ import AnimationWrapper from '../AnimationWrapper';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: React.forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) => (
+    div: React.forwardRef<HTMLDivElement, Record<string, unknown>>(({ children, ...props }, ref) => (
       <div ref={ref} {...props} data-testid="motion-div">
         {children}
       </div>
@@ -43,11 +43,7 @@ vi.mock('@/lib/animations', () => ({
       exit: { scale: 0.95, opacity: 0 },
     },
   },
-  getTransition: vi.fn(() => ({
-    duration: 0.3,
-    ease: 'easeOut',
-    delay: 0,
-  })),
+
 }));
 
 // Mock IntersectionObserver
@@ -115,9 +111,9 @@ describe('AnimationWrapper', () => {
     expect(screen.getByTestId('motion-div')).toHaveClass('custom-class');
   });
 
-  it('handles reduced motion preference', () => {
-    const { useReducedMotion } = require('@/hooks/useAnimations');
-    useReducedMotion.mockReturnValue(true);
+  it('handles reduced motion preference', async () => {
+    const { useReducedMotion } = await import('@/hooks/useAnimations');
+    (useReducedMotion as any).mockReturnValue(true);
 
     render(
       <AnimationWrapper animation="fadeIn">
@@ -131,8 +127,8 @@ describe('AnimationWrapper', () => {
 
   it('passes through additional motion props', () => {
     render(
-      <AnimationWrapper 
-        animation="fadeIn" 
+      <AnimationWrapper
+        animation="fadeIn"
         data-testid="custom-test-id"
         style={{ color: 'red' }}
       >

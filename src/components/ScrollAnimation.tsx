@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { FRAMER_VARIANTS, getTransition } from '@/lib/animations';
+import { motion, Transition } from 'framer-motion';
+import { FRAMER_VARIANTS } from '@/lib/animations';
 import { useReducedMotion } from '@/hooks/useAnimations';
-import { AnimationType, AnimationDuration, AnimationEasing } from '@/types/animations';
+import { AnimationType, AnimationDuration } from '@/types/animations';
 
 interface ScrollAnimationProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface ScrollAnimationProps {
   triggerOnce?: boolean;
   delay?: number;
   duration?: AnimationDuration;
-  easing?: AnimationEasing;
+  easing?: 'easeOut' | 'easeIn' | 'easeInOut' | 'bounce';
   className?: string;
   stagger?: boolean;
   staggerDelay?: number;
@@ -74,7 +74,13 @@ const ScrollAnimation: React.FC<ScrollAnimationProps> = ({
 
   // Get animation variants
   const variants = FRAMER_VARIANTS[animation];
-  const transition = getTransition(duration, easing, delay / 1000);
+
+  // Create transition config with proper typing
+  const transition: Transition = {
+    duration: duration === 'fast' ? 0.2 : duration === 'slow' ? 0.5 : 0.3,
+    ease: easing === 'easeIn' ? 'easeIn' : easing === 'easeInOut' ? 'easeInOut' : easing === 'bounce' ? 'backOut' : 'easeOut',
+    delay: delay ? delay / 1000 : 0,
+  };
 
   // Handle staggered animations for multiple children
   const containerVariants = stagger ? {
@@ -108,7 +114,11 @@ const ScrollAnimation: React.FC<ScrollAnimationProps> = ({
           <motion.div
             key={index}
             variants={variants}
-            transition={getTransition(duration, easing, (delay + index * staggerDelay) / 1000)}
+            transition={{
+              duration: duration === 'fast' ? 0.2 : duration === 'slow' ? 0.5 : 0.3,
+              ease: easing === 'easeIn' ? 'easeIn' : easing === 'easeInOut' ? 'easeInOut' : easing === 'bounce' ? 'backOut' : 'easeOut',
+              delay: (delay + index * staggerDelay) / 1000,
+            }}
           >
             {child}
           </motion.div>

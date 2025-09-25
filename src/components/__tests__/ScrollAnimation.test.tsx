@@ -6,7 +6,7 @@ import ScrollAnimation from '../ScrollAnimation';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: React.forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) => (
+    div: React.forwardRef<HTMLDivElement, Record<string, unknown>>(({ children, ...props }, ref) => (
       <div ref={ref} {...props} data-testid="motion-div">
         {children}
       </div>
@@ -33,11 +33,6 @@ vi.mock('@/lib/animations', () => ({
       exit: { y: -20, opacity: 0 },
     },
   },
-  getTransition: vi.fn(() => ({
-    duration: 0.3,
-    ease: 'easeOut',
-    delay: 0,
-  })),
 }));
 
 // Mock IntersectionObserver
@@ -94,9 +89,9 @@ describe('ScrollAnimation', () => {
     expect(screen.getByTestId('motion-div')).toHaveClass('scroll-container');
   });
 
-  it('handles reduced motion preference', () => {
-    const { useReducedMotion } = require('@/hooks/useAnimations');
-    useReducedMotion.mockReturnValue(true);
+  it('handles reduced motion preference', async () => {
+    const { useReducedMotion } = await import('@/hooks/useAnimations');
+    (useReducedMotion as any).mockReturnValue(true);
 
     render(
       <ScrollAnimation animation="fadeIn">

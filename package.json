@@ -11,7 +11,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@erc7824/nitrolite": "^0.3.0",
     "@hookform/resolvers": "^3.9.0",
+    "@pinata/sdk": "^2.1.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
@@ -42,6 +44,7 @@
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.56.2",
     "@types/canvas-confetti": "^1.6.4",
+    "@types/ws": "^8.18.1",
     "canvas-confetti": "^1.6.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -50,7 +53,9 @@
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.23.12",
     "input-otp": "^1.2.4",
+    "ipfs-http-client": "^60.0.1",
     "lucide-react": "^0.462.0",
+    "music-metadata": "^11.9.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
@@ -63,6 +68,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
+    "web3.storage": "^4.5.5",
+    "ws": "^8.18.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {

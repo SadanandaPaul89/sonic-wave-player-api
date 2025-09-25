@@ -9,9 +9,9 @@ export interface AnimationConfig {
 }
 
 export interface AnimationVariants extends Variants {
-  initial: any;
-  animate: any;
-  exit?: any;
+  initial: Record<string, unknown>;
+  animate: Record<string, unknown>;
+  exit?: Record<string, unknown>;
 }
 
 export interface TransitionConfig {
@@ -37,7 +37,7 @@ export interface StaggerConfig {
 
 export type AnimationType = 'fadeIn' | 'slideUp' | 'slideLeft' | 'slideRight' | 'scaleIn' | 'scaleOut';
 export type AnimationTrigger = 'onMount' | 'onScroll' | 'onHover' | 'onFocus';
-export type AnimationEasing = 'easeOut' | 'easeIn' | 'easeInOut' | 'bounce' | 'spring';
+export type AnimationEasing = 'easeOut' | 'easeIn' | 'easeInOut' | 'bounce';
 export type AnimationDuration = 'fast' | 'normal' | 'slow' | 'slower';
 
 export interface AnimationProps {

@@ -6,6 +6,7 @@ import { usePlayerQueue } from '@/hooks/usePlayerQueue';
 import { useRepeatMode } from '@/hooks/useRepeatMode';
 import { useAudioControls } from '@/hooks/useAudioControls';
 import { usePlayerSideEffects } from '@/hooks/usePlayerSideEffects';
+import { useIPFSPlayer } from '@/hooks/useIPFSPlayer';
 import { PlayerContextProps } from '@/contexts/PlayerContext';
 
 export const usePlayerCore = (): PlayerContextProps => {
@@ -35,14 +36,27 @@ export const usePlayerCore = (): PlayerContextProps => {
     return null;
   });
 
-  const loadAndPlay = useCallback((track: Track) => {
-    console.log('Loading and playing track:', track.name);
+  // Initialize IPFS player
+  const { loadTrack, playWithIPFS, pauseWithIPFS } = useIPFSPlayer(
+    audioElement,
+    currentTrack,
+    setIsPlaying,
+    setProgress,
+    setDuration
+  );
+
+  const loadAndPlay = useCallback(async (track: Track) => {
+    console.log('Loading and playing track:', track.name, track.ipfs ? '(IPFS)' : '(Traditional)');
     if (currentTrack) {
       setPlayHistory(prev => [currentTrack, ...prev.slice(0, 9)]);
     }
     setCurrentTrack(track);
-    setIsPlaying(true);
-  }, [currentTrack, setCurrentTrack, setIsPlaying, setPlayHistory]);
+    
+    // Use IPFS-aware play function
+    setTimeout(() => {
+      playWithIPFS();
+    }, 100); // Small delay to ensure track is set
+  }, [currentTrack, setCurrentTrack, setPlayHistory, playWithIPFS]);
 
   const playTrack = (track: Track) => {
     loadAndPlay(track);
@@ -114,11 +128,12 @@ export const usePlayerCore = (): PlayerContextProps => {
 
   const togglePlayPause = useCallback(() => {
     console.log('PlayerContext: togglePlayPause called, current isPlaying:', isPlaying);
-    setIsPlaying(prev => {
-      console.log('PlayerContext: setting isPlaying to:', !prev);
-      return !prev;
-    });
-  }, [isPlaying, setIsPlaying]);
+    if (isPlaying) {
+      pauseWithIPFS();
+    } else {
+      playWithIPFS();
+    }
+  }, [isPlaying, playWithIPFS, pauseWithIPFS]);
 
   const setVolumeLevel = (level: number) => {
     setVolume(Math.max(0, Math.min(1, level)));

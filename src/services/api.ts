@@ -26,10 +26,56 @@ export interface Track {
   artistName: string;
   albumName: string;
   duration: number;
-  previewURL: string;
+  previewURL: string; // Legacy field for backward compatibility
   albumId: string;
   artistId?: string;
   image?: string;
+  // IPFS-specific fields
+  ipfs?: {
+    hash: string;
+    audioFiles: {
+      original?: {
+        uri: string;
+        format: 'FLAC' | 'WAV';
+        bitrate: 'lossless';
+        size: number;
+      };
+      high_quality: {
+        uri: string;
+        format: 'MP3' | 'AAC';
+        bitrate: '320kbps';
+        size: number;
+      };
+      streaming: {
+        uri: string;
+        format: 'MP3' | 'AAC';
+        bitrate: '192kbps';
+        size: number;
+      };
+      mobile: {
+        uri: string;
+        format: 'MP3';
+        bitrate: '128kbps';
+        size: number;
+      };
+    };
+    metadata: {
+      title: string;
+      artist: string;
+      album?: string;
+      genre?: string;
+      year?: number;
+      artwork?: string;
+      created_at: string;
+    };
+  };
+  // NFT-specific fields
+  nft?: {
+    contractAddress: string;
+    tokenId: string;
+    isExclusive: boolean;
+    owner?: string;
+  };
 }
 
 export interface PublishedTrack extends Track {

@@ -7,7 +7,7 @@ import PageTransition from '../PageTransition';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: React.forwardRef<HTMLDivElement, any>(({ children, ...props }, ref) => (
+    div: React.forwardRef<HTMLDivElement, Record<string, unknown>>(({ children, ...props }, ref) => (
       <div ref={ref} {...props} data-testid="motion-div">
         {children}
       </div>
@@ -40,10 +40,7 @@ vi.mock('@/lib/animations', () => ({
       exit: { opacity: 0 },
     },
   },
-  getTransition: vi.fn(() => ({
-    duration: 0.3,
-    ease: 'easeOut',
-  })),
+
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -79,9 +76,9 @@ describe('PageTransition', () => {
     expect(screen.getByTestId('motion-div')).toBeInTheDocument();
   });
 
-  it('handles reduced motion preference', () => {
-    const { useReducedMotion } = require('@/hooks/useAnimations');
-    useReducedMotion.mockReturnValue(true);
+  it('handles reduced motion preference', async () => {
+    const { useReducedMotion } = await import('@/hooks/useAnimations');
+    (useReducedMotion as any).mockReturnValue(true);
 
     renderWithRouter(
       <PageTransition>

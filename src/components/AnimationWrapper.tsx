@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import { FRAMER_VARIANTS, getTransition } from '@/lib/animations';
+import { motion, HTMLMotionProps, Transition } from 'framer-motion';
+import { FRAMER_VARIANTS } from '@/lib/animations';
 import { useReducedMotion } from '@/hooks/useAnimations';
 
 export type AnimationType = 'fadeIn' | 'slideUp' | 'slideLeft' | 'scaleIn';
@@ -35,7 +35,8 @@ const AnimationWrapper: React.FC<AnimationWrapperProps> = ({
 
   // Handle scroll-triggered animations
   React.useEffect(() => {
-    if (trigger !== 'onScroll' || !ref.current) return;
+    const currentRef = ref.current;
+    if (trigger !== 'onScroll' || !currentRef) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -43,7 +44,7 @@ const AnimationWrapper: React.FC<AnimationWrapperProps> = ({
           setIsVisible(true);
           if (once) {
             setHasAnimated(true);
-            observer.unobserve(ref.current!);
+            observer.unobserve(entry.target);
           }
         } else if (!once) {
           setIsVisible(false);
@@ -52,22 +53,22 @@ const AnimationWrapper: React.FC<AnimationWrapperProps> = ({
       { threshold }
     );
 
-    observer.observe(ref.current);
+    observer.observe(currentRef);
 
     return () => {
-      if (ref.current) observer.unobserve(ref.current);
+      if (currentRef) observer.unobserve(currentRef);
     };
   }, [trigger, once, hasAnimated, threshold]);
 
   // Get animation variants
   const variants = FRAMER_VARIANTS[animation];
 
-  // Create transition config
-  const transition = getTransition(
-    duration <= 200 ? 'fast' : duration <= 400 ? 'normal' : 'slow',
-    'easeOut',
-    delay / 1000
-  );
+  // Create transition config with proper typing
+  const transition: Transition = {
+    duration: duration <= 200 ? 0.2 : duration <= 400 ? 0.3 : 0.5,
+    ease: 'easeOut',
+    delay: delay / 1000,
+  };
 
   // Handle hover animations
   const hoverProps = trigger === 'onHover' ? {
@@ -78,7 +79,7 @@ const AnimationWrapper: React.FC<AnimationWrapperProps> = ({
   // If reduced motion is preferred, show content without animation
   if (reducedMotion) {
     return (
-      <div ref={ref} className={className} {...(motionProps as any)}>
+      <div ref={ref} className={className} {...(motionProps as Record<string, unknown>)}>
         {children}
       </div>
     );

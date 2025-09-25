@@ -3,8 +3,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "./lib/supabase";
+import { getAuthService, isUsingLocalAuth } from "./config/auth";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { YellowProvider, YellowErrorBoundary } from "./providers/YellowProvider";
+import { WalletProvider } from "./contexts/WalletContext";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -21,6 +23,9 @@ import ShareTrack from "./pages/ShareTrack";
 import AboutUs from "./pages/AboutUs";
 import Artists from "./pages/Artists";
 import ProfilePage from "./pages/ProfilePage";
+import Wallet from "./pages/Wallet";
+import IPFSDemo from "./pages/IPFSDemo";
+import Leaderboard from "./pages/Leaderboard";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
@@ -59,12 +64,14 @@ function App() {
     const initializeAuth = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase.auth.getSession();
+        const authService = await getAuthService();
+        const { data, error } = await authService.getSession();
         if (error) {
           console.error("Error getting session:", error);
           return;
         }
         console.log("Initial session check:", data.session ? "Session found" : "No session");
+        console.log("Using local auth:", isUsingLocalAuth());
         setSession(data.session);
       } catch (error) {
         console.error("Error in auth initialization:", error);
@@ -73,15 +80,28 @@ function App() {
       }
     };
 
-    // Setup auth listeners before checking session
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(handleAuthChange);
+    const setupAuthListener = async () => {
+      const authService = await getAuthService();
+      const {
+        data: { subscription },
+      } = authService.onAuthStateChange(handleAuthChange);
 
-    initializeAuth();
+      return subscription;
+    };
+
+    let subscription: any;
+
+    const init = async () => {
+      subscription = await setupAuthListener();
+      await initializeAuth();
+    };
+
+    init();
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, [handleAuthChange]);
 
@@ -97,45 +117,54 @@ function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
-              <Route path="/share/:trackId" element={<ShareTrack />} />
-              <Route
-                path="/"
-                element={
-                  session ? (
-                    <Layout>
-                      <Home />
-                    </Layout>
-                  ) : (
-                    <Navigate to="/auth" replace />
-                  )
-                }
-              />
-              <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/about" element={session ? <Layout><AboutUs /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/artists" element={session ? <Layout><Artists /></Layout> : <Navigate to="/auth" replace />} />
-              <Route path="/profile" element={
-                session ? (
-                  <Layout>
-                    <ProfilePage />
-                  </Layout>
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <WalletProvider>
+            <YellowErrorBoundary>
+              <YellowProvider autoConnect={true} enableToasts={true}>
+                <BrowserRouter>
+                <Routes>
+                  <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
+                  <Route path="/share/:trackId" element={<ShareTrack />} />
+                  <Route
+                    path="/"
+                    element={
+                      session ? (
+                        <Layout>
+                          <Home />
+                        </Layout>
+                      ) : (
+                        <Navigate to="/auth" replace />
+                      )
+                    }
+                  />
+                  <Route path="/search" element={session ? <Layout><Search /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/library" element={session ? <Layout><Library /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/about" element={session ? <Layout><AboutUs /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/album/:id" element={session ? <Layout><AlbumView /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/artist/:id" element={session ? <Layout><ArtistView /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/artist-profile/:id" element={session ? <Layout><ArtistProfile /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/publish" element={session ? <Layout><PublishSong /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/artist-registration" element={session ? <Layout><ArtistRegistration /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/admin" element={session ? <Layout><AdminPanel /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/artists" element={session ? <Layout><Artists /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/profile" element={
+                    session ? (
+                      <Layout>
+                        <ProfilePage />
+                      </Layout>
+                    ) : (
+                      <Navigate to="/auth" replace />
+                    )
+                  } />
+                  <Route path="/wallet" element={session ? <Layout><Wallet /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/ipfs-demo" element={session ? <Layout><IPFSDemo /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="/leaderboard" element={session ? <Layout><Leaderboard /></Layout> : <Navigate to="/auth" replace />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </YellowProvider>
+          </YellowErrorBoundary>
           <Toaster />
+          </WalletProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>
