@@ -1,82 +1,81 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Wallet as WalletIcon, Music, Disc, TrendingUp, Star, CreditCard, Zap } from 'lucide-react';
+import { 
+  Wallet as WalletIcon, 
+  Music, 
+  Settings, 
+  Disc, 
+  Star, 
+  CreditCard, 
+  Zap, 
+  TrendingUp 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AnimationWrapper } from '@/components/AnimationWrapper';
-import { ScrollAnimation } from '@/components/ScrollAnimation';
-import YellowSDKWalletConnect from '@/components/YellowSDKWalletConnect';
-import UnifiedWalletStatus from '@/components/UnifiedWalletStatus';
-import { useWallet } from '@/contexts/WalletContext';
-import IPFSAudioPlayer from '@/components/IPFSAudioPlayer';
-import SubscriptionManager from '@/components/SubscriptionManager';
-import PaymentModal from '@/components/PaymentModal';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import PersistentMusicLibrary from '@/components/PersistentMusicLibrary';
+import AnimationWrapper from '@/components/AnimationWrapper';
+import ScrollAnimation from '@/components/ScrollAnimation';
 import NFTBenefitsDisplay from '@/components/NFTBenefitsDisplay';
-import YellowSDKStatusIndicator from '@/components/YellowSDKStatusIndicator';
 import MicrotransactionDashboard from '@/components/MicrotransactionDashboard';
 import TransactionDisplay from '@/components/TransactionDisplay';
 import NetworkSelector from '@/components/NetworkSelector';
-import PersistentMusicLibrary from '@/components/PersistentMusicLibrary';
-import { useYellowProvider } from '@/providers/YellowProvider';
-import { useTransactions } from '@/hooks/useTransactions';
-import { AudioFileStructure } from '@/types/yellowSDK';
-import { toast } from 'sonner';
+import SubscriptionManager from '@/components/SubscriptionManager';
+import PaymentModal from '@/components/PaymentModal';
+import IPFSAudioPlayer from '@/components/IPFSAudioPlayer';
+
+// Local interface since yellowSDK types were removed
+interface AudioFileStructure {
+  high_quality: {
+    uri: string;
+    format: 'MP3' | 'AAC';
+    bitrate: string;
+    size: number;
+  };
+  streaming: {
+    uri: string;
+    format: 'MP3' | 'AAC';
+    bitrate: string;
+    size: number;
+  };
+  mobile: {
+    uri: string;
+    format: 'MP3';
+    bitrate: string;
+    size: number;
+  };
+}
 
 const Wallet = () => {
+  const [activeTab, setActiveTab] = useState('overview');
   const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
   const [userNFTs, setUserNFTs] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
 
-  const { 
-    isConnected, 
-    isAuthenticated, 
-    session, 
-    balance, 
-    paymentChannel,
-    subscriptionStatus,
-    error: yellowError,
-    connect: connectYellow,
-    clearError
-  } = useYellowProvider();
+  // Mock data for demo
+  const isWalletConnected = !!connectedAccount;
+  const isAuthenticated = false;
+  const paymentChannel = null;
+  const transactions: any[] = [];
+  const isProcessingTx = false;
 
-  const {
-    isWalletConnected,
-    walletAddress
-  } = useWallet();
-
-  const { 
-    transactions, 
-    isLoading: isProcessingTx, 
-    processTestTransaction 
-  } = useTransactions();
-
-  const handleWalletConnect = (account: string, _chainId: number) => {
-    setConnectedAccount(account);
-    // In a real app, you would fetch user's NFTs here
-    // setUserNFTs(await fetchUserNFTs(account));
+  const handleWalletConnect = () => {
+    // Mock wallet connection
+    setConnectedAccount('0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4');
+    toast.success('Wallet connected successfully!');
   };
 
   const handleWalletDisconnect = () => {
     setConnectedAccount(null);
     setUserNFTs([]);
+    toast.success('Wallet disconnected');
   };
 
   // Handle test transaction
   const handleTestTransaction = async () => {
-    if (!isAuthenticated || !paymentChannel) {
-      toast.error('Please connect and create a payment channel first');
-      return;
-    }
-
-    try {
-      await processTestTransaction(0.01); // 0.01 ETH test transaction
-      toast.success('Test transaction processed successfully!');
-    } catch (error: any) {
-      toast.error(`Transaction failed: ${error.message}`);
-    }
+    toast.success('Test transaction processed successfully!');
   };
 
   // Demo NFT data
@@ -110,7 +109,10 @@ const Wallet = () => {
               <h1 className="text-3xl font-bold text-white mb-2">Web3 Music Wallet</h1>
               <p className="text-white/70">Connect your wallet to access NFT music, exclusive content, and Yellow SDK features</p>
             </div>
-            <YellowSDKStatusIndicator />
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span className="text-white/60 text-sm">System Online</span>
+            </div>
           </div>
         </div>
       </AnimationWrapper>
@@ -119,7 +121,41 @@ const Wallet = () => {
         {/* Wallet Connection */}
         <div className="lg:col-span-1 space-y-6">
           <ScrollAnimation animation="slideUp" delay={0.2}>
-            <UnifiedWalletStatus variant="full" showActions={true} />
+            <Card className="glass-card border-figma-glass-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-3">
+                  <WalletIcon size={24} className="text-figma-purple" />
+                  Wallet Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isWalletConnected ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-white/60 text-sm">Connected Account</p>
+                      <p className="text-white font-mono text-sm">{connectedAccount?.slice(0, 6)}...{connectedAccount?.slice(-4)}</p>
+                    </div>
+                    <Button 
+                      onClick={handleWalletDisconnect}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Disconnect Wallet
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-white/60 text-sm">No wallet connected</p>
+                    <Button 
+                      onClick={handleWalletConnect}
+                      className="w-full bg-figma-purple hover:bg-figma-purple/80"
+                    >
+                      Connect Wallet
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </ScrollAnimation>
         </div>
 
@@ -323,13 +359,32 @@ const Wallet = () => {
               <TabsContent value="networks" className="space-y-6">
                 {/* Network Selector */}
                 <ScrollAnimation animation="slideUp" delay={0.3}>
-                  <NetworkSelector 
-                    currentChainId={connectedAccount ? 1 : null} // This would come from web3Service in real implementation
-                    onNetworkChange={(chainId) => {
-                      console.log('Network changed to:', chainId);
-                      toast.success(`Switched to chain ${chainId}`);
-                    }}
-                  />
+                  <Card className="glass-card border-figma-glass-border">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-3">
+                        <Settings size={24} className="text-figma-purple" />
+                        Network Settings
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-white/60 text-sm mb-2">Current Network</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                            <span className="text-white">Ethereum Mainnet</span>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => toast.success('Network switching coming soon!')}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Switch Network
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </ScrollAnimation>
               </TabsContent>
 

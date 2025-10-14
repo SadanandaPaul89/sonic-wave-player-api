@@ -1,8 +1,8 @@
 // Enhanced Music Service with IPFS Integration
 import { Track, Artist, Album } from './api';
 import { simpleIPFSService as ipfsService, AudioFileStructure, MusicMetadata } from './ipfsServiceSimple';
-import { web3Service } from './web3Service';
 import { getTopTracks } from './supabaseService';
+import { pinataLibraryService } from './pinataLibraryService';
 
 interface NetworkQuality {
   connection: 'slow' | 'medium' | 'fast';
@@ -79,24 +79,10 @@ class MusicService {
     return await ipfsService.getOptimalGatewayUrl(ipfsHash);
   }
 
-  // Check if user has access to track (for NFT-gated content)
+  // Check if user has access to track (simplified - no NFT gating)
   async checkTrackAccess(track: Track): Promise<boolean> {
-    // If track is not NFT-gated, allow access
-    if (!track.nft) {
-      return true;
-    }
-
-    // Check NFT ownership
-    const currentAccount = web3Service.getCurrentAccount();
-    if (!currentAccount) {
-      return false;
-    }
-
-    return await web3Service.checkNFTOwnership(
-      track.nft.contractAddress,
-      track.nft.tokenId,
-      currentAccount
-    );
+    // All tracks are accessible without NFT gating
+    return true;
   }
 
   // Upload track to IPFS
@@ -155,8 +141,8 @@ class MusicService {
     }
   }
 
-  // Create NFT-gated track
-  async createNFTTrack(
+  // Create regular track (NFT functionality removed)
+  async createRegularTrack(
     audioFile: File,
     metadata: {
       title: string;
@@ -165,19 +151,9 @@ class MusicService {
       genre?: string;
       year?: number;
       artwork?: string;
-    },
-    nftData: {
-      contractAddress: string;
-      tokenId: string;
-      isExclusive: boolean;
     }
   ): Promise<Track> {
-    const track = await this.uploadTrack(audioFile, metadata);
-    
-    // Add NFT data
-    track.nft = nftData;
-    
-    return track;
+    return await this.uploadTrack(audioFile, metadata);
   }
 
   // Get tracks from Supabase database (replacing demo tracks)
@@ -232,11 +208,12 @@ class MusicService {
     }
   }
 
-  // Get all tracks (IPFS + traditional + user uploads) - ALL TAGGED AS IPFS
+  // Get all tracks (Pinata + IPFS + traditional + user uploads) - ALL TAGGED AS IPFS
   async getAllTracks(): Promise<Track[]> {
     try {
       // Get all track sources
-      const [demoTracks, userTracks] = await Promise.all([
+      const [pinataTracks, demoTracks, userTracks] = await Promise.all([
+        pinataLibraryService.getAllTracks(),
         this.getIPFSTracks(),
         this.getUserUploadedTracks()
       ]);
@@ -244,8 +221,8 @@ class MusicService {
       // Get traditional tracks (from existing API) and tag them as IPFS
       const traditionalTracks: Track[] = await this.getTraditionalTracksAsIPFS();
       
-      // Combine all sources (user uploads first, then demo, then traditional)
-      return [...userTracks, ...demoTracks, ...traditionalTracks];
+      // Combine all sources (Pinata tracks first, then user uploads, then demo, then traditional)
+      return [...pinataTracks, ...userTracks, ...demoTracks, ...traditionalTracks];
     } catch (error) {
       console.error('Error fetching tracks:', error);
       return [];
@@ -357,22 +334,35 @@ class MusicService {
     return genres[Math.floor(Math.random() * genres.length)];
   }
 
-  // Search tracks (including IPFS)
+  // Search tracks (including Pinata and IPFS)
   async searchTracks(query: string): Promise<Track[]> {
-    const allTracks = await this.getAllTracks();
-    
-    return allTracks.filter(track => 
-      track.name.toLowerCase().includes(query.toLowerCase()) ||
-      track.artistName.toLowerCase().includes(query.toLowerCase()) ||
-      track.albumName.toLowerCase().includes(query.toLowerCase()) ||
-      (track.ipfs?.metadata.genre && track.ipfs.metadata.genre.toLowerCase().includes(query.toLowerCase()))
-    );
+    try {
+      // Search Pinata tracks first (they're the real uploaded files)
+      const pinataResults = await pinataLibraryService.searchTracks(query);
+      
+      // Search other tracks
+      const allTracks = await this.getAllTracks();
+      const otherResults = allTracks.filter(track => 
+        !track.id.startsWith('pinata-') && ( // Exclude Pinata tracks to avoid duplicates
+          track.name.toLowerCase().includes(query.toLowerCase()) ||
+          track.artistName.toLowerCase().includes(query.toLowerCase()) ||
+          track.albumName.toLowerCase().includes(query.toLowerCase()) ||
+          (track.ipfs?.metadata.genre && track.ipfs.metadata.genre.toLowerCase().includes(query.toLowerCase()))
+        )
+      );
+      
+      // Combine results (Pinata first)
+      return [...pinataResults, ...otherResults];
+    } catch (error) {
+      console.error('Error searching tracks:', error);
+      return [];
+    }
   }
 
   // Get user uploaded tracks from local storage
   async getUserUploadedTracks(): Promise<Track[]> {
     try {
-      const cachedFiles = ipfsService.getCachedFiles();
+      const cachedFiles = await ipfsService.getCachedFiles();
       const userTracks: Track[] = [];
 
       for (const file of cachedFiles) {
@@ -441,17 +431,18 @@ class MusicService {
     }
   }
 
-  // Get featured IPFS tracks (including user uploads)
+  // Get featured IPFS tracks (including Pinata and user uploads)
   async getFeaturedIPFSTracks(): Promise<Track[]> {
     try {
-      // Get both demo tracks and user uploads
-      const [demoTracks, userTracks] = await Promise.all([
+      // Get all track sources
+      const [pinataTracks, demoTracks, userTracks] = await Promise.all([
+        pinataLibraryService.getAllTracks(),
         this.getIPFSTracks(),
         this.getUserUploadedTracks()
       ]);
 
-      // Combine user uploads first (they appear at the top), then demo tracks
-      const allTracks = [...userTracks, ...demoTracks];
+      // Combine Pinata tracks first (real uploads), then user uploads, then demo tracks
+      const allTracks = [...pinataTracks, ...userTracks, ...demoTracks];
       
       return allTracks.slice(0, 10); // Return first 10 as featured
     } catch (error) {
@@ -460,10 +451,140 @@ class MusicService {
     }
   }
 
-  // Get NFT tracks
-  async getNFTTracks(): Promise<Track[]> {
+  // Get featured tracks (NFT functionality removed)
+  async getFeaturedTracks(): Promise<Track[]> {
     const allTracks = await this.getAllTracks();
-    return allTracks.filter(track => track.nft);
+    return allTracks.slice(0, 10); // Return first 10 as featured
+  }
+
+  // Get all albums (including Pinata albums)
+  async getAllAlbums(): Promise<Album[]> {
+    try {
+      const pinataAlbums = await pinataLibraryService.getAllAlbums();
+      
+      // Create albums from other tracks
+      const allTracks = await this.getAllTracks();
+      const otherTracks = allTracks.filter(track => !track.id.startsWith('pinata-'));
+      
+      const albumMap = new Map<string, Album>();
+      
+      // Add Pinata albums first
+      pinataAlbums.forEach(album => {
+        albumMap.set(album.id, album);
+      });
+      
+      // Process other tracks into albums
+      for (const track of otherTracks) {
+        if (!albumMap.has(track.albumId)) {
+          const albumTracks = otherTracks.filter(t => t.albumId === track.albumId);
+          const album: Album = {
+            id: track.albumId,
+            name: track.albumName,
+            artistName: track.artistName,
+            artistId: track.artistId || '',
+            image: track.image || '',
+            releaseDate: new Date().toISOString()
+          };
+          albumMap.set(album.id, album);
+        }
+      }
+      
+      return Array.from(albumMap.values());
+    } catch (error) {
+      console.error('Error getting albums:', error);
+      return [];
+    }
+  }
+
+  // Get all artists (including Pinata artists)
+  async getAllArtists(): Promise<Artist[]> {
+    try {
+      const pinataArtists = await pinataLibraryService.getAllArtists();
+      
+      // Create artists from other tracks
+      const allTracks = await this.getAllTracks();
+      const otherTracks = allTracks.filter(track => !track.id.startsWith('pinata-'));
+      
+      const artistMap = new Map<string, Artist>();
+      
+      // Add Pinata artists first
+      pinataArtists.forEach(artist => {
+        artistMap.set(artist.id, artist);
+      });
+      
+      // Process other tracks into artists
+      for (const track of otherTracks) {
+        if (!artistMap.has(track.artistId)) {
+          const artistTracks = otherTracks.filter(t => t.artistId === track.artistId);
+          const artist: Artist = {
+            id: track.artistId || '',
+            name: track.artistName,
+            image: track.image || '',
+            type: 'artist'
+          };
+          artistMap.set(artist.id, artist);
+        }
+      }
+      
+      return Array.from(artistMap.values());
+    } catch (error) {
+      console.error('Error getting artists:', error);
+      return [];
+    }
+  }
+
+  // Get tracks by album (including Pinata)
+  async getTracksByAlbum(albumName: string): Promise<Track[]> {
+    try {
+      const pinataTracks = await pinataLibraryService.getTracksByAlbum(albumName);
+      const allTracks = await this.getAllTracks();
+      const otherTracks = allTracks.filter(track => 
+        !track.id.startsWith('pinata-') && 
+        track.albumName.toLowerCase() === albumName.toLowerCase()
+      );
+      
+      return [...pinataTracks, ...otherTracks];
+    } catch (error) {
+      console.error('Error getting tracks by album:', error);
+      return [];
+    }
+  }
+
+  // Get tracks by artist (including Pinata)
+  async getTracksByArtist(artistName: string): Promise<Track[]> {
+    try {
+      const pinataTracks = await pinataLibraryService.getTracksByArtist(artistName);
+      const allTracks = await this.getAllTracks();
+      const otherTracks = allTracks.filter(track => 
+        !track.id.startsWith('pinata-') && 
+        track.artistName.toLowerCase() === artistName.toLowerCase()
+      );
+      
+      return [...pinataTracks, ...otherTracks];
+    } catch (error) {
+      console.error('Error getting tracks by artist:', error);
+      return [];
+    }
+  }
+
+  // Refresh Pinata library
+  async refreshPinataLibrary(): Promise<void> {
+    try {
+      await pinataLibraryService.refresh();
+      console.log('✅ Pinata library refreshed');
+    } catch (error) {
+      console.error('Error refreshing Pinata library:', error);
+    }
+  }
+
+  // Get library statistics
+  getLibraryStats() {
+    const pinataStats = pinataLibraryService.getStats();
+    return {
+      pinata: pinataStats,
+      networkQuality: this.networkQuality,
+      totalSources: 4 // Pinata + User uploads + Demo + Traditional
+    };
   }
 
   // Get current network quality

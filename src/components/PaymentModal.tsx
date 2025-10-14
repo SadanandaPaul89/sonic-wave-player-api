@@ -24,10 +24,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePayment } from '@/hooks/usePayment';
-import { useYellowSDK } from '@/hooks/useYellowSDK';
 import { PaymentOption, PaymentResult } from '@/services/paymentService';
 import { toast } from 'sonner';
-import UnifiedWalletStatus from '@/components/UnifiedWalletStatus';
 import { useWallet } from '@/contexts/WalletContext';
 
 interface PaymentModalProps {
@@ -47,7 +45,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   contentArtist,
   onPaymentSuccess
 }) => {
-  const { session, isAuthenticated, isConnected, connect, isConnecting } = useYellowSDK();
+  // Mock Yellow SDK data since it's been removed
+  const session = null;
+  const isAuthenticated = false;
+  const isConnected = false;
+  const connect = async () => {};
+  const isConnecting = false;
   const { 
     getPaymentOptions, 
     processPayment, 
@@ -206,7 +209,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         </DialogHeader>
 
         {/* Wallet Status */}
-        <UnifiedWalletStatus variant="compact" showActions={true} />
+        <Card className="glass-card border-figma-glass-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wallet size={16} className="text-figma-purple" />
+                <span className="text-white text-sm">Wallet Status</span>
+              </div>
+              <Badge variant="secondary" className="bg-red-500/20 text-red-400">
+                Not Connected
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="space-y-4">
           {/* Loading State */}

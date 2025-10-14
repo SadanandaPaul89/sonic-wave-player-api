@@ -5,8 +5,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { getAuthService, isUsingLocalAuth } from "./config/auth";
 import { ThemeProvider } from "./components/ThemeProvider";
-import { YellowProvider, YellowErrorBoundary } from "./providers/YellowProvider";
+import { PlayerProvider } from "./contexts/PlayerContext";
 import { WalletProvider } from "./contexts/WalletContext";
+import { YellowProvider } from "./providers/YellowProvider";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -18,13 +20,14 @@ import PublishSong from "./pages/PublishSong";
 import ArtistRegistration from "./pages/ArtistRegistration";
 import AdminPanel from "./pages/AdminPanel";
 import Auth from "./pages/Auth";
+import "./services/pinataQuickTest"; // Make quickPinataTest available globally
 import NotFound from "./pages/NotFound";
 import ShareTrack from "./pages/ShareTrack";
 import AboutUs from "./pages/AboutUs";
 import Artists from "./pages/Artists";
 import ProfilePage from "./pages/ProfilePage";
 import Wallet from "./pages/Wallet";
-import IPFSDemo from "./pages/IPFSDemo";
+
 import Leaderboard from "./pages/Leaderboard";
 import { toast } from "@/hooks/use-toast";
 
@@ -64,10 +67,13 @@ function App() {
     const initializeAuth = async () => {
       try {
         setLoading(true);
+        console.log("Starting auth initialization...");
         const authService = await getAuthService();
+        console.log("Auth service obtained");
         const { data, error } = await authService.getSession();
         if (error) {
           console.error("Error getting session:", error);
+          setLoading(false);
           return;
         }
         console.log("Initial session check:", data.session ? "Session found" : "No session");
@@ -75,6 +81,8 @@ function App() {
         setSession(data.session);
       } catch (error) {
         console.error("Error in auth initialization:", error);
+        // Set session to null to show auth page instead of infinite loading
+        setSession(null);
       } finally {
         setLoading(false);
       }
@@ -107,20 +115,21 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="text-lg text-white">Loading...</div>
       </div>
     );
   }
 
   return (
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WalletProvider>
-            <YellowErrorBoundary>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WalletProvider>
               <YellowProvider autoConnect={true} enableToasts={true}>
-                <BrowserRouter>
+                <PlayerProvider>
+              <BrowserRouter>
                 <Routes>
                   <Route path="/auth" element={!session ? <Auth /> : <Navigate to="/" replace />} />
                   <Route path="/share/:trackId" element={<ShareTrack />} />
@@ -156,18 +165,19 @@ function App() {
                     )
                   } />
                   <Route path="/wallet" element={session ? <Layout><Wallet /></Layout> : <Navigate to="/auth" replace />} />
-                  <Route path="/ipfs-demo" element={session ? <Layout><IPFSDemo /></Layout> : <Navigate to="/auth" replace />} />
+
                   <Route path="/leaderboard" element={session ? <Layout><Leaderboard /></Layout> : <Navigate to="/auth" replace />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
-            </YellowProvider>
-          </YellowErrorBoundary>
-          <Toaster />
-          </WalletProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+              <Toaster />
+                </PlayerProvider>
+              </YellowProvider>
+            </WalletProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

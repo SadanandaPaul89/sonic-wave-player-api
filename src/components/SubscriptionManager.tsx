@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useYellowSDK } from '@/hooks/useYellowSDK';
 import { SubscriptionTier } from '@/services/subscriptionService';
 import { toast } from 'sonner';
 
@@ -29,7 +28,12 @@ interface SubscriptionManagerProps {
 }
 
 const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({ className = '' }) => {
-  const { isAuthenticated, session, isConnected, connect, isConnecting } = useYellowSDK();
+  // Mock Yellow SDK data since it's been removed
+  const isAuthenticated = false;
+  const session = null;
+  const isConnected = false;
+  const connect = async () => {};
+  const isConnecting = false;
   const {
     availableTiers,
     currentSubscription,

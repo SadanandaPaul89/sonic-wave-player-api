@@ -168,14 +168,28 @@ class IPFSService {
   }
 
   private validateFile(file: File) {
-    const validTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/aac', 'audio/ogg', 'audio/mp4'];
+    const audioTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/aac', 'audio/ogg', 'audio/mp4'];
+    const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = [...audioTypes, ...imageTypes];
+    
     if (!validTypes.includes(file.type)) {
       throw new Error(`Invalid file type: ${file.type}. Supported types: ${validTypes.join(', ')}`);
     }
 
-    const maxSize = 100 * 1024 * 1024; // 100MB
-    if (file.size > maxSize) {
-      throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size: 100MB`);
+    // Different size limits for different file types
+    const isAudio = audioTypes.includes(file.type);
+    const isImage = imageTypes.includes(file.type);
+    
+    if (isAudio) {
+      const maxAudioSize = 100 * 1024 * 1024; // 100MB for audio
+      if (file.size > maxAudioSize) {
+        throw new Error(`Audio file too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size: 100MB`);
+      }
+    } else if (isImage) {
+      const maxImageSize = 10 * 1024 * 1024; // 10MB for images
+      if (file.size > maxImageSize) {
+        throw new Error(`Image file too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size: 10MB`);
+      }
     }
   }
 
@@ -204,12 +218,21 @@ class IPFSService {
     });
     formData.append('pinataOptions', options);
 
+    // Use JWT authentication if available, fallback to API key/secret
+    const headers: Record<string, string> = {};
+    
+    if (IPFS_CONFIG.pinata.jwt) {
+      headers['Authorization'] = `Bearer ${IPFS_CONFIG.pinata.jwt}`;
+    } else if (IPFS_CONFIG.pinata.apiKey && IPFS_CONFIG.pinata.secretKey) {
+      headers['pinata_api_key'] = IPFS_CONFIG.pinata.apiKey;
+      headers['pinata_secret_api_key'] = IPFS_CONFIG.pinata.secretKey;
+    } else {
+      throw new Error('No Pinata authentication credentials available');
+    }
+
     const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
-      headers: {
-        'pinata_api_key': IPFS_CONFIG.pinata.apiKey,
-        'pinata_secret_api_key': IPFS_CONFIG.pinata.secretKey,
-      },
+      headers,
       body: formData
     });
 
@@ -360,15 +383,24 @@ class IPFSService {
   }
 
   async pinFile(ipfsHash: string): Promise<void> {
-    if (IPFS_CONFIG.pinata.apiKey && IPFS_CONFIG.pinata.secretKey) {
+    // Check if we have any Pinata credentials
+    if (IPFS_CONFIG.pinata.jwt || (IPFS_CONFIG.pinata.apiKey && IPFS_CONFIG.pinata.secretKey)) {
       try {
+        // Use JWT authentication if available, fallback to API key/secret
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (IPFS_CONFIG.pinata.jwt) {
+          headers['Authorization'] = `Bearer ${IPFS_CONFIG.pinata.jwt}`;
+        } else {
+          headers['pinata_api_key'] = IPFS_CONFIG.pinata.apiKey;
+          headers['pinata_secret_api_key'] = IPFS_CONFIG.pinata.secretKey;
+        }
+
         const response = await fetch('https://api.pinata.cloud/pinning/pinByHash', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'pinata_api_key': IPFS_CONFIG.pinata.apiKey,
-            'pinata_secret_api_key': IPFS_CONFIG.pinata.secretKey,
-          },
+          headers,
           body: JSON.stringify({
             hashToPin: ipfsHash,
             pinataMetadata: {
@@ -395,14 +427,22 @@ class IPFSService {
   }
 
   async unpinFile(ipfsHash: string): Promise<void> {
-    if (IPFS_CONFIG.pinata.apiKey && IPFS_CONFIG.pinata.secretKey) {
+    // Check if we have any Pinata credentials
+    if (IPFS_CONFIG.pinata.jwt || (IPFS_CONFIG.pinata.apiKey && IPFS_CONFIG.pinata.secretKey)) {
       try {
+        // Use JWT authentication if available, fallback to API key/secret
+        const headers: Record<string, string> = {};
+        
+        if (IPFS_CONFIG.pinata.jwt) {
+          headers['Authorization'] = `Bearer ${IPFS_CONFIG.pinata.jwt}`;
+        } else {
+          headers['pinata_api_key'] = IPFS_CONFIG.pinata.apiKey;
+          headers['pinata_secret_api_key'] = IPFS_CONFIG.pinata.secretKey;
+        }
+
         const response = await fetch(`https://api.pinata.cloud/pinning/unpin/${ipfsHash}`, {
           method: 'DELETE',
-          headers: {
-            'pinata_api_key': IPFS_CONFIG.pinata.apiKey,
-            'pinata_secret_api_key': IPFS_CONFIG.pinata.secretKey,
-          }
+          headers
         });
 
         if (!response.ok) {
@@ -561,6 +601,19 @@ class IPFSService {
       default:
         return 'MP3';
     }
+  }
+
+  // Upload artwork/image to IPFS
+  async uploadArtwork(imageFile: File, onProgress?: (progress: IPFSUploadProgress) => void): Promise<string> {
+    const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    
+    if (!imageTypes.includes(imageFile.type)) {
+      throw new Error(`Invalid image type: ${imageFile.type}. Supported types: ${imageTypes.join(', ')}`);
+    }
+
+    console.log('Uploading artwork:', imageFile.name, imageFile.type, `${(imageFile.size / 1024).toFixed(2)} KB`);
+    
+    return await this.uploadFile(imageFile, onProgress);
   }
 
   // Upload metadata to IPFS

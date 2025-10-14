@@ -1,285 +1,156 @@
-// React hook for Yellow SDK integration
-
+// Mock useYellowSDK Hook - Replacement for removed Yellow SDK
 import { useState, useEffect, useCallback } from 'react';
 import { yellowSDKService } from '@/services/yellowSDKService';
-import { 
-  UserSession, 
-  PaymentChannel, 
-  Transaction, 
-  SubscriptionStatus,
-  ErrorMessage 
-} from '@/types/yellowSDK';
+import { UserSession, Transaction } from '@/types/yellowSDK';
 
 interface YellowSDKState {
   isConnected: boolean;
   isAuthenticated: boolean;
-  isConnecting: boolean;
   session: UserSession | null;
-  balance: number;
-  paymentChannel: PaymentChannel | null;
+  isLoading: boolean;
   error: string | null;
-  lastTransaction: Transaction | null;
+  transactions: Transaction[];
 }
 
-interface YellowSDKActions {
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  authenticate: (walletAddress: string, signature: string) => Promise<UserSession>;
-  createPaymentChannel: () => Promise<PaymentChannel>;
-  processTransaction: (amount: number, contentId: string, type?: Transaction['type']) => Promise<Transaction>;
-  settleChannel: () => Promise<void>;
-  clearError: () => void;
-}
-
-export const useYellowSDK = (): YellowSDKState & YellowSDKActions => {
+export const useYellowSDK = () => {
   const [state, setState] = useState<YellowSDKState>({
     isConnected: false,
     isAuthenticated: false,
-    isConnecting: false,
     session: null,
-    balance: 0,
-    paymentChannel: null,
+    isLoading: false,
     error: null,
-    lastTransaction: null
+    transactions: []
   });
 
-  // Update state from service
-  const updateStateFromService = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      isConnected: yellowSDKService.getConnectionStatus(),
-      isAuthenticated: yellowSDKService.getAuthenticationStatus(),
-      session: yellowSDKService.getCurrentSession(),
-      balance: yellowSDKService.getBalance(),
-      paymentChannel: yellowSDKService.getCurrentSession()?.paymentChannel || null
-    }));
-  }, []);
-
-  // Event handlers
-  const handleConnected = useCallback(() => {
-    console.log('Yellow SDK connected');
-    setState(prev => ({
-      ...prev,
-      isConnected: true,
-      isConnecting: false,
-      error: null
-    }));
-  }, []);
-
-  const handleDisconnected = useCallback(() => {
-    console.log('Yellow SDK disconnected');
-    setState(prev => ({
-      ...prev,
-      isConnected: false,
-      isAuthenticated: false,
-      isConnecting: false,
-      session: null,
-      balance: 0,
-      paymentChannel: null
-    }));
-  }, []);
-
-  const handleAuthenticated = useCallback((session: UserSession) => {
-    console.log('Yellow SDK authenticated:', session.walletAddress);
-    setState(prev => ({
-      ...prev,
-      isAuthenticated: true,
-      session,
-      balance: session.balance,
-      error: null
-    }));
-  }, []);
-
-  const handleChannelCreated = useCallback((channel: PaymentChannel) => {
-    console.log('Payment channel created:', channel.channelId);
-    setState(prev => ({
-      ...prev,
-      paymentChannel: channel,
-      balance: channel.balance
-    }));
-  }, []);
-
-  const handleChannelUpdated = useCallback((channel: PaymentChannel) => {
-    console.log('Payment channel updated:', channel.channelId);
-    setState(prev => ({
-      ...prev,
-      paymentChannel: channel,
-      balance: channel.balance
-    }));
-  }, []);
-
-  const handleTransactionProcessed = useCallback((transaction: Transaction) => {
-    console.log('Transaction processed:', transaction.id);
-    setState(prev => ({
-      ...prev,
-      lastTransaction: transaction,
-      balance: prev.session ? prev.session.balance : prev.balance
-    }));
-  }, []);
-
-  const handleSubscriptionUpdated = useCallback((subscription: SubscriptionStatus) => {
-    console.log('Subscription updated:', subscription);
-    setState(prev => ({
-      ...prev,
-      session: prev.session ? {
-        ...prev.session,
-        subscriptionStatus: subscription
-      } : null
-    }));
-  }, []);
-
-  const handleError = useCallback((error: ErrorMessage) => {
-    console.error('Yellow SDK error:', error);
-    setState(prev => ({
-      ...prev,
-      error: error.payload.message,
-      isConnecting: false
-    }));
-  }, []);
-
-  // Setup event listeners
-  useEffect(() => {
-    yellowSDKService.on('connected', handleConnected);
-    yellowSDKService.on('disconnected', handleDisconnected);
-    yellowSDKService.on('authenticated', handleAuthenticated);
-    yellowSDKService.on('channelCreated', handleChannelCreated);
-    yellowSDKService.on('channelUpdated', handleChannelUpdated);
-    yellowSDKService.on('transactionProcessed', handleTransactionProcessed);
-    yellowSDKService.on('subscriptionUpdated', handleSubscriptionUpdated);
-    yellowSDKService.on('error', handleError);
-
-    // Initial state sync
-    updateStateFromService();
-
-    return () => {
-      yellowSDKService.off('connected', handleConnected);
-      yellowSDKService.off('disconnected', handleDisconnected);
-      yellowSDKService.off('authenticated', handleAuthenticated);
-      yellowSDKService.off('channelCreated', handleChannelCreated);
-      yellowSDKService.off('channelUpdated', handleChannelUpdated);
-      yellowSDKService.off('transactionProcessed', handleTransactionProcessed);
-      yellowSDKService.off('subscriptionUpdated', handleSubscriptionUpdated);
-      yellowSDKService.off('error', handleError);
-    };
-  }, [
-    handleConnected,
-    handleDisconnected,
-    handleAuthenticated,
-    handleChannelCreated,
-    handleChannelUpdated,
-    handleTransactionProcessed,
-    handleSubscriptionUpdated,
-    handleError,
-    updateStateFromService
-  ]);
-
-  // Actions
+  // Initialize connection
   const connect = useCallback(async () => {
-    if (state.isConnected || state.isConnecting) {
-      return;
-    }
-
-    setState(prev => ({ ...prev, isConnecting: true, error: null }));
-
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    
     try {
       await yellowSDKService.initializeConnection();
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        isConnecting: false,
-        error: error.message || 'Failed to connect to Yellow SDK'
+      setState(prev => ({ 
+        ...prev, 
+        isConnected: true, 
+        isLoading: false 
       }));
-      throw error;
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Connection failed',
+        isLoading: false 
+      }));
     }
-  }, [state.isConnected, state.isConnecting]);
-
-  const disconnect = useCallback(() => {
-    yellowSDKService.disconnect();
   }, []);
 
-  const authenticate = useCallback(async (walletAddress: string, signature: string) => {
-    if (!state.isConnected) {
-      throw new Error('Not connected to Yellow SDK');
-    }
-
+  // Authenticate user
+  const authenticate = useCallback(async (walletAddress: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    
     try {
-      const session = await yellowSDKService.authenticateUser(walletAddress, signature);
-      return session;
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message || 'Authentication failed'
+      const session = await yellowSDKService.authenticateUser(walletAddress);
+      setState(prev => ({ 
+        ...prev, 
+        isAuthenticated: true,
+        session,
+        isLoading: false 
       }));
-      throw error;
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Authentication failed',
+        isLoading: false 
+      }));
     }
-  }, [state.isConnected]);
+  }, []);
 
-  const createPaymentChannel = useCallback(async () => {
-    if (!state.isAuthenticated) {
-      throw new Error('User not authenticated');
-    }
-
+  // Disconnect
+  const disconnect = useCallback(async () => {
     try {
-      const channel = await yellowSDKService.createPaymentChannel();
-      return channel;
+      await yellowSDKService.disconnect();
+      setState({
+        isConnected: false,
+        isAuthenticated: false,
+        session: null,
+        isLoading: false,
+        error: null,
+        transactions: []
+      });
     } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message || 'Failed to create payment channel'
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Disconnect failed'
       }));
-      throw error;
     }
-  }, [state.isAuthenticated]);
+  }, []);
 
+  // Process transaction
   const processTransaction = useCallback(async (
-    amount: number, 
-    contentId: string, 
-    type: Transaction['type'] = 'payment'
+    amount: number,
+    contentId: string,
+    metadata?: any
   ) => {
-    if (!state.paymentChannel) {
-      throw new Error('No active payment channel');
-    }
-
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    
     try {
-      const transaction = await yellowSDKService.processTransaction(amount, contentId, type);
+      const transaction = await yellowSDKService.processTransaction(amount, contentId, metadata);
+      setState(prev => ({ 
+        ...prev, 
+        transactions: [...prev.transactions, transaction],
+        isLoading: false 
+      }));
       return transaction;
     } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message || 'Transaction failed'
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Transaction failed',
+        isLoading: false 
       }));
       throw error;
     }
-  }, [state.paymentChannel]);
+  }, []);
 
-  const settleChannel = useCallback(async () => {
-    if (!state.paymentChannel) {
-      throw new Error('No active payment channel');
-    }
+  // Set up event listeners
+  useEffect(() => {
+    const handleConnected = () => {
+      setState(prev => ({ ...prev, isConnected: true }));
+    };
 
-    try {
-      await yellowSDKService.settleChannel();
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error.message || 'Channel settlement failed'
+    const handleAuthenticated = (session: UserSession) => {
+      setState(prev => ({ ...prev, isAuthenticated: true, session }));
+    };
+
+    const handleDisconnected = () => {
+      setState(prev => ({ 
+        ...prev, 
+        isConnected: false, 
+        isAuthenticated: false, 
+        session: null 
       }));
-      throw error;
-    }
-  }, [state.paymentChannel]);
+    };
 
-  const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    const handleTransactionCompleted = (transaction: Transaction) => {
+      setState(prev => ({ 
+        ...prev, 
+        transactions: [...prev.transactions, transaction] 
+      }));
+    };
+
+    yellowSDKService.on('connected', handleConnected);
+    yellowSDKService.on('authenticated', handleAuthenticated);
+    yellowSDKService.on('disconnected', handleDisconnected);
+    yellowSDKService.on('transactionCompleted', handleTransactionCompleted);
+
+    // Cleanup function would remove listeners in a real implementation
+    return () => {
+      // In a real implementation, we'd remove the listeners here
+    };
   }, []);
 
   return {
     ...state,
     connect,
-    disconnect,
     authenticate,
-    createPaymentChannel,
-    processTransaction,
-    settleChannel,
-    clearError
+    disconnect,
+    processTransaction
   };
 };

@@ -115,15 +115,29 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   useEffect(() => {
     initializeWalletState();
     setupEventListeners();
+    
+    // Set up periodic connection status check
+    const statusCheckInterval = setInterval(() => {
+      checkConnectionStatus();
+    }, 5000); // Check every 5 seconds
+    
+    return () => {
+      clearInterval(statusCheckInterval);
+    };
   }, []);
 
   const initializeWalletState = useCallback(async () => {
     try {
+      console.log('WalletContext: Initializing wallet state...');
+      
       // Check existing wallet connection
       const walletAddress = web3Service.getCurrentAccount();
       const chainId = web3Service.getCurrentChainId();
+      const isWalletConnected = web3Service.isWalletConnected();
       
-      if (walletAddress && chainId) {
+      console.log('WalletContext: Initial wallet state:', { walletAddress, chainId, isWalletConnected });
+      
+      if (walletAddress && chainId && isWalletConnected) {
         setState(prev => ({
           ...prev,
           isWalletConnected: true,
@@ -159,43 +173,127 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         // Initialize user role and NFT minting status
         await initializeUserRole(walletAddress);
         await initializeNFTMintingStatus(walletAddress);
+      } else {
+        // Ensure we're in disconnected state
+        setState(prev => ({
+          ...prev,
+          isWalletConnected: false,
+          walletAddress: null,
+          chainId: null,
+          balance: '0'
+        }));
       }
     } catch (error) {
       console.error('Error initializing wallet state:', error);
+      setState(prev => ({
+        ...prev,
+        error: 'Failed to initialize wallet state'
+      }));
     }
   }, []);
+
+  // Check connection status periodically
+  const checkConnectionStatus = useCallback(async () => {
+    try {
+      const walletAddress = web3Service.getCurrentAccount();
+      const chainId = web3Service.getCurrentChainId();
+      const isWalletConnected = web3Service.isWalletConnected();
+      
+      // Only update if there's a mismatch
+      if (state.isWalletConnected !== isWalletConnected || 
+          state.walletAddress !== walletAddress || 
+          state.chainId !== chainId) {
+        
+        console.log('WalletContext: Connection status mismatch detected, syncing...');
+        
+        if (isWalletConnected && walletAddress && chainId) {
+          setState(prev => ({
+            ...prev,
+            isWalletConnected: true,
+            walletAddress,
+            chainId
+          }));
+          
+          // Refresh balance if needed
+          if (state.walletAddress !== walletAddress) {
+            await refreshBalance();
+          }
+        } else {
+          setState(prev => ({
+            ...prev,
+            isWalletConnected: false,
+            walletAddress: null,
+            chainId: null,
+            balance: '0'
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+    }
+  }, [state.isWalletConnected, state.walletAddress, state.chainId]);
 
   const setupEventListeners = useCallback(() => {
     // Web3 wallet events
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
+        console.log('WalletContext: Accounts changed:', accounts);
         if (accounts.length === 0) {
+          console.log('WalletContext: No accounts, disconnecting all');
           handleDisconnectAll();
         } else {
           const newAddress = accounts[0];
+          console.log('WalletContext: Account switched to:', newAddress);
           setState(prev => ({
             ...prev,
-            walletAddress: newAddress
+            walletAddress: newAddress,
+            isWalletConnected: true
           }));
           
           // Refresh all wallet-dependent data
-          await refreshBalance();
-          await initializeUserRole(newAddress);
-          await initializeNFTMintingStatus(newAddress);
+          try {
+            await refreshBalance();
+            await initializeUserRole(newAddress);
+            await initializeNFTMintingStatus(newAddress);
+          } catch (error) {
+            console.error('Error refreshing wallet data after account change:', error);
+          }
         }
       };
 
-      const handleChainChanged = (chainId: string) => {
+      const handleChainChanged = async (chainId: string) => {
         const newChainId = parseInt(chainId, 16);
+        console.log('WalletContext: Chain changed to:', newChainId);
         setState(prev => ({
           ...prev,
           chainId: newChainId
         }));
-        refreshBalance();
+        
+        try {
+          await refreshBalance();
+        } catch (error) {
+          console.error('Error refreshing balance after chain change:', error);
+        }
+      };
+
+      const handleConnect = (connectInfo: { chainId: string }) => {
+        console.log('WalletContext: Provider connected:', connectInfo);
+        const newChainId = parseInt(connectInfo.chainId, 16);
+        setState(prev => ({
+          ...prev,
+          chainId: newChainId
+        }));
+      };
+
+      const handleDisconnect = (error: { code: number; message: string }) => {
+        console.log('WalletContext: Provider disconnected:', error);
+        handleDisconnectAll();
       };
 
       (window as any).ethereum.on('accountsChanged', handleAccountsChanged);
       (window as any).ethereum.on('chainChanged', handleChainChanged);
+      (window as any).ethereum.on('connect', handleConnect);
+      (window as any).ethereum.on('disconnect', handleDisconnect);
     }
 
     // Yellow SDK events
@@ -475,7 +573,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
     
     try {
-      await yellowSDKService.createPaymentChannel(initialDeposit);
+      const channel = await yellowSDKService.createPaymentChannel(initialDeposit);
       
       toast.success('Payment channel created!', {
         description: 'You can now make instant payments',

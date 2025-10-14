@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+
 import { Upload, Music, Disc, Wallet as WalletIcon, ShoppingCart, TrendingUp, Star, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,15 @@ import { useContent } from '@/hooks/useContent';
 import { ipfsMusicService } from '@/services/ipfsMusicService';
 import { AudioFileStructure } from '@/types/yellowSDK';
 import IPFSMusicUploader from '@/components/IPFSMusicUploader';
+import EnhancedMusicUploader from '@/components/EnhancedMusicUploader';
+import UploadedTrackDisplay from '@/components/UploadedTrackDisplay';
 import { MusicMetadata } from '@/services/ipfsServiceSimple';
+import PinataDiagnosticPanel from '@/components/PinataDiagnosticPanel';
+import PinataUploadTest from '@/components/PinataUploadTest';
+import PinataKeyChecker from '@/components/PinataKeyChecker';
+import SonicWaveLibrary from '@/components/SonicWaveLibrary';
+import SonicWavePlayer from '@/components/SonicWavePlayer';
+import PinataCredentialDebugger from '@/components/PinataCredentialDebugger';
 
 const IPFSDemo = () => {
   const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
@@ -117,45 +125,50 @@ const IPFSDemo = () => {
 
       <ScrollAnimation animation="slideUp" delay={0.2}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 bg-white/10 backdrop-blur-sm">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-figma-purple">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8 bg-white/10 backdrop-blur-sm">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <TrendingUp size={16} className="mr-2" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="wallet" className="data-[state=active]:bg-figma-purple">
+            <TabsTrigger value="wallet" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <WalletIcon size={16} className="mr-2" />
               Wallet
             </TabsTrigger>
-            <TabsTrigger value="upload" className="data-[state=active]:bg-figma-purple">
+            <TabsTrigger value="upload" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <Upload size={16} className="mr-2" />
               Upload
             </TabsTrigger>
-            <TabsTrigger value="player" className="data-[state=active]:bg-figma-purple">
+            <TabsTrigger value="player" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <Music size={16} className="mr-2" />
               Player
             </TabsTrigger>
-            <TabsTrigger value="payments" className="data-[state=active]:bg-figma-purple">
+            <TabsTrigger value="payments" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <CreditCard size={16} className="mr-2" />
               Payments
             </TabsTrigger>
-            <TabsTrigger value="marketplace" className="data-[state=active]:bg-figma-purple">
+            <TabsTrigger value="marketplace" className="data-[state=active]:bg-white data-[state=active]:text-black">
               <ShoppingCart size={16} className="mr-2" />
               Marketplace
+            </TabsTrigger>
+            <TabsTrigger value="library" className="data-[state=active]:bg-white data-[state=active]:text-black">
+              <Music size={16} className="mr-2" />
+              Library
+            </TabsTrigger>
+            <TabsTrigger value="diagnostic" className="data-[state=active]:bg-white data-[state=active]:text-black">
+              <Star size={16} className="mr-2" />
+              Diagnostic
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
+              <div>
                 <Card className="glass-card border-figma-glass-border h-full">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-figma-purple/20 rounded-full flex items-center justify-center">
-                        <Disc size={24} className="text-figma-purple" />
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <Disc size={24} className="text-white" />
                       </div>
                       <h3 className="text-white font-semibold text-lg">Decentralized Storage</h3>
                     </div>
@@ -165,17 +178,14 @@ const IPFSDemo = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
 
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
+              <div>
                 <Card className="glass-card border-figma-glass-border h-full">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-figma-purple/20 rounded-full flex items-center justify-center">
-                        <WalletIcon size={24} className="text-figma-purple" />
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <WalletIcon size={24} className="text-white" />
                       </div>
                       <h3 className="text-white font-semibold text-lg">Web3 Integration</h3>
                     </div>
@@ -185,17 +195,14 @@ const IPFSDemo = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
 
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
+              <div>
                 <Card className="glass-card border-figma-glass-border h-full">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-figma-purple/20 rounded-full flex items-center justify-center">
-                        <Music size={24} className="text-figma-purple" />
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <Music size={24} className="text-white" />
                       </div>
                       <h3 className="text-white font-semibold text-lg">Adaptive Streaming</h3>
                     </div>
@@ -205,7 +212,7 @@ const IPFSDemo = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             </div>
 
             <Card className="glass-card border-figma-glass-border">
@@ -323,8 +330,20 @@ const IPFSDemo = () => {
           <TabsContent value="upload">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
-                <IPFSMusicUploader onUploadComplete={(track) => {
-                  setUploadedTracks(prev => [...prev, { metadata: track.metadata, hash: track.ipfsHash }]);
+                <EnhancedMusicUploader onUploadComplete={(track) => {
+                  setUploadedTracks(prev => [...prev, { 
+                    metadata: {
+                      title: track.title,
+                      artist: track.artist,
+                      album: track.album,
+                      genre: track.genre,
+                      year: track.year,
+                      audioHash: track.audioHash,
+                      artworkHash: track.artworkHash,
+                      ...track.metadata
+                    }, 
+                    hash: track.ipfsHash 
+                  }]);
                 }} />
               </div>
               <div className="space-y-6">
@@ -363,24 +382,7 @@ const IPFSDemo = () => {
                   </CardContent>
                 </Card>
 
-                {uploadedTracks.length > 0 && (
-                  <Card className="glass-card border-figma-glass-border">
-                    <CardHeader>
-                      <CardTitle className="text-white">Your Uploads</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {uploadedTracks.map((track, index) => (
-                          <div key={index} className="p-3 bg-white/5 rounded-figma-sm">
-                            <p className="text-white font-medium text-sm">{track.metadata.title}</p>
-                            <p className="text-white/60 text-xs">{track.metadata.artist}</p>
-                            <p className="text-figma-purple text-xs font-mono">IPFS: {track.hash.slice(0, 20)}...</p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <UploadedTrackDisplay tracks={uploadedTracks} />
               </div>
             </div>
           </TabsContent>
@@ -552,26 +554,7 @@ const IPFSDemo = () => {
                   </CardContent>
                 </Card>
 
-                {uploadedTracks.length > 0 && (
-                  <Card className="glass-card border-figma-glass-border">
-                    <CardHeader>
-                      <CardTitle className="text-white">Your Uploaded Tracks</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {uploadedTracks.map((track, index) => (
-                          <IPFSAudioPlayer
-                            key={index}
-                            audioFiles={track.metadata.ipfs_hashes}
-                            title={track.metadata.title}
-                            artist={track.metadata.artist}
-                            artwork={track.metadata.artwork}
-                          />
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <UploadedTrackDisplay tracks={uploadedTracks} />
               </div>
             </div>
           </TabsContent>
@@ -581,6 +564,38 @@ const IPFSDemo = () => {
             <div className="text-center py-12">
               <h2 className="text-2xl font-bold text-white mb-4">NFT Marketplace</h2>
               <p className="text-white/60">Coming soon - NFT marketplace functionality</p>
+            </div>
+          </TabsContent>
+
+          {/* Library Tab */}
+          <TabsContent value="library">
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">Sonic Wave Music Library</h2>
+                <p className="text-white/60">
+                  Browse, search, and play all your uploaded music with full album art support
+                </p>
+              </div>
+              <SonicWaveLibrary />
+            </div>
+          </TabsContent>
+
+          {/* Diagnostic Tab */}
+          <TabsContent value="diagnostic">
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">Pinata API Diagnostics</h2>
+                <p className="text-white/60">
+                  Test your Pinata connection and troubleshoot upload issues
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                <PinataCredentialDebugger />
+                <PinataKeyChecker />
+                <PinataUploadTest />
+                <PinataDiagnosticPanel />
+              </div>
             </div>
           </TabsContent>
         </Tabs>

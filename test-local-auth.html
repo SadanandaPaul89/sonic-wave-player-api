@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Local Auth</title>
+</head>
+
+<body>
+    <h1>Local Auth Test</h1>
+    <div id="status"></div>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="checkSession()">Check Session</button>
+    <button onclick="clearSession()">Clear Session</button>
+
+    <script>
+        // Copy the local auth logic here for testing
+        const TEST_USERS = [
+            {
+                id: '1',
+                email: 'test@example.com',
+                password: 'password123',
+                name: 'Test User',
+                created_at: new Date().toISOString(),
+            }
+        ];
+
+        const SESSION_KEY = 'sonic_wave_session';
+
+        const generateToken = () => {
+            return Math.random().toString(36).substring(2) + Date.now().toString(36);
+        };
+
+        const createSession = (user) => {
+            const session = {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    created_at: user.created_at,
+                },
+                access_token: generateToken(),
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            };
+
+            localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+            return session;
+        };
+
+        async function testLogin() {
+            const email = 'test@example.com';
+            const password = 'password123';
+
+            const user = TEST_USERS.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                document.getElementById('status').innerHTML = 'Login failed: Invalid credentials';
+                return;
+            }
+
+            const session = createSession(user);
+            document.getElementById('status').innerHTML = 'Login successful: ' + JSON.stringify(session, null, 2);
+        }
+
+        function checkSession() {
+            const sessionData = localStorage.getItem(SESSION_KEY);
+            if (sessionData) {
+                document.getElementById('status').innerHTML = 'Session found: ' + sessionData;
+            } else {
+                document.getElementById('status').innerHTML = 'No session found';
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(SESSION_KEY);
+            document.getElementById('status').innerHTML = 'Session cleared';
+        }
+
+        // Check initial state
+        checkSession();
+    </script>
+</body>
+
+</html>

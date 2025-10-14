@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ArtistNameWithBadge from "./ArtistNameWithBadge";
+import { motion } from 'framer-motion';
 
 interface TrackListItemProps {
   track: Track;
@@ -48,32 +49,53 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
   const trackImageUrl = getTrackImage(track);
 
   return (
-    <div 
+    <motion.div 
       className={`group card-hover-container ${
         isCurrentTrack ? 'text-figma-purple' : 'text-white/80'
       } sm:grid sm:grid-cols-12 sm:gap-4 
         px-2 py-[10px] sm:px-4 sm:py-2 
         hover:bg-white/10 rounded-figma-md 
         flex flex-col mb-2 sm:mb-0 cursor-pointer transition-all duration-300`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ 
+        scale: 1.02, 
+        x: 4,
+        transition: { duration: 0.2 }
+      }}
+      whileTap={{ scale: 0.98 }}
+      layout
     >
       {/* Row 1: Index/Play, Title/Artist */}
       <div className="flex items-center gap-3 sm:col-span-5">
         <div className="w-6 flex-shrink-0 flex items-center justify-center relative">
-          <span className={`group-hover:hidden ${isCurrentTrack ? 'text-figma-purple' : 'text-white/60'} text-sm sm:text-base`}>
+          <motion.span 
+            className={`group-hover:hidden ${isCurrentTrack ? 'text-figma-purple' : 'text-white/60'} text-sm sm:text-base`}
+            initial={{ opacity: 1 }}
+            whileHover={{ opacity: 0 }}
+          >
             {index + 1}
-          </span>
-          <button 
+          </motion.span>
+          <motion.button 
             className="hidden group-hover:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
             onClick={() => onPlayClick(track)}
+            initial={{ opacity: 0, scale: 0 }}
+            whileHover={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.2 }}
           >
             {isCurrentPlaying ? 
               <Pause size={16} className="text-white" /> : 
               <Play size={16} className="text-white" />
             }
-          </button>
+          </motion.button>
         </div>
         <div className="flex items-center gap-2 truncate sm:w-auto w-full">
-          <div className="w-10 h-10 bg-white/10 rounded flex-shrink-0 overflow-hidden">
+          <motion.div 
+            className="w-10 h-10 bg-white/10 rounded flex-shrink-0 overflow-hidden"
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.3 }}
+          >
             <img
               src={trackImageUrl}
               alt={`${track.name} album art`}
@@ -83,26 +105,40 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
                 target.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center';
               }}
             />
-          </div>
+          </motion.div>
           <div className="truncate flex flex-col">
             <div className="flex items-center gap-2">
-              <span 
+              <motion.span 
                 className="font-medium truncate text-base sm:text-lg cursor-pointer hover:underline text-white group-hover:text-white"
                 onClick={() => onPlayClick(track)}
+                whileHover={{ x: 2 }}
+                transition={{ duration: 0.2 }}
               >
                 {track.name}
-              </span>
+              </motion.span>
               {/* IPFS Indicator - Show for ALL tracks */}
-              <Badge variant="secondary" className="bg-figma-purple/20 text-figma-purple text-xs px-1.5 py-0.5">
-                <Globe size={8} className="mr-1" />
-                IPFS
-              </Badge>
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Badge variant="secondary" className="bg-figma-purple/20 text-figma-purple text-xs px-1.5 py-0.5">
+                  <Globe size={8} className="mr-1" />
+                  IPFS
+                </Badge>
+              </motion.div>
               {/* NFT Indicator */}
               {(track as any).nft && (
-                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 text-xs px-1.5 py-0.5">
-                  <Zap size={8} className="mr-1" />
-                  NFT
-                </Badge>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 text-xs px-1.5 py-0.5">
+                    <Zap size={8} className="mr-1" />
+                    NFT
+                  </Badge>
+                </motion.div>
               )}
             </div>
             {/* Artist name - always below track name on mobile */}
@@ -133,24 +169,34 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
         {/* divider */}
         {(showAlbum) && <span className="text-muted-foreground/50">·</span>}
         <div className="flex items-center gap-2">
-          <Heart 
-            size={15} 
-            className={`cursor-pointer transition-colors align-middle ${
-              isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
-            } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={(e) => onLikeClick(track, e)}
-          />
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Heart 
+              size={15} 
+              className={`cursor-pointer transition-colors align-middle ${
+                isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={(e) => onLikeClick(track, e)}
+            />
+          </motion.div>
           <span>{track.like_count || 0}</span>
           <Headphones size={15} className="ml-2" />
           <span>{track.play_count || 0}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 h-auto text-muted-foreground hover:text-foreground"
-            onClick={(e) => onShareClick(track, e)}
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <MoreHorizontal size={14} />
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto text-muted-foreground hover:text-foreground"
+              onClick={(e) => onShareClick(track, e)}
+            >
+              <MoreHorizontal size={14} />
+            </Button>
+          </motion.div>
         </div>
         {/* Duration right-most for mobile */}
         <span className="ml-auto text-xs text-muted-foreground min-w-[40px] text-right">{formatTime(track.duration)}</span>
@@ -158,20 +204,31 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
 
       {/* Row 2: Desktop only stats */}
       <div className="hidden sm:flex sm:col-span-2 items-center justify-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Heart 
-            size={14} 
-            className={`cursor-pointer transition-colors ${
-              isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
-            } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={(e) => onLikeClick(track, e)}
-          />
-          <span>{track.like_count || 0}</span>
-        </div>
-        <div className="flex items-center gap-1">
+        <motion.div 
+          className="flex items-center gap-1"
+          whileHover={{ scale: 1.05 }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Heart 
+              size={14} 
+              className={`cursor-pointer transition-colors ${
+                isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'
+              } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={(e) => onLikeClick(track, e)}
+            />
+          </motion.div>
+          <span>{(track as any).like_count || 0}</span>
+        </motion.div>
+        <motion.div 
+          className="flex items-center gap-1"
+          whileHover={{ scale: 1.05 }}
+        >
           <Headphones size={14} />
-          <span>{track.play_count || 0}</span>
-        </div>
+          <span>{(track as any).play_count || 0}</span>
+        </motion.div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -198,7 +255,7 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
       <div className="hidden sm:flex sm:col-span-2 items-center justify-end text-sm text-muted-foreground">
         {formatTime(track.duration)}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

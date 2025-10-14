@@ -163,6 +163,9 @@ class Web3Service {
       this.provider = (window as any).ethereum as EthereumProvider;
       console.log('Web3 provider detected:', this.provider.isMetaMask ? 'MetaMask' : 'Unknown');
       
+      // Setup event listeners for connection changes
+      this.setupProviderEventListeners();
+      
       // Check if already connected
       try {
         const accounts = await this.provider.request({ method: 'eth_accounts' }) as string[];
@@ -172,13 +175,61 @@ class Web3Service {
           this.currentChainId = parseInt(chainId, 16);
           this.isConnected = true;
           console.log('Already connected to:', this.currentAccount, 'on chain:', this.currentChainId);
+        } else {
+          // Ensure we're in disconnected state if no accounts
+          this.isConnected = false;
+          this.currentAccount = null;
+          this.currentChainId = null;
         }
       } catch (error) {
         console.log('No existing connection found');
+        this.isConnected = false;
+        this.currentAccount = null;
+        this.currentChainId = null;
       }
     } else {
       console.warn('No Web3 provider found. Please install MetaMask or another Web3 wallet.');
     }
+  }
+
+  private setupProviderEventListeners() {
+    if (!this.provider) return;
+
+    // Listen for account changes
+    this.provider.on('accountsChanged', (accounts: string[]) => {
+      console.log('Accounts changed:', accounts);
+      if (accounts.length === 0) {
+        // User disconnected
+        this.currentAccount = null;
+        this.isConnected = false;
+        console.log('Wallet disconnected via provider');
+      } else {
+        // User switched accounts
+        this.currentAccount = accounts[0];
+        this.isConnected = true;
+        console.log('Account switched to:', this.currentAccount);
+      }
+    });
+
+    // Listen for chain changes
+    this.provider.on('chainChanged', (chainId: string) => {
+      const newChainId = parseInt(chainId, 16);
+      console.log('Chain changed to:', newChainId);
+      this.currentChainId = newChainId;
+    });
+
+    // Listen for connection status changes
+    this.provider.on('connect', (connectInfo: { chainId: string }) => {
+      console.log('Provider connected:', connectInfo);
+      this.currentChainId = parseInt(connectInfo.chainId, 16);
+    });
+
+    this.provider.on('disconnect', (error: { code: number; message: string }) => {
+      console.log('Provider disconnected:', error);
+      this.currentAccount = null;
+      this.currentChainId = null;
+      this.isConnected = false;
+    });
   }
 
   // Connect wallet
@@ -709,7 +760,17 @@ class Web3Service {
     this.currentAccount = null;
     this.currentChainId = null;
     this.isConnected = false;
-    console.log('Wallet disconnected');
+    
+    // Clear any cached data
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Clear any wallet-related localStorage items
+      const keysToRemove = Object.keys(window.localStorage).filter(key => 
+        key.includes('wallet') || key.includes('web3') || key.includes('metamask')
+      );
+      keysToRemove.forEach(key => window.localStorage.removeItem(key));
+    }
+    
+    console.log('Wallet disconnected and cache cleared');
   }
 }
 

@@ -47,3 +47,10 @@ This feature involves a complete frontend revamp based on a Figma design that in
 2. WHEN adding animations THEN the system SHALL use performant animation libraries and techniques
 3. WHEN structuring code THEN the system SHALL maintain clean separation of concerns and follow existing project patterns
 4. WHEN implementing responsive design THEN the system SHALL use consistent breakpoints and design tokens
+
+### Requirement 5
+**User Story:** The footer of the website is not completed hence expecting the design to be made by vibe coding maintiaining the overall project theme.
+
+### Acceptance Criteria 
+
+1. WHEN implementing the footer, the buttons should be available and working such as, contact us, about us, social media

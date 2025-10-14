@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { X, Home, Search, Library, Info, User, LogOut, Wallet, Disc, Trophy } from 'lucide-react';
+import { X, Home, Search, Library, Info, User, LogOut, Wallet, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getAuthService } from '@/config/auth';
 import { Logo, BRAND_TAGLINES } from '@/components/Brand';
@@ -19,7 +19,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
     { icon: Library, label: 'Your Library', path: '/library' },
     { icon: Trophy, label: 'Leaderboard', path: '/leaderboard' },
     { icon: Wallet, label: 'Wallet', path: '/wallet', isWeb3: true },
-    { icon: Disc, label: 'IPFS Demo', path: '/ipfs-demo', isWeb3: true },
     { icon: Info, label: 'About Us', path: '/about' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];

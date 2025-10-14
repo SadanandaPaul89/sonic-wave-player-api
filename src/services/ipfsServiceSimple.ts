@@ -1,4 +1,10 @@
-// Simplified IPFS Service that works without external API keys
+// Enhanced IPFS Service with reliable audio storage and retrieval
+// Integrates with audioStorageManager, contentHashService, and playbackUrlResolver
+
+import { audioStorageManager, StoredAudioFile, AudioMetadata } from './audioStorageManager';
+import { contentHashService } from './contentHashService';
+import { playbackUrlResolver, AudioSource } from './playbackUrlResolver';
+import { audioBlobManager } from './audioBlobManager';
 
 export interface UploadProgress {
   stage: 'preparing' | 'uploading' | 'processing' | 'pinning' | 'complete';
@@ -54,13 +60,12 @@ export interface MusicMetadata {
 
 class SimpleIPFSService {
   private uploadProgressCallbacks: Map<string, (progress: UploadProgress) => void> = new Map();
-  private fileBlobCache: Map<string, Blob> = new Map();
 
   constructor() {
-    console.log('Simple IPFS Service initialized');
+    console.log('Enhanced IPFS Service initialized with reliable storage');
   }
 
-  // Simple file upload that works locally
+  // Enhanced file upload with proper storage and hashing
   async uploadFile(file: File, onProgress?: (progress: UploadProgress) => void, allowMetadata: boolean = false): Promise<string> {
     const uploadId = `upload_${Date.now()}`;
     if (onProgress) {
@@ -68,7 +73,7 @@ class SimpleIPFSService {
     }
 
     try {
-      console.log('Starting simple upload for:', file.name);
+      console.log('Starting enhanced upload for:', file.name);
 
       this.updateProgress(uploadId, {
         stage: 'preparing',
@@ -91,45 +96,58 @@ class SimpleIPFSService {
 
       this.updateProgress(uploadId, {
         stage: 'processing',
-        progress: 60,
-        message: 'Generating hash...'
+        progress: 50,
+        message: 'Generating content hash...'
       });
 
-      // Generate a content-based hash
-      const hash = await this.generateContentHash(new Uint8Array(arrayBuffer));
-      console.log('Generated hash:', hash);
+      // Generate proper content-based hash
+      const hashResult = await contentHashService.generateHashFromFile(file);
+      const hash = hashResult.hash;
+      console.log('Generated content hash:', hash);
+
+      this.updateProgress(uploadId, {
+        stage: 'processing',
+        progress: 70,
+        message: 'Extracting metadata...'
+      });
+
+      // Extract audio metadata
+      const audioMetadata = await this.extractAudioMetadata(file);
 
       this.updateProgress(uploadId, {
         stage: 'pinning',
-        progress: 80,
-        message: 'Storing file...'
+        progress: 85,
+        message: 'Storing file in persistent storage...'
       });
 
-      // Store file metadata and create blob URL for playback
-      const blob = new Blob([arrayBuffer], { type: file.type });
-      const blobUrl = URL.createObjectURL(blob);
-      
-      // Store only metadata and blob URL reference
-      const fileData = {
+      // Create stored audio file object
+      const storedFile: Omit<StoredAudioFile, 'storageLocation' | 'uploadedAt' | 'lastAccessedAt'> = {
         hash,
-        name: file.name,
-        type: file.type,
+        originalName: file.name,
+        mimeType: file.type,
         size: file.size,
-        blobUrl,
-        uploadedAt: new Date().toISOString()
+        audioData: arrayBuffer,
+        metadata: {
+          title: audioMetadata.title || file.name.replace(/\.[^/.]+$/, ''),
+          artist: audioMetadata.artist || 'Unknown Artist',
+          album: audioMetadata.album,
+          duration: audioMetadata.duration || 0,
+          bitrate: audioMetadata.bitrate,
+          sampleRate: audioMetadata.sampleRate,
+          channels: audioMetadata.channels,
+          format: this.getAudioFormat(file.type),
+          genre: audioMetadata.genre,
+          year: audioMetadata.year || new Date().getFullYear(),
+          artwork: audioMetadata.artwork
+        }
       };
 
-      // Store metadata only (much smaller)
-      try {
-        localStorage.setItem(`ipfs_file_${hash}`, JSON.stringify(fileData));
-      } catch (error) {
-        console.warn('Failed to store file metadata in localStorage:', error);
-        // Continue without localStorage - file will still work via blob cache
-      }
-      
-      // Store blob reference in memory for this session
-      this.fileBlobCache.set(hash, blob);
-      console.log('File stored locally with hash:', hash);
+      // Store in persistent storage
+      await audioStorageManager.storeAudioFile(storedFile);
+
+      // Create blob URL for immediate playback
+      const blobUrl = audioBlobManager.createBlobUrl(arrayBuffer, file.type, hash);
+      console.log('File stored with hash:', hash, 'Blob URL:', blobUrl);
 
       this.updateProgress(uploadId, {
         stage: 'complete',
@@ -170,14 +188,49 @@ class SimpleIPFSService {
     }
   }
 
-  private async generateContentHash(data: Uint8Array): Promise<string> {
-    // Generate SHA-256 hash
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    // Convert to IPFS-like hash format
-    return `Qm${hashHex.substring(0, 44)}`;
+  // Validate audio file access and availability
+  async validateAudioAccess(ipfsHash: string): Promise<boolean> {
+    try {
+      // Check if file exists in storage
+      const storedFile = await audioStorageManager.getAudioFile(ipfsHash);
+      if (storedFile) {
+        return true;
+      }
+
+      // Check if blob URL is available
+      const blobUrl = await audioBlobManager.getBlobUrl(ipfsHash);
+      if (blobUrl) {
+        return true;
+      }
+
+      // Try to resolve via IPFS gateways
+      const audioSource: AudioSource = {
+        type: 'ipfs',
+        identifier: ipfsHash
+      };
+
+      const result = await playbackUrlResolver.resolveAudioUrl(audioSource);
+      return result.strategy !== 'fallback_demo';
+
+    } catch (error) {
+      console.error('Failed to validate audio access:', error);
+      return false;
+    }
+  }
+
+  // Preload audio for better performance
+  async preloadAudio(ipfsHash: string): Promise<void> {
+    try {
+      const audioSource: AudioSource = {
+        type: 'ipfs',
+        identifier: ipfsHash
+      };
+
+      await playbackUrlResolver.preloadAudio(audioSource);
+      console.log('Preloaded audio:', ipfsHash);
+    } catch (error) {
+      console.warn('Failed to preload audio:', ipfsHash, error);
+    }
   }
 
   private updateProgress(uploadId: string, progress: UploadProgress) {
@@ -187,97 +240,98 @@ class SimpleIPFSService {
     }
   }
 
-  // Get file URL for playback
+  // Get optimal playback URL using the enhanced resolver
   async getOptimalGatewayUrl(ipfsHash: string): Promise<string> {
-    // Check if file is cached in memory first
-    const cachedBlob = this.fileBlobCache.get(ipfsHash);
-    if (cachedBlob) {
-      const url = URL.createObjectURL(cachedBlob);
-      console.log('Created blob URL from cache:', url);
-      return url;
-    }
+    try {
+      // Create audio source for the resolver
+      const audioSource: AudioSource = {
+        type: 'ipfs',
+        identifier: ipfsHash
+      };
 
-    // Check if file metadata is stored locally
-    const localFile = localStorage.getItem(`ipfs_file_${ipfsHash}`);
-    if (localFile) {
-      try {
-        const fileData = JSON.parse(localFile);
-        // If we have a stored blob URL, return it
-        if (fileData.blobUrl) {
-          console.log('Using stored blob URL:', fileData.blobUrl);
-          return fileData.blobUrl;
-        }
-      } catch (error) {
-        console.error('Error reading local file metadata:', error);
-      }
-    }
+      // Use the playback URL resolver with all fallback strategies
+      const result = await playbackUrlResolver.resolveAudioUrl(audioSource);
+      
+      console.log(`Resolved ${ipfsHash} using ${result.strategy}: ${result.url}`);
+      return result.url;
 
-    // Fallback to public IPFS gateway
-    console.log('Falling back to public IPFS gateway for:', ipfsHash);
-    return `https://ipfs.io/ipfs/${ipfsHash}`;
+    } catch (error) {
+      console.error('Failed to resolve playback URL for:', ipfsHash, error);
+      
+      // Final fallback to demo audio
+      console.warn('Using demo audio as final fallback');
+      return 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav';
+    }
   }
 
-  // Process audio file with metadata extraction
+  // Process audio file with enhanced metadata extraction and storage
   async processAudioFile(file: File, onProgress?: (progress: UploadProgress) => void): Promise<{
     metadata: MusicMetadata;
     ipfsHashes: AudioFileStructure;
   }> {
     try {
-      console.log('Processing audio file:', file.name);
+      console.log('Processing audio file with enhanced pipeline:', file.name);
 
-      // Upload the file
+      // Upload the file (this now uses enhanced storage)
       const hash = await this.uploadFile(file, onProgress);
 
-      // Extract basic metadata
-      const audioMetadata = await this.extractAudioMetadata(file);
+      // Get the stored file to access its metadata
+      const storedFile = await audioStorageManager.getAudioFile(hash);
+      if (!storedFile) {
+        throw new Error('Failed to retrieve stored audio file');
+      }
 
-      // Create metadata object
-      const metadata: MusicMetadata = {
-        title: audioMetadata.title || file.name.replace(/\.[^/.]+$/, ''),
-        artist: audioMetadata.artist || 'Unknown Artist',
-        album: audioMetadata.album,
-        duration: audioMetadata.duration || 0,
-        genre: audioMetadata.genre,
-        year: audioMetadata.year || new Date().getFullYear(),
-        ipfs_hashes: {
-          high_quality: {
-            uri: `ipfs://${hash}`,
-            format: this.getAudioFormat(file.type),
-            bitrate: '320kbps',
-            size: file.size
-          },
-          streaming: {
-            uri: `ipfs://${hash}`,
-            format: this.getAudioFormat(file.type),
-            bitrate: '192kbps',
-            size: Math.floor(file.size * 0.6)
-          },
-          mobile: {
-            uri: `ipfs://${hash}`,
-            format: this.getAudioFormat(file.type),
-            bitrate: '128kbps',
-            size: Math.floor(file.size * 0.4)
-          }
+      // Create IPFS-compatible metadata structure
+      const ipfsHashes: AudioFileStructure = {
+        high_quality: {
+          uri: contentHashService.createIPFSURI(hash),
+          format: this.getAudioFormat(file.type),
+          bitrate: '320kbps',
+          size: file.size
         },
-        artwork: audioMetadata.artwork,
-        created_at: new Date().toISOString(),
+        streaming: {
+          uri: contentHashService.createIPFSURI(hash),
+          format: this.getAudioFormat(file.type),
+          bitrate: '192kbps',
+          size: Math.floor(file.size * 0.6)
+        },
+        mobile: {
+          uri: contentHashService.createIPFSURI(hash),
+          format: this.getAudioFormat(file.type),
+          bitrate: '128kbps',
+          size: Math.floor(file.size * 0.4)
+        }
+      };
+
+      const metadata: MusicMetadata = {
+        title: storedFile.metadata.title,
+        artist: storedFile.metadata.artist,
+        album: storedFile.metadata.album,
+        duration: storedFile.metadata.duration,
+        genre: storedFile.metadata.genre,
+        year: storedFile.metadata.year,
+        ipfs_hashes: ipfsHashes,
+        artwork: storedFile.metadata.artwork,
+        created_at: storedFile.uploadedAt,
         file_size: {
           high_quality: file.size,
           streaming: Math.floor(file.size * 0.6),
           mobile: Math.floor(file.size * 0.4)
         },
         properties: {
-          originalFilename: file.name,
-          mimeType: file.type,
-          uploadedAt: new Date().toISOString()
+          originalFilename: storedFile.originalName,
+          mimeType: storedFile.mimeType,
+          uploadedAt: storedFile.uploadedAt,
+          contentHash: hash,
+          storageLocation: storedFile.storageLocation
         }
       };
 
-      console.log('Audio file processed successfully:', metadata);
+      console.log('Audio file processed with enhanced metadata:', metadata);
 
       return {
         metadata,
-        ipfsHashes: metadata.ipfs_hashes
+        ipfsHashes
       };
 
     } catch (error) {
@@ -383,47 +437,85 @@ class SimpleIPFSService {
     }
   }
 
-  // Get cached files info
-  getCachedFiles(): Array<{ hash: string; name: string; size: number; uploadedAt: string }> {
-    const files: Array<{ hash: string; name: string; size: number; uploadedAt: string }> = [];
-    
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('ipfs_file_')) {
-        try {
-          const fileData = JSON.parse(localStorage.getItem(key) || '{}');
-          files.push({
-            hash: fileData.hash,
-            name: fileData.name,
-            size: fileData.size,
-            uploadedAt: fileData.uploadedAt
-          });
-        } catch (error) {
-          console.error('Error reading cached file:', key, error);
-        }
-      }
+  // Get cached files info from enhanced storage
+  async getCachedFiles(): Promise<Array<{ hash: string; name: string; size: number; uploadedAt: string }>> {
+    try {
+      const storedFiles = await audioStorageManager.listAudioFiles();
+      return storedFiles.map(file => ({
+        hash: file.hash,
+        name: file.originalName,
+        size: file.size,
+        uploadedAt: file.uploadedAt
+      }));
+    } catch (error) {
+      console.error('Error getting cached files:', error);
+      return [];
     }
-    
-    return files.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
   }
 
-  // Clear all cached files
-  clearCache(): void {
-    // Clear localStorage entries
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('ipfs_file_')) {
-        keysToRemove.push(key);
-      }
+  // Clear all cached files using enhanced storage
+  async clearCache(): Promise<void> {
+    try {
+      // Clear audio storage
+      await audioStorageManager.clearAllFiles();
+      
+      // Clear blob cache
+      audioBlobManager.clearAllBlobs();
+      
+      // Clear resolver cache
+      playbackUrlResolver.clearCache();
+      
+      // Clear hash cache
+      contentHashService.clearCache();
+      
+      console.log('All IPFS caches cleared');
+    } catch (error) {
+      console.error('Error clearing cache:', error);
     }
-    
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    
-    // Clear blob cache
-    this.fileBlobCache.clear();
-    
-    console.log('IPFS cache cleared');
+  }
+
+  // Get comprehensive storage statistics
+  async getStorageStats(): Promise<{
+    audioStorage: any;
+    blobManager: any;
+    resolver: any;
+    hashService: any;
+  }> {
+    try {
+      const [audioStats, blobStats, resolverStats, hashStats] = await Promise.all([
+        audioStorageManager.getStorageStats(),
+        Promise.resolve(audioBlobManager.getBlobStats()),
+        Promise.resolve(playbackUrlResolver.getResolutionStats()),
+        Promise.resolve(contentHashService.getCacheStats())
+      ]);
+
+      return {
+        audioStorage: audioStats,
+        blobManager: blobStats,
+        resolver: resolverStats,
+        hashService: hashStats
+      };
+    } catch (error) {
+      console.error('Error getting storage stats:', error);
+      return {
+        audioStorage: null,
+        blobManager: null,
+        resolver: null,
+        hashService: null
+      };
+    }
+  }
+
+  // Cleanup old files based on access patterns
+  async cleanupOldFiles(maxAge?: number): Promise<number> {
+    try {
+      const deletedCount = await audioStorageManager.cleanupOldFiles(maxAge);
+      console.log(`Cleaned up ${deletedCount} old audio files`);
+      return deletedCount;
+    } catch (error) {
+      console.error('Error during cleanup:', error);
+      return 0;
+    }
   }
 }
 
