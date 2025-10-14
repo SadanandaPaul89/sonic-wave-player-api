@@ -12,30 +12,30 @@ const AboutUs: React.FC = () => {
       initials: "SP",
       color: "bg-gradient-to-br from-purple-500 to-pink-500"
     },
-    {
-      name: "Mayank Sen",
-      note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
-      initials: "MS",
-      color: "bg-gradient-to-br from-blue-500 to-cyan-500"
-    },
-    {
-      name: "Avanthika Prathapan",
-      note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
-      initials: "AP",
-      color: "bg-gradient-to-br from-green-500 to-emerald-500"
-    },
+    // {
+    //   name: "Mayank Sen",
+    //   note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
+    //   initials: "MS",
+    //   color: "bg-gradient-to-br from-blue-500 to-cyan-500"
+    // },
+    // {
+    //   name: "Avanthika Prathapan",
+    //   note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
+    //   initials: "AP",
+    //   color: "bg-gradient-to-br from-green-500 to-emerald-500"
+    // },
     {
       name: "Hariharan G V",
       note: "Committed to delivering exceptional performance and creating innovative solutions for music lovers.",
       initials: "HG",
       color: "bg-gradient-to-br from-orange-500 to-red-500"
     },
-     {
-    name: "Sanjay Ganesh K Barade",
-    note: "Driven by a love for technology and music, always eager to create meaningful solutions that unite communities.",
-    initials: "SB",
-    color: "bg-gradient-to-br from-fuchsia-500 to-indigo-500"
-  },
+  //    {
+  //   name: "Sanjay Ganesh K Barade",
+  //   note: "Driven by a love for technology and music, always eager to create meaningful solutions that unite communities.",
+  //   initials: "SB",
+  //   color: "bg-gradient-to-br from-fuchsia-500 to-indigo-500"
+  // },
   {
       name: "Ayusman Nayak",
       note: "Being part of Sonic Wave has been an incredible journey. The energy, the creativity, and the passion here constantly push me to grow. Proud to be part of this team!",
