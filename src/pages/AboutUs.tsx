@@ -12,11 +12,7 @@ const AboutUs: React.FC = () => {
       initials: "SP",
       color: "bg-gradient-to-br from-purple-500 to-pink-500"
     },
-<<<<<<< HEAD
     {
-=======
-     {
->>>>>>> 167a6a55b0b9f14ca4785781f47066fa10c3d218
       name: "Mayank Sen",
       note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
       initials: "MS",
