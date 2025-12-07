@@ -37,8 +37,7 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
   const getTrackImage = (track: Track): string => {
     // Always prioritize track's own image (album art)
     if (track.image && 
-        !track.image.includes('default-artist') && 
-        track.image !== 'https://cdn.jamendo.com/default/default-artist_200.jpg') {
+        !track.image.includes('default-artist')) {
       return track.image;
     }
     

@@ -378,7 +378,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             {/* Album Art, Track Info, Buttons, Controls */}
             <div className="rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 transition-transform duration-300 hover:scale-[1.02] w-60 h-60 sm:w-72 sm:h-72 max-w-[92vw] mb-2">
               <img
-                src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                src={currentTrack.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop'}
                 alt={currentTrack.albumName}
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -533,7 +533,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ isOpen, onClose }) 
             `}
           >
             <img
-              src={currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+              src={currentTrack.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop'}
               alt={currentTrack.albumName}
               className="w-full h-full object-cover"
               loading="lazy"

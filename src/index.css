@@ -319,4 +319,5 @@
   .animate-scale-in {
     animation: scale-in var(--animation-duration-normal) var(--animation-easing);
   }
+
 }

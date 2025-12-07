@@ -149,7 +149,7 @@ const ArtistView: React.FC = () => {
                     onClick={() => playTrack(track)}
                   >
                     <img
-                      src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                      src={track.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'}
                       alt={track.name}
                       className="w-full h-full rounded object-cover"
                     />

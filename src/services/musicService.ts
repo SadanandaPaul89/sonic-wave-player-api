@@ -59,9 +59,10 @@ class MusicService {
   }
 
   // Get IPFS audio URL based on network quality
-  private async getIPFSAudioUrl(audioFiles: AudioFileStructure): Promise<string> {
+  private async getIPFSAudioUrl(audioFiles: any): Promise<string> {
     // Select appropriate quality based on network
-    let selectedAudio = audioFiles[this.networkQuality.format];
+    const format = this.networkQuality.format;
+    let selectedAudio = audioFiles[format];
     
     // Fallback to available formats
     if (!selectedAudio) {
@@ -69,11 +70,18 @@ class MusicService {
     }
 
     if (!selectedAudio) {
+      console.error('No audio files available in audioFiles:', audioFiles);
       throw new Error('No audio files available');
     }
 
     // Extract IPFS hash from URI
     const ipfsHash = selectedAudio.uri.replace('ipfs://', '');
+    
+    console.log('Selected audio quality:', {
+      format,
+      bitrate: selectedAudio.bitrate,
+      ipfsHash
+    });
     
     // Get optimal gateway URL
     return await ipfsService.getOptimalGatewayUrl(ipfsHash);
@@ -156,82 +164,45 @@ class MusicService {
     return await this.uploadTrack(audioFile, metadata);
   }
 
-  // Get tracks from Supabase database (replacing demo tracks)
-  async getIPFSTracks(): Promise<Track[]> {
+  // Get tracks from Supabase database (regular HTTP tracks, NOT IPFS)
+  async getSupabaseTracks(): Promise<Track[]> {
     try {
-      // Fetch tracks from Supabase
-      const supabaseTracks = await getTopTracks(20); // Get up to 20 tracks
-
-      // Convert Supabase tracks to IPFS-compatible format
-      const ipfsTracks: Track[] = supabaseTracks.map(track => ({
-        ...track,
-        // Add IPFS metadata structure for compatibility with IPFS player
-        ipfs: {
-          hash: `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`, // Mock IPFS hash for now
-          audioFiles: {
-            high_quality: {
-              uri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-              format: 'MP3',
-              bitrate: '320kbps',
-              size: Math.floor(track.duration * 40000) // Estimate file size
-            },
-            streaming: {
-              uri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-              format: 'MP3',
-              bitrate: '192kbps',
-              size: Math.floor(track.duration * 24000)
-            },
-            mobile: {
-              uri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-              format: 'MP3',
-              bitrate: '128kbps',
-              size: Math.floor(track.duration * 16000)
-            }
-          },
-          metadata: {
-            title: track.name,
-            artist: track.artistName,
-            album: track.albumName,
-            genre: 'Electronic', // Default genre, could be enhanced later
-            year: 2024,
-            artwork: track.image,
-            created_at: new Date().toISOString()
-          }
-        }
-      }));
-
-      return ipfsTracks;
+      // Fetch tracks from Supabase - these are regular HTTP tracks
+      const supabaseTracks = await getTopTracks(20);
+      
+      // Return tracks WITHOUT fake IPFS metadata
+      // These will play from their previewURL (HTTP) not IPFS
+      return supabaseTracks;
     } catch (error) {
       console.error('Error fetching Supabase tracks:', error);
-      // Fallback to empty array if Supabase fails
       return [];
     }
   }
 
-  // Get all tracks (Pinata + IPFS + traditional + user uploads) - ALL TAGGED AS IPFS
+  // Get all tracks (IPFS from Pinata + regular HTTP tracks)
   async getAllTracks(): Promise<Track[]> {
     try {
       // Get all track sources
-      const [pinataTracks, demoTracks, userTracks] = await Promise.all([
-        pinataLibraryService.getAllTracks(),
-        this.getIPFSTracks(),
-        this.getUserUploadedTracks()
+      const [pinataTracks, supabaseTracks, userTracks, traditionalTracks] = await Promise.all([
+        pinataLibraryService.getAllTracks(), // Real IPFS tracks from Pinata
+        this.getSupabaseTracks(), // Regular HTTP tracks from Supabase
+        this.getUserUploadedTracks(), // User uploaded IPFS tracks
+        this.getTraditionalTracks() // Demo HTTP tracks
       ]);
       
-      // Get traditional tracks (from existing API) and tag them as IPFS
-      const traditionalTracks: Track[] = await this.getTraditionalTracksAsIPFS();
-      
-      // Combine all sources (Pinata tracks first, then user uploads, then demo, then traditional)
-      return [...pinataTracks, ...userTracks, ...demoTracks, ...traditionalTracks];
+      // Combine all sources
+      // Only pinataTracks and userTracks have real IPFS data
+      // supabaseTracks and traditionalTracks are regular HTTP
+      return [...pinataTracks, ...userTracks, ...supabaseTracks, ...traditionalTracks];
     } catch (error) {
       console.error('Error fetching tracks:', error);
       return [];
     }
   }
 
-  // Convert traditional tracks to appear as IPFS tracks
-  private async getTraditionalTracksAsIPFS(): Promise<Track[]> {
-    // Mock traditional tracks that will appear as IPFS-based
+  // Get traditional demo tracks (regular HTTP, NOT IPFS)
+  private async getTraditionalTracks(): Promise<Track[]> {
+    // Demo tracks with actual playable audio URLs (HTTP, not IPFS)
     const traditionalTracks: Track[] = [
       {
         id: 'trad-1',
@@ -239,7 +210,7 @@ class MusicService {
         artistName: 'Beach House',
         albumName: 'Coastal Dreams',
         duration: 195,
-        previewURL: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // Placeholder
+        previewURL: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', // Actual music
         albumId: 'album-coastal-dreams',
         artistId: 'artist-beach-house',
         image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop'
@@ -250,7 +221,7 @@ class MusicService {
         artistName: 'Urban Echo',
         albumName: 'Metropolitan',
         duration: 220,
-        previewURL: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // Placeholder
+        previewURL: 'https://cdn.pixabay.com/audio/2022/03/10/audio_4dedf3f94c.mp3', // Actual music
         albumId: 'album-metropolitan',
         artistId: 'artist-urban-echo',
         image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop'
@@ -261,7 +232,7 @@ class MusicService {
         artistName: 'Neon Nights',
         albumName: 'After Hours',
         duration: 185,
-        previewURL: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // Placeholder
+        previewURL: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884fe05c21.mp3', // Actual music
         albumId: 'album-after-hours',
         artistId: 'artist-neon-nights',
         image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop'
@@ -272,7 +243,7 @@ class MusicService {
         artistName: 'Ambient Collective',
         albumName: 'Natural Sounds',
         duration: 300,
-        previewURL: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // Placeholder
+        previewURL: 'https://cdn.pixabay.com/audio/2022/03/15/audio_c610232532.mp3', // Actual music
         albumId: 'album-natural-sounds',
         artistId: 'artist-ambient-collective',
         image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=400&fit=crop'
@@ -283,7 +254,7 @@ class MusicService {
         artistName: 'Synth Masters',
         albumName: 'Digital Age',
         duration: 240,
-        previewURL: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // Placeholder
+        previewURL: 'https://cdn.pixabay.com/audio/2021/08/04/audio_12b0c7443c.mp3', // Actual music
         albumId: 'album-digital-age',
         artistId: 'artist-synth-masters',
         image: 'https://images.unsplash.com/photo-1571974599782-87624638275c?w=400&h=400&fit=crop'
@@ -431,20 +402,19 @@ class MusicService {
     }
   }
 
-  // Get featured IPFS tracks (including Pinata and user uploads)
+  // Get featured IPFS tracks (ONLY real IPFS tracks from Pinata and user uploads)
   async getFeaturedIPFSTracks(): Promise<Track[]> {
     try {
-      // Get all track sources
-      const [pinataTracks, demoTracks, userTracks] = await Promise.all([
-        pinataLibraryService.getAllTracks(),
-        this.getIPFSTracks(),
-        this.getUserUploadedTracks()
+      // Get ONLY real IPFS track sources
+      const [pinataTracks, userTracks] = await Promise.all([
+        pinataLibraryService.getAllTracks(), // Real IPFS from Pinata
+        this.getUserUploadedTracks() // Real IPFS from user uploads
       ]);
 
-      // Combine Pinata tracks first (real uploads), then user uploads, then demo tracks
-      const allTracks = [...pinataTracks, ...userTracks, ...demoTracks];
+      // Combine only real IPFS tracks
+      const ipfsTracks = [...pinataTracks, ...userTracks];
       
-      return allTracks.slice(0, 10); // Return first 10 as featured
+      return ipfsTracks.slice(0, 10); // Return first 10 as featured
     } catch (error) {
       console.error('Error getting featured IPFS tracks:', error);
       return [];

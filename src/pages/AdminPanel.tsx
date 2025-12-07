@@ -473,7 +473,7 @@ const AdminPanel: React.FC = () => {
                         <TableRow key={artist.id}>
                           <TableCell>
                             <img 
-                              src={artist.image || 'https://cdn.jamendo.com/default/default-artist_200.jpg'}
+                              src={artist.image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'}
                               alt={artist.name} 
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -567,7 +567,7 @@ const AdminPanel: React.FC = () => {
                           <TableRow key={track.id}>
                             <TableCell>
                               <img 
-                                src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                                src={track.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'}
                                 alt={track.name} 
                                 className="w-10 h-10 rounded object-cover"
                               />
@@ -639,7 +639,7 @@ const AdminPanel: React.FC = () => {
                         <TableRow key={track.id}>
                           <TableCell>
                             <img 
-                              src={track.image || 'https://cdn.jamendo.com/default/default-track_200.jpg'}
+                              src={track.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'}
                               alt={track.name} 
                               className="w-10 h-10 rounded object-cover"
                             />
@@ -771,7 +771,7 @@ const renderRequestsList = (
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
               <img 
-                src={request.artist_image || 'https://cdn.jamendo.com/default/default-artist_200.jpg'} 
+                src={request.artist_image || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'} 
                 alt={request.artist_name} 
                 className="w-full h-full object-cover"
               />

@@ -1,7 +1,4 @@
-// Jamendo API configuration
-const API_KEY = 'af567a60';
-const CLIENT_SECRET = '931d7d5868340508620990e3ba2510d6';
-const BASE_URL = 'https://api.jamendo.com/v3.0';
+// API configuration (Jamendo removed)
 
 // Types
 export interface Artist {
@@ -95,31 +92,31 @@ export const mockArtists: Artist[] = [
   {
     id: 'art.1',
     name: 'The Weeknd',
-    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
     type: 'artist'
   },
   {
     id: 'art.2',
     name: 'Billie Eilish',
-    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
     type: 'artist'
   },
   {
     id: 'art.3',
     name: 'Drake',
-    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
     type: 'artist'
   },
   {
     id: 'art.4',
     name: 'Taylor Swift',
-    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
     type: 'artist'
   },
   {
     id: 'art.5',
     name: 'Ed Sheeran',
-    image: 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
     type: 'artist'
   }
 ];
@@ -130,21 +127,21 @@ export const mockAlbums: Album[] = [
     name: 'After Hours',
     artistName: 'The Weeknd',
     releaseDate: '2020-03-20',
-    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'alb.2',
     name: 'Happier Than Ever',
     artistName: 'Billie Eilish',
     releaseDate: '2021-07-30',
-    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'alb.3',
     name: 'Certified Lover Boy',
     artistName: 'Drake',
     releaseDate: '2021-09-03',
-    image: 'https://cdn.jamendo.com/default/default-album_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   }
 ];
 
@@ -157,7 +154,7 @@ export const mockTracks: Track[] = [
     duration: 201,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
     albumId: 'alb.1',
-    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'tra.2',
@@ -167,7 +164,7 @@ export const mockTracks: Track[] = [
     duration: 215,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
     albumId: 'alb.1',
-    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'tra.3',
@@ -177,7 +174,7 @@ export const mockTracks: Track[] = [
     duration: 298,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
     albumId: 'alb.2',
-    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'tra.4',
@@ -187,7 +184,7 @@ export const mockTracks: Track[] = [
     duration: 196,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
     albumId: 'alb.2',
-    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   },
   {
     id: 'tra.5',
@@ -197,7 +194,7 @@ export const mockTracks: Track[] = [
     duration: 254,
     previewURL: 'https://listen.hs.llnwd.net/g2/prvw/4/9/2/4/1/911214294.mp3',
     albumId: 'alb.3',
-    image: 'https://cdn.jamendo.com/default/default-track_200.jpg'
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   }
 ];
 
@@ -206,19 +203,19 @@ export const mockPlaylists: Playlist[] = [
     id: 'pla.1',
     name: 'Today\'s Top Hits',
     description: 'The most popular songs right now',
-    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop'
   },
   {
     id: 'pla.2',
     name: 'RapCaviar',
     description: 'New music from Drake, Lil Baby and more',
-    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop'
   },
   {
     id: 'pla.3',
     name: 'chill hits',
     description: 'Kick back to the best new and recent chill hits',
-    image: 'https://cdn.jamendo.com/default/default-playlist_200.jpg'
+    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop'
   }
 ];
 
@@ -276,7 +273,7 @@ export const getTopTracks = async (limit = 20): Promise<Track[]> => {
   }
 };
 
-// Fetch featured playlists (using Jamendo's featured tracks as playlists)
+// Fetch featured playlists
 export const getFeaturedPlaylists = async (limit = 10): Promise<Playlist[]> => {
   try {
     const response = await fetch(
@@ -459,12 +456,12 @@ export const searchContent = async (query: string, type = 'track', limit = 20): 
 // Get image URL for content
 export const getImageUrl = (item: any, size = 'sm'): string => {
   if (!item) {
-    return 'https://cdn.jamendo.com/default/default-artist_200.jpg';
+    return 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop';
   }
 
   if (item.image) {
     return item.image;
   }
 
-  return 'https://cdn.jamendo.com/default/default-artist_200.jpg';
+  return 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop';
 };

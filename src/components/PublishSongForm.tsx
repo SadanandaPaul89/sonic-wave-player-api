@@ -72,7 +72,6 @@ const PublishSongForm: React.FC<PublishSongFormProps> = ({ track, onSuccess }) =
     
     // Check if track has album art (not default placeholder or artist image)
     if (track?.image && 
-        track.image !== 'https://cdn.jamendo.com/default/default-track_200.jpg' &&
         !track.image.includes('default-artist') &&
         track.image !== 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f') {
       setTrackHasAlbumArt(true);

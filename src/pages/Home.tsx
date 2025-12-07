@@ -14,11 +14,11 @@ import { usePlayer } from '@/contexts/PlayerContext';
 // Removed excessive animations
 import { Link } from 'react-router-dom';
 import { sonicWaveMusicLibrary, SonicWaveTrack } from '@/services/sonicWaveMusicLibrary';
-import { 
-  SectionSkeleton, 
-  GridSkeleton, 
-  ListItemSkeleton, 
-  CardSkeleton 
+import {
+  SectionSkeleton,
+  GridSkeleton,
+  ListItemSkeleton,
+  CardSkeleton
 } from '@/components/LoadingSkeleton';
 
 const Home: React.FC = () => {
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      
+
       try {
         const [artists, tracks, featuredIPFS, pinataMusic] = await Promise.all([
           getTopArtists(10),
@@ -43,14 +43,14 @@ const Home: React.FC = () => {
           musicService.getFeaturedIPFSTracks(),
           musicService.getAllTracks() // This now includes Pinata tracks first
         ]);
-        
+
         // Initialize Sonic Wave library and get recent uploads
         await sonicWaveMusicLibrary.initializeLibrary();
         const recentSonicWaveTracks = sonicWaveMusicLibrary.getRecentlyUploadedTracks(6);
-        
+
         // Filter Pinata tracks (they start with 'pinata-')
         const pinataOnly = pinataMusic.filter(track => track.id.startsWith('pinata-')).slice(0, 10);
-        
+
         setTopArtists(artists);
         setTopTracks(tracks);
         setIpfsTracks(featuredIPFS);
@@ -62,7 +62,7 @@ const Home: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
 
     // Listen for custom events when new tracks are uploaded
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('ipfs-track-uploaded', handleNewTrackUploaded);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('ipfs-track-uploaded', handleNewTrackUploaded);
@@ -90,44 +90,44 @@ const Home: React.FC = () => {
   }, []);
 
   const recentlyPlayedItems = [
-    { 
-      id: '1', 
-      name: 'Indie Pop Vibes', 
+    {
+      id: '1',
+      name: 'Indie Pop Vibes',
       description: 'Fresh indie tracks for your daily dose of creativity',
       imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
     },
-    { 
-      id: '2', 
-      name: 'Chill Beats', 
+    {
+      id: '2',
+      name: 'Chill Beats',
       description: 'Relaxing electronic music for focus and calm',
       imageUrl: 'https://images.unsplash.com/photo-1571974599782-87624638275c?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
     },
-    { 
-      id: '3', 
-      name: 'Electronic Dreams', 
+    {
+      id: '3',
+      name: 'Electronic Dreams',
       description: 'Futuristic sounds and synthesized melodies',
       imageUrl: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
     },
-    { 
-      id: '4', 
-      name: 'Acoustic Sessions', 
+    {
+      id: '4',
+      name: 'Acoustic Sessions',
       description: 'Intimate acoustic performances and raw emotion',
       imageUrl: 'https://images.unsplash.com/photo-1511735111819-9a3f7709049c?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
     },
-    { 
-      id: '5', 
-      name: 'Late Night Jazz', 
+    {
+      id: '5',
+      name: 'Late Night Jazz',
       description: 'Smooth jazz for those midnight moments',
       imageUrl: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
     },
-    { 
-      id: '6', 
-      name: 'Morning Coffee', 
+    {
+      id: '6',
+      name: 'Morning Coffee',
       description: 'Perfect tunes to start your day right',
       imageUrl: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=500&h=500&fit=crop&crop=center',
       type: 'playlist' as const
@@ -150,18 +150,18 @@ const Home: React.FC = () => {
   if (isLoading) {
     return (
       <div className="pb-20 space-y-8">
-        <BrandLoader 
-          message="Loading your music..." 
+        <BrandLoader
+          message="Loading your music..."
           showTagline={true}
           size="lg"
         />
-        
+
         {/* Loading Skeletons */}
         <div className="space-y-8">
           <SectionSkeleton title={true}>
             <GridSkeleton items={6} columns={3} />
           </SectionSkeleton>
-          
+
           <SectionSkeleton title={true}>
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -169,7 +169,7 @@ const Home: React.FC = () => {
               ))}
             </div>
           </SectionSkeleton>
-          
+
           <SectionSkeleton title={true}>
             <GridSkeleton items={4} columns={2} />
           </SectionSkeleton>
@@ -183,7 +183,7 @@ const Home: React.FC = () => {
       <h1 className={`${isMobile ? 'text-xl sm:text-2xl' : 'text-3xl'} font-bold mb-4 sm:mb-6 text-white`}>
         Home
       </h1>
-      
+
       {/* Recently Played Section */}
       <div className="space-y-6">
         <div className="space-y-4">
@@ -194,7 +194,7 @@ const Home: React.FC = () => {
             Fresh beats, straight from the studio.
           </p>
         </div>
-        
+
         {isMobile ? (
           <div className="grid grid-cols-2 gap-4">
             {recentlyPlayedItems.slice(0, 4).map((item) => (
@@ -219,7 +219,7 @@ const Home: React.FC = () => {
           <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-2xl'} font-bold text-white`}>
             Featured Track
           </h2>
-          <div 
+          <div
             className="flex items-center space-x-6 glass-card p-6 rounded-figma-lg hover:bg-white/10 transition-all duration-300 group cursor-pointer"
             onClick={handlePlayFeaturedTrack}
           >
@@ -238,7 +238,7 @@ const Home: React.FC = () => {
                 {topTracks[0].artistName}
               </p>
               <div>
-                <Button 
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePlayFeaturedTrack();
@@ -301,19 +301,35 @@ const Home: React.FC = () => {
           Popular Albums
         </h2>
         <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'} gap-4`}>
-          {['Album Title 1', 'Album Title 2'].map((title) => (
+          {[
+            { title: 'Udaan', image: '/images/Udaan (1).jpg' },
+            { title: 'Sky mein dance', image: '/images/Sky mein dance.jpeg' }
+          ].map((album) => (
             <div
-              key={title}
-              className="music-card aspect-square rounded-figma-md p-4 flex items-end cursor-pointer group hover:scale-105 transition-all duration-300"
+              key={album.title}
+              className="relative aspect-square rounded-figma-md overflow-hidden cursor-pointer group hover:scale-105 transition-all duration-300"
             >
-              <h3 className="text-white font-medium group-hover:text-figma-purple transition-colors">
-                {title}
-              </h3>
+              {/* Album Cover Image */}
+              <img
+                src={album.image}
+                alt={album.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+
+              {/* Overlay gradient for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+              {/* Album Title */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                <h3 className="text-white font-medium group-hover:text-figma-purple transition-colors">
+                  {album.title}
+                </h3>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      
+
       {/* All Music Section - Now ALL music is IPFS-tagged */}
       <div className="space-y-6">
         <div className="space-y-4">
@@ -357,7 +373,7 @@ const Home: React.FC = () => {
           cols={isMobile ? 2 : 5}
         />
       )}
-      
+
       {/* Top IPFS Tracks section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">

@@ -41,7 +41,7 @@ const ArtistRegistration: React.FC = () => {
       const artistProfile = createArtistProfile({
         name: values.artistName,
         bio: values.bio,
-        image: artistImage || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+        image: artistImage || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
         userId: `user-${Date.now()}`
       });
 

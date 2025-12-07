@@ -50,7 +50,7 @@ class SubscriptionService {
 
   private initializeService() {
     this.setupDefaultTiers();
-    
+
     // Listen for subscription updates from Yellow SDK
     yellowSDKService.on('subscriptionUpdated', this.handleSubscriptionUpdate.bind(this));
   }
@@ -265,7 +265,7 @@ class SubscriptionService {
         };
 
         this.userSubscriptions.set(session.walletAddress, subscriptionStatus);
-        
+
         // Notify Yellow SDK of subscription update
         yellowSDKService.emit('subscriptionUpdated', subscriptionStatus);
       }
@@ -298,7 +298,7 @@ class SubscriptionService {
       };
 
       this.userSubscriptions.set(session.walletAddress, updatedSubscription);
-      
+
       // Notify Yellow SDK
       yellowSDKService.emit('subscriptionUpdated', updatedSubscription);
 
@@ -396,7 +396,7 @@ class SubscriptionService {
   getCurrentSubscription(userAddress?: string): SubscriptionStatus | null {
     const session = yellowSDKService.getCurrentSession();
     const address = userAddress || session?.walletAddress;
-    
+
     if (!address) return null;
 
     return this.userSubscriptions.get(address) || null;
@@ -405,7 +405,7 @@ class SubscriptionService {
   // Check if user has access to specific content tier
   hasAccessToTier(requiredTier: string, userAddress?: string): boolean {
     const subscription = this.getCurrentSubscription(userAddress);
-    
+
     if (!subscription || !subscription.isActive) {
       return false;
     }
@@ -432,7 +432,7 @@ class SubscriptionService {
   // Check if subscription is expiring soon (within 7 days)
   isSubscriptionExpiringSoon(userAddress?: string): boolean {
     const subscription = this.getCurrentSubscription(userAddress);
-    
+
     if (!subscription || !subscription.isActive) {
       return false;
     }
@@ -444,7 +444,7 @@ class SubscriptionService {
   // Get days until subscription expires
   getDaysUntilExpiration(userAddress?: string): number {
     const subscription = this.getCurrentSubscription(userAddress);
-    
+
     if (!subscription || !subscription.isActive) {
       return 0;
     }

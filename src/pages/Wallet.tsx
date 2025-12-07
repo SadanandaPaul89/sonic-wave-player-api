@@ -25,27 +25,8 @@ import SubscriptionManager from '@/components/SubscriptionManager';
 import PaymentModal from '@/components/PaymentModal';
 import IPFSAudioPlayer from '@/components/IPFSAudioPlayer';
 
-// Local interface since yellowSDK types were removed
-interface AudioFileStructure {
-  high_quality: {
-    uri: string;
-    format: 'MP3' | 'AAC';
-    bitrate: string;
-    size: number;
-  };
-  streaming: {
-    uri: string;
-    format: 'MP3' | 'AAC';
-    bitrate: string;
-    size: number;
-  };
-  mobile: {
-    uri: string;
-    format: 'MP3';
-    bitrate: string;
-    size: number;
-  };
-}
+// Import the correct AudioFileStructure from yellowSDK types
+import type { AudioFileStructure } from '@/types/yellowSDK';
 
 const Wallet = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -81,22 +62,19 @@ const Wallet = () => {
   // Demo NFT data
   const demoNFT: AudioFileStructure = {
     high_quality: {
-      uri: 'ipfs://QmYourMusicHashHere',
+      url: 'ipfs://QmYourMusicHashHere',
       format: 'MP3',
-      bitrate: '320kbps',
-      size: 9600000
+      bitrate: 320
     },
-    streaming: {
-      uri: 'ipfs://QmYourMusicHashHere',
+    medium_quality: {
+      url: 'ipfs://QmYourMusicHashHere',
       format: 'MP3',
-      bitrate: '192kbps',
-      size: 5760000
+      bitrate: 192
     },
-    mobile: {
-      uri: 'ipfs://QmYourMusicHashHere',
+    low_quality: {
+      url: 'ipfs://QmYourMusicHashHere',
       format: 'MP3',
-      bitrate: '128kbps',
-      size: 3840000
+      bitrate: 128
     }
   };
 
@@ -107,7 +85,7 @@ const Wallet = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Web3 Music Wallet</h1>
-              <p className="text-white/70">Connect your wallet to access NFT music, exclusive content, and Yellow SDK features</p>
+              <p className="text-white/70">Connect your wallet to access NFTs and exclusive content</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>

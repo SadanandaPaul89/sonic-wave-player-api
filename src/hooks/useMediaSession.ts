@@ -35,7 +35,7 @@ export const useMediaSession = ({
         album: currentTrack.albumName || 'Unknown Album',
         artwork: [
           {
-            src: currentTrack.image || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+            src: currentTrack.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=512&h=512&fit=crop',
             sizes: '512x512',
             type: 'image/jpeg'
           }

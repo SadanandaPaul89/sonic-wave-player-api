@@ -89,7 +89,7 @@ const AlbumView = () => {
         <div className="flex-shrink-0">
           <div className="w-48 h-48 bg-spotify-elevated shadow-xl">
             <img 
-              src={album.image || 'https://cdn.jamendo.com/default/default-album_200.jpg'} 
+              src={album.image || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'} 
               alt={album.name} 
               className="w-full h-full object-cover"
             />

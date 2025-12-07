@@ -10,56 +10,6 @@ import { Loader2, AlertCircle, Lock, Mail, Eye, EyeOff, CheckCircle, X } from 'l
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Custom CSS to completely disable ALL hover effects
-const noHoverStyles = `
-  .no-hover,
-  .no-hover * {
-    transition: none !important;
-    animation-duration: 0s !important;
-  }
-  
-  .no-hover *:hover,
-  .no-hover *:focus:hover,
-  .no-hover *:active:hover {
-    background-color: inherit !important;
-    background: inherit !important;
-    color: inherit !important;
-    border-color: inherit !important;
-    opacity: inherit !important;
-    transform: inherit !important;
-    box-shadow: inherit !important;
-    text-decoration: inherit !important;
-    filter: inherit !important;
-    scale: inherit !important;
-    outline: inherit !important;
-  }
-  
-  /* Disable all Tailwind hover utilities */
-  .no-hover [class*="hover:"]:hover {
-    all: revert !important;
-  }
-  
-  /* Specifically target button elements */
-  .no-hover button:hover,
-  .no-hover input:hover,
-  .no-hover [role="button"]:hover,
-  .no-hover [type="button"]:hover,
-  .no-hover [type="submit"]:hover {
-    background-color: inherit !important;
-    background: inherit !important;
-    color: inherit !important;
-    border-color: inherit !important;
-    transform: none !important;
-    box-shadow: inherit !important;
-    opacity: inherit !important;
-  }
-  
-  /* Override specific component hover states */
-  .no-hover .bg-gradient-to-r:hover {
-    background: inherit !important;
-  }
-`;
-
 const Auth = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -256,11 +206,9 @@ const Auth = () => {
 
   if (isMobile) {
     return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: noHoverStyles }} />
-        <div className="no-hover min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-          {/* Enhanced Background with Bright Gradient - Mobile */}
-          <div className="absolute inset-0">
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+        {/* Enhanced Background with Bright Gradient - Mobile */}
+        <div className="absolute inset-0">
             {/* Bright gradient base */}
             <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300"></div>
 
@@ -274,10 +222,10 @@ const Auth = () => {
 
             {/* Light overlay for better contrast */}
             <div className="absolute inset-0 bg-white/10"></div>
-          </div>
+        </div>
 
-          <div>
-            <Card className="w-full max-w-sm bg-white/95 backdrop-blur-lg shadow-2xl border border-white/20 relative z-10">
+        <div>
+          <Card className="w-full max-w-sm bg-white/95 backdrop-blur-lg shadow-2xl border border-white/20 relative z-10">
               <CardContent className="p-6">
                 <div className="text-center mb-8">
                   <div className="relative h-16">
@@ -526,46 +474,43 @@ const Auth = () => {
                     )}
                     {activeTab === 'login' ? 'Login with Google' : 'Register with Google'}
                   </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: noHoverStyles }} />
-      <div className="no-hover min-h-screen relative overflow-hidden flex items-center justify-center p-6">
-        {/* Enhanced Background with Bright Gradient */}
-        <div className="absolute inset-0">
-          {/* Bright gradient base */}
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300"></div>
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6">
+      {/* Enhanced Background with Bright Gradient */}
+      <div className="absolute inset-0">
+        {/* Bright gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300"></div>
 
-          {/* Animated mesh gradient overlay */}
-          <div className="absolute inset-0 opacity-70">
+        {/* Animated mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-70">
             <div className="absolute top-0 left-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
             <div className="absolute top-0 right-0 w-72 h-72 bg-rose-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
             <div className="absolute bottom-0 left-0 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: '4s' }}></div>
             <div className="absolute bottom-0 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: '6s' }}></div>
-          </div>
+        </div>
 
-          {/* Subtle pattern overlay */}
-          <div className="absolute inset-0 opacity-5">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0" style={{
               backgroundImage: `radial-gradient(circle at 2px 2px, rgba(0,0,0,0.3) 1px, transparent 0)`,
               backgroundSize: '30px 30px'
             }}></div>
-          </div>
-
-          {/* Light overlay for better contrast */}
-          <div className="absolute inset-0 bg-white/10"></div>
         </div>
 
-        <div className="w-full max-w-4xl mx-auto relative z-10">
-          <div>
+        {/* Light overlay for better contrast */}
+        <div className="absolute inset-0 bg-white/10"></div>
+      </div>
+
+      <div className="w-full max-w-4xl mx-auto relative z-10">
+        <div>
             <Card className="overflow-hidden bg-white/80 backdrop-blur-lg shadow-2xl border border-white/20">
               <div className="flex min-h-[600px]">
                 {/* Left Panel - Welcome Section with Enhanced Background */}
@@ -629,7 +574,7 @@ const Auth = () => {
                         }`}>
                         <div className="space-y-8">
                           <h1 className="text-6xl font-bold bg-gradient-to-r from-white to-emerald-100 bg-clip-text text-transparent">
-                            Welcome Back!
+                            Join Sonic Wave!
                           </h1>
                           <p className="text-xl font-light">
                             Already have an account?
@@ -812,14 +757,13 @@ const Auth = () => {
                         {activeTab === 'login' ? 'Login with Google' : 'Register with Google'}
                       </Button>
                     </form>
-                  </div>
                 </div>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -43,7 +43,7 @@ interface SupabaseSong {
 const mapArtistFromSupabase = (artist: SupabaseArtist): Artist => ({
   id: artist.id,
   name: artist.name,
-  image: artist.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg',
+  image: artist.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
   type: 'artist',
   bio: artist.bio,
   verification_status: artist.verification_status
@@ -63,7 +63,7 @@ const mapAlbumFromSupabase = async (album: SupabaseAlbum): Promise<Album> => {
     artistName: artist?.name || 'Unknown Artist',
     artistId: album.artist_id,
     releaseDate: album.release_date || new Date().toISOString(),
-    image: album.image_url || 'https://cdn.jamendo.com/default/default-album_200.jpg'
+    image: album.image_url || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
   };
 };
 
@@ -90,7 +90,7 @@ const mapSongFromSupabase = async (song: SupabaseSong): Promise<Track> => {
     albumId: song.album_id || '',
     duration: song.duration,
     previewURL: song.audio_url,
-    image: song.image_url || 'https://cdn.jamendo.com/default/default-track_200.jpg',
+    image: song.image_url || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop',
     like_count: song.like_count || 0,
     play_count: song.play_count || 0
   };
@@ -466,7 +466,7 @@ export const publishSong = async (
       albumId,
       duration: durationInteger, // Return the integer duration
       previewURL: audioUrl,
-      image: imageUrl || 'https://cdn.jamendo.com/default/default-track_200.jpg'
+      image: imageUrl || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop'
     };
   } catch (error) {
     console.error('Unexpected error in publishSong:', error);
@@ -609,7 +609,7 @@ export const getVerificationRequests = async (): Promise<any[]> => {
         return {
           ...request,
           artist_name: artist?.name || 'Unknown Artist',
-          artist_image: artist?.image_url || 'https://cdn.jamendo.com/default/default-artist_200.jpg'
+          artist_image: artist?.image_url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'
         };
       })
     );

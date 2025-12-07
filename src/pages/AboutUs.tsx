@@ -12,18 +12,18 @@ const AboutUs: React.FC = () => {
       initials: "SP",
       color: "bg-gradient-to-br from-purple-500 to-pink-500"
     },
-    // {
-    //   name: "Mayank Sen",
-    //   note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
-    //   initials: "MS",
-    //   color: "bg-gradient-to-br from-blue-500 to-cyan-500"
-    // },
-    // {
-    //   name: "Avanthika Prathapan",
-    //   note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
-    //   initials: "AP",
-    //   color: "bg-gradient-to-br from-green-500 to-emerald-500"
-    // },
+    {
+      name: "Mayank Sen",
+      note: "Dedicated to building robust systems that empower artists and connect them with their audience.",
+      initials: "MS",
+      color: "bg-gradient-to-br from-blue-500 to-cyan-500"
+    },
+    {
+      name: "Avanthika Prathapan",
+      note: "Focused on crafting beautiful interfaces that make music discovery an enjoyable journey.",
+      initials: "AP",
+      color: "bg-gradient-to-br from-green-500 to-emerald-500"
+    },
     {
       name: "Hariharan G V",
       note: "Committed to delivering exceptional performance and creating innovative solutions for music lovers.",
