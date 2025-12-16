@@ -71,7 +71,7 @@ const AboutUs: React.FC = () => {
             </h2>
             <div className="space-y-4 text-lg leading-relaxed">
               <p>
-                <strong className="text-spotify-green">Sonic Wave</strong> is a platform for independent artists to share their masterpieces with the type of audience they need! It has no boundaries and no hidden compliances.
+                <strong className="text-spotify-green">Sonic Wave</strong> is a platform for independent artists to share their masterpieces with the type of audience they need! It has no boundaries and no hidden compliances. And all these on blockchain!
               </p>
               <p>
                 For the audiophiles/listeners, Sonic Wave is a platform where you will find all kinds of music directly from the creator without any unwanted interruptions and limits.
