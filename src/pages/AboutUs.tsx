@@ -30,12 +30,18 @@ const AboutUs: React.FC = () => {
       initials: "HG",
       color: "bg-gradient-to-br from-orange-500 to-red-500"
     },
-  //    {
-  //   name: "Sanjay Ganesh K Barade",
-  //   note: "Driven by a love for technology and music, always eager to create meaningful solutions that unite communities.",
-  //   initials: "SB",
-  //   color: "bg-gradient-to-br from-fuchsia-500 to-indigo-500"
-  // },
+     {
+    name: "Sahiti Reddy",
+    note: "Bringing music and Blockchain together to make the artist economy more valued ",
+    initials: "SR",
+    color: "bg-gradient-to-br from-blue-500 to-violet-500"
+  },
+     {
+    name: "Ananya Kavuri",
+    note: "An audiophile crafting and sorting musical inventions, supporting the artist fraternity",
+    initials: "AK",
+    color: "bg-gradient-to-br from-fuchsia-500 to-blue-500"
+  },
   {
       name: "Ayusman Nayak",
       note: "Being part of Sonic Wave has been an incredible journey. The energy, the creativity, and the passion here constantly push me to grow. Proud to be part of this team!",
