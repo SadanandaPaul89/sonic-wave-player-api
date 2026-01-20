@@ -1,6 +1,6 @@
 // Authentication configuration
 // Set USE_LOCAL_AUTH to true to use local auth, false to use Supabase
-export const USE_LOCAL_AUTH = true;
+export const USE_LOCAL_AUTH = false;
 
 // Export the appropriate auth service based on configuration
 export const getAuthService = async () => {

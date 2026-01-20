@@ -5,6 +5,7 @@
  */
 
 import { Track, Album, Artist } from './api';
+import { supabase } from '@/lib/supabase';
 
 interface PinataFile {
   id: string;
@@ -61,10 +62,10 @@ class PinataLibraryService {
   private async initializeService() {
     console.log('🎵 Initializing Pinata Library Service...');
     console.log('📡 Gateway:', this.PINATA_GATEWAY);
-    
+
     // Load cached data from localStorage
     this.loadFromCache();
-    
+
     // Fetch fresh data in background
     this.fetchPinataFiles().catch(error => {
       console.warn('Background fetch failed:', error);
@@ -107,8 +108,8 @@ class PinataLibraryService {
   async searchTracks(query: string): Promise<Track[]> {
     const tracks = await this.getAllTracks();
     const searchTerm = query.toLowerCase();
-    
-    return tracks.filter(track => 
+
+    return tracks.filter(track =>
       track.name.toLowerCase().includes(searchTerm) ||
       track.artistName.toLowerCase().includes(searchTerm) ||
       track.albumName.toLowerCase().includes(searchTerm) ||
@@ -121,7 +122,7 @@ class PinataLibraryService {
    */
   async getTracksByAlbum(albumName: string): Promise<Track[]> {
     const tracks = await this.getAllTracks();
-    return tracks.filter(track => 
+    return tracks.filter(track =>
       track.albumName.toLowerCase() === albumName.toLowerCase()
     );
   }
@@ -131,7 +132,7 @@ class PinataLibraryService {
    */
   async getTracksByArtist(artistName: string): Promise<Track[]> {
     const tracks = await this.getAllTracks();
-    return tracks.filter(track => 
+    return tracks.filter(track =>
       track.artistName.toLowerCase() === artistName.toLowerCase()
     );
   }
@@ -142,7 +143,7 @@ class PinataLibraryService {
   private async fetchPinataFiles(): Promise<void> {
     try {
       console.log('🔄 Fetching files from Pinata...');
-      
+
       // Get environment variables for Pinata API
       const apiKey = process.env.REACT_APP_PINATA_API_KEY || localStorage.getItem('pinata_api_key');
       const secretKey = process.env.REACT_APP_PINATA_SECRET_KEY || localStorage.getItem('pinata_secret_key');
@@ -165,21 +166,21 @@ class PinataLibraryService {
 
       // Process files into tracks
       const tracks = await this.processFilesToTracks(files);
-      
+
       // Update cache
       this.cachedTracks = tracks;
       this.lastFetchTime = Date.now();
-      
+
       // Process albums and artists
       this.processAlbumsAndArtists(tracks);
-      
+
       // Save to localStorage
       this.saveToCache();
-      
+
       console.log(`✅ Loaded ${tracks.length} tracks from Pinata`);
       console.log(`📀 Found ${this.cachedAlbums.size} albums`);
       console.log(`🎤 Found ${this.cachedArtists.size} artists`);
-      
+
     } catch (error) {
       console.error('Error fetching Pinata files:', error);
       // Keep existing cached data on error
@@ -189,7 +190,31 @@ class PinataLibraryService {
   /**
    * Fetch files using Pinata API
    */
+  /**
+   * Fetch files using Pinata API (via Supabase Edge Function)
+   */
   private async fetchFromPinataAPI(jwt?: string, apiKey?: string, secretKey?: string): Promise<PinataFile[]> {
+    try {
+      console.log('⚡ Calling Pinata Proxy Edge Function...');
+
+      const { data, error } = await supabase.functions.invoke('pinata-proxy?action=list', {
+        method: 'GET',
+      });
+
+      if (error) {
+        console.warn('Edge Function call failed, details:', error);
+        throw error;
+      }
+
+      if (data && data.rows) {
+        console.log('✅ Edge Function returned files');
+        return data.rows;
+      }
+    } catch (err) {
+      console.warn('⚠️ Edge Function failed, falling back to direct API call if keys exist...', err);
+    }
+
+    // Fallback to direct API call if Edge Function fails (and we still have local keys)
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     };
@@ -222,7 +247,7 @@ class PinataLibraryService {
   private async discoverFilesFromGateway(): Promise<PinataFile[]> {
     // This is a fallback method when API access isn't available
     console.log('Using gateway discovery method...');
-    
+
     // Try to load from localStorage cache
     const cached = localStorage.getItem('pinata_discovered_files');
     if (cached) {
@@ -295,7 +320,7 @@ class PinataLibraryService {
     // Save test files to cache for next time
     localStorage.setItem('pinata_discovered_files', JSON.stringify(testFiles));
     console.log(`🧪 Created ${testFiles.length} test files for demonstration`);
-    
+
     return testFiles;
   }
 
@@ -304,10 +329,10 @@ class PinataLibraryService {
    */
   private async processFilesToTracks(files: PinataFile[]): Promise<Track[]> {
     const tracks: Track[] = [];
-    
+
     // Filter for audio files
-    const audioFiles = files.filter(file => 
-      file.mime_type?.startsWith('audio/') || 
+    const audioFiles = files.filter(file =>
+      file.mime_type?.startsWith('audio/') ||
       file.metadata?.name?.match(/\.(mp3|wav|flac|aac|ogg|m4a)$/i)
     );
 
@@ -317,7 +342,7 @@ class PinataLibraryService {
     for (const [albumKey, albumFiles] of albumGroups.entries()) {
       // Find artwork for this album
       const artworkFile = await this.findArtworkForAlbum(albumKey, files);
-      
+
       for (const file of albumFiles) {
         try {
           const track = await this.createTrackFromFile(file, artworkFile);
@@ -342,13 +367,13 @@ class PinataLibraryService {
     for (const file of files) {
       // Try to extract album from metadata
       let albumKey = 'Unknown Album';
-      
+
       if (file.metadata?.keyvalues?.album) {
         albumKey = file.metadata.keyvalues.album;
       } else if (file.metadata?.name) {
         // Try to extract album from filename patterns
         const name = file.metadata.name;
-        
+
         // Pattern: "Artist - Album - Track.mp3"
         const albumMatch = name.match(/^([^-]+)\s*-\s*([^-]+)\s*-\s*(.+)\.(mp3|wav|flac|aac|ogg|m4a)$/i);
         if (albumMatch) {
@@ -376,15 +401,15 @@ class PinataLibraryService {
    */
   private async findArtworkForAlbum(albumKey: string, allFiles: PinataFile[]): Promise<PinataFile | null> {
     // Look for image files with similar names or metadata
-    const imageFiles = allFiles.filter(file => 
-      file.mime_type?.startsWith('image/') || 
+    const imageFiles = allFiles.filter(file =>
+      file.mime_type?.startsWith('image/') ||
       file.metadata?.name?.match(/\.(jpg|jpeg|png|webp|gif)$/i)
     );
 
     for (const imageFile of imageFiles) {
       const name = imageFile.metadata?.name?.toLowerCase() || '';
       const albumLower = albumKey.toLowerCase();
-      
+
       // Check if image name contains album name or common artwork names
       if (
         name.includes(albumLower) ||
@@ -407,10 +432,10 @@ class PinataLibraryService {
     try {
       // Extract metadata from file
       const metadata = this.extractMetadataFromFile(file);
-      
+
       // Create track ID
       const trackId = `pinata-${file.ipfs_pin_hash}`;
-      
+
       // Get file URLs
       const audioUrl = `${this.PINATA_GATEWAY}/ipfs/${file.ipfs_pin_hash}`;
       const artworkUrl = artworkFile ? `${this.PINATA_GATEWAY}/ipfs/${artworkFile.ipfs_pin_hash}` : undefined;
@@ -425,7 +450,7 @@ class PinataLibraryService {
         albumId: `album-${this.sanitizeId(metadata.album || 'unknown')}`,
         artistId: `artist-${this.sanitizeId(metadata.artist)}`,
         image: artworkUrl,
-        
+
         // Add IPFS metadata for compatibility
         ipfs: {
           hash: file.ipfs_pin_hash,
@@ -460,7 +485,7 @@ class PinataLibraryService {
             // Note: description and tags would need to be added to the metadata interface
           }
         },
-        
+
         // Additional metadata (these would need to be added to Track interface or stored elsewhere)
         // uploadedAt: file.date_pinned,
         // fileSize: file.size,
@@ -480,7 +505,7 @@ class PinataLibraryService {
   private extractMetadataFromFile(file: PinataFile): MusicFileMetadata {
     const keyvalues = file.metadata?.keyvalues || {};
     const fileName = file.metadata?.name || `Track ${file.ipfs_pin_hash.substring(0, 8)}`;
-    
+
     // Try to extract from keyvalues first
     if (keyvalues.title && keyvalues.artist) {
       return {
@@ -494,10 +519,10 @@ class PinataLibraryService {
         tags: keyvalues.tags ? keyvalues.tags.split(',').map(t => t.trim()) : undefined
       };
     }
-    
+
     // Try to extract from filename
     const metadata = this.parseFilename(fileName);
-    
+
     // Merge with any available keyvalues
     return {
       title: keyvalues.title || metadata.title,
@@ -517,7 +542,7 @@ class PinataLibraryService {
   private parseFilename(filename: string): MusicFileMetadata {
     // Remove file extension
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-    
+
     // Pattern: "Artist - Album - Track"
     let match = nameWithoutExt.match(/^([^-]+)\s*-\s*([^-]+)\s*-\s*(.+)$/);
     if (match) {
@@ -527,7 +552,7 @@ class PinataLibraryService {
         title: match[3].trim()
       };
     }
-    
+
     // Pattern: "Artist - Track"
     match = nameWithoutExt.match(/^([^-]+)\s*-\s*(.+)$/);
     if (match) {
@@ -536,7 +561,7 @@ class PinataLibraryService {
         title: match[2].trim()
       };
     }
-    
+
     // Pattern: "Album/Track" or "Album\Track"
     match = nameWithoutExt.match(/^([^\/\\]+)[\\/](.+)$/);
     if (match) {
@@ -546,7 +571,7 @@ class PinataLibraryService {
         artist: 'Unknown Artist'
       };
     }
-    
+
     // Default: use filename as title
     return {
       title: nameWithoutExt,
@@ -620,7 +645,7 @@ class PinataLibraryService {
 
   private getFormatFromMimeType(mimeType?: string): 'MP3' | 'AAC' {
     if (!mimeType) return 'MP3';
-    
+
     switch (mimeType) {
       case 'audio/mpeg':
         return 'MP3';
@@ -660,7 +685,7 @@ class PinataLibraryService {
         const cacheData = JSON.parse(cached);
         this.cachedTracks = cacheData.tracks || [];
         this.lastFetchTime = cacheData.timestamp || 0;
-        
+
         // Rebuild maps
         if (cacheData.albums) {
           this.cachedAlbums.clear();
@@ -668,14 +693,14 @@ class PinataLibraryService {
             this.cachedAlbums.set(album.id, album);
           });
         }
-        
+
         if (cacheData.artists) {
           this.cachedArtists.clear();
           cacheData.artists.forEach((artist: Artist) => {
             this.cachedArtists.set(artist.id, artist);
           });
         }
-        
+
         console.log(`📱 Loaded ${this.cachedTracks.length} tracks from cache`);
       }
     } catch (error) {
@@ -719,9 +744,9 @@ class PinataLibraryService {
         keyvalues: metadata || {}
       },
       regions: [],
-      mime_type: fileName.endsWith('.mp3') ? 'audio/mpeg' : 
-                 fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
-                 fileName.endsWith('.png') ? 'image/png' : 'application/octet-stream'
+      mime_type: fileName.endsWith('.mp3') ? 'audio/mpeg' :
+        fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') ? 'image/jpeg' :
+          fileName.endsWith('.png') ? 'image/png' : 'application/octet-stream'
     };
 
     // Get existing cached files
