@@ -47,7 +47,14 @@ const AboutUs: React.FC = () => {
       note: "Being part of Sonic Wave has been an incredible journey. The energy, the creativity, and the passion here constantly push me to grow. Proud to be part of this team!",
       initials: "AN",
       color: "bg-gradient-to-br from-blue-500 to-violet-500"
+    },
+{
+      name: "K S Nitish",
+      note: "Designing and critical thinking in the field of music is my forte. On the journey to make artists free and self sufficient",
+      initials: "N",
+      color: "bg-gradient-to-br from-blue-500 to-violet-500"
     }
+
   ];
 
   return (
