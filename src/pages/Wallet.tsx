@@ -14,45 +14,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useWallet } from '@/contexts/WalletContext';
 import PersistentMusicLibrary from '@/components/PersistentMusicLibrary';
 import AnimationWrapper from '@/components/AnimationWrapper';
 import ScrollAnimation from '@/components/ScrollAnimation';
 import NFTBenefitsDisplay from '@/components/NFTBenefitsDisplay';
 import MicrotransactionDashboard from '@/components/MicrotransactionDashboard';
 import TransactionDisplay from '@/components/TransactionDisplay';
-import NetworkSelector from '@/components/NetworkSelector';
 import SubscriptionManager from '@/components/SubscriptionManager';
 import PaymentModal from '@/components/PaymentModal';
 import IPFSAudioPlayer from '@/components/IPFSAudioPlayer';
+import Web3WalletConnect from '@/components/Web3WalletConnect';
 
 // Import the correct AudioFileStructure from yellowSDK types
 import type { AudioFileStructure } from '@/types/yellowSDK';
 
 const Wallet = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
-  const [userNFTs, setUserNFTs] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Mock data for demo
-  const isWalletConnected = !!connectedAccount;
-  const isAuthenticated = false;
-  const paymentChannel = null;
+  // Use centralized wallet context
+  const {
+    isWalletConnected,
+    walletAddress,
+    isYellowSDKAuthenticated,
+    paymentChannel,
+  } = useWallet();
+
+  // Mock data for demo - in production, this would come from blockchain/backend
+  const userNFTs: any[] = [];
   const transactions: any[] = [];
   const isProcessingTx = false;
-
-  const handleWalletConnect = () => {
-    // Mock wallet connection
-    setConnectedAccount('0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4');
-    toast.success('Wallet connected successfully!');
-  };
-
-  const handleWalletDisconnect = () => {
-    setConnectedAccount(null);
-    setUserNFTs([]);
-    toast.success('Wallet disconnected');
-  };
 
   // Handle test transaction
   const handleTestTransaction = async () => {
@@ -96,44 +89,10 @@ const Wallet = () => {
       </AnimationWrapper>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Wallet Connection */}
+        {/* Wallet Connection - Single Source of Truth */}
         <div className="lg:col-span-1 space-y-6">
           <ScrollAnimation animation="slideUp" delay={0.2}>
-            <Card className="glass-card border-figma-glass-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-3">
-                  <WalletIcon size={24} className="text-figma-purple" />
-                  Wallet Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isWalletConnected ? (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-white/60 text-sm">Connected Account</p>
-                      <p className="text-white font-mono text-sm">{connectedAccount?.slice(0, 6)}...{connectedAccount?.slice(-4)}</p>
-                    </div>
-                    <Button 
-                      onClick={handleWalletDisconnect}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Disconnect Wallet
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-white/60 text-sm">No wallet connected</p>
-                    <Button 
-                      onClick={handleWalletConnect}
-                      className="w-full bg-figma-purple hover:bg-figma-purple/80"
-                    >
-                      Connect Wallet
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <Web3WalletConnect />
           </ScrollAnimation>
         </div>
 
@@ -286,7 +245,7 @@ const Wallet = () => {
 
               <TabsContent value="transactions" className="space-y-6">
                 {/* Test Transaction Button */}
-                {isAuthenticated && paymentChannel && (
+                {isYellowSDKAuthenticated && paymentChannel && (
                   <ScrollAnimation animation="slideUp" delay={0.3}>
                     <Card className="glass-card border-figma-glass-border">
                       <CardHeader>
@@ -394,17 +353,17 @@ const Wallet = () => {
                   <h2 className="text-2xl font-bold text-white mb-4">Connect Your Wallet</h2>
                   <p className="text-white/60 max-w-md mx-auto mb-6">
                     Connect your Web3 wallet to access your NFT music collection, 
-                    Yellow SDK features, and decentralized music platform.
+                    payment features, and decentralized music platform.
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-lg mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-lg mx-auto mb-8">
                     <Card className="glass-card border-figma-glass-border">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3 mb-2">
                           <Star size={16} className="text-figma-purple" />
-                          <h3 className="text-white font-medium text-sm">Yellow SDK</h3>
+                          <h3 className="text-white font-medium text-sm">Payment Channels</h3>
                         </div>
                         <p className="text-white/60 text-xs">
-                          Payment channels, subscriptions, and microtransactions
+                          Instant micropayments and subscriptions
                         </p>
                       </CardContent>
                     </Card>
@@ -419,6 +378,9 @@ const Wallet = () => {
                         </p>
                       </CardContent>
                     </Card>
+                  </div>
+                  <div className="text-center text-white/40 text-sm">
+                    <p>Use the wallet connection panel on the left to get started</p>
                   </div>
                 </CardContent>
               </Card>
