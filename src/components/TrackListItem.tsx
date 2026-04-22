@@ -69,19 +69,20 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
       <div className="flex items-center gap-3 sm:col-span-5">
         <div className="w-6 flex-shrink-0 flex items-center justify-center relative">
           <motion.span 
-            className={`group-hover:hidden ${isCurrentTrack ? 'text-figma-purple' : 'text-white/60'} text-sm sm:text-base`}
+            className={`${isCurrentTrack ? 'text-figma-purple' : 'text-white/70'} font-bold text-sm sm:text-base`}
             initial={{ opacity: 1 }}
-            whileHover={{ opacity: 0 }}
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.15 }}
           >
             {index + 1}
           </motion.span>
           <motion.button 
-            className="hidden group-hover:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center bg-figma-purple/80 hover:bg-figma-purple backdrop-blur-sm rounded-full shadow-lg transition-all duration-200"
             onClick={() => onPlayClick(track)}
-            initial={{ opacity: 0, scale: 0 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             whileHover={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ duration: 0.2 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
             {isCurrentPlaying ? 
               <Pause size={16} className="text-white" /> : 

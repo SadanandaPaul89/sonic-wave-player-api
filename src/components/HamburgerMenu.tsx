@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { X, Home, Search, Library, Info, User, LogOut, Wallet, Trophy } from 'lucide-react';
+import { X, Home, Search, Library, Info, User, LogOut, Wallet, Trophy, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
 import { getAuthService } from '@/config/auth';
 import { Logo, BRAND_TAGLINES } from '@/components/Brand';
 
@@ -12,6 +13,8 @@ interface HamburgerMenuProps {
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
   const location = useLocation();
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/' },
@@ -22,6 +25,43 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
     { icon: Info, label: 'About Us', path: '/about' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
+
+  // Fetch profile name
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setProfileLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setProfileName(null);
+        setProfileLoading(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (data && data.name) {
+        setProfileName(data.name);
+      } else {
+        setProfileName(null);
+      }
+      setProfileLoading(false);
+    };
+
+    fetchProfile();
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        fetchProfile();
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -103,7 +143,16 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ onClose }) => {
         </div>
         <div>
           <p className="text-white font-medium">Profile</p>
-          <p className="text-white/60 text-sm">No name set</p>
+          {profileLoading ? (
+            <div className="flex items-center gap-2 text-white/60 text-sm">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Loading...
+            </div>
+          ) : (
+            <p className="text-white/60 text-sm" title={profileName || "No name set"}>
+              {profileName || "No name set"}
+            </p>
+          )}
         </div>
       </motion.div>
 
